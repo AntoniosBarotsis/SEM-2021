@@ -1,0 +1,9 @@
+image: gradle:6.7-jdk15
+
+stages:
+  - build
+
+build:
+  stage: build
+  script:
+    gradle build
