@@ -11,7 +11,7 @@ public class Username {
     String username;
 
     /**
-     * Creates a Username if the input is valid
+     * Creates a Username if the input is valid.
      *
      * @param username The username
      * @return The newly created Username
@@ -28,7 +28,7 @@ public class Username {
     }
 
     /**
-     * Ensures that the <code>username</code> has these properties:
+     * Ensures that the <code>username</code> has certain properties.
      *
      * <ul>
      *     <li>A length of 2 or more characters</li>

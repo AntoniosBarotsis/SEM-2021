@@ -3,7 +3,7 @@ package nl.tudelft.sem.template.controllers;
 
 import nl.tudelft.sem.template.domain.DTOs.StudentRequest;
 import nl.tudelft.sem.template.domain.User;
-import nl.tudelft.sem.template.services.IUserService;
+import nl.tudelft.sem.template.services.IuserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping
 public class AuthenticationController {
-    private final IUserService userService;
+    private final IuserService userService;
 
     @Autowired
-    public AuthenticationController(IUserService userService) {
+    public AuthenticationController(IuserService userService) {
         this.userService = userService;
     }
 
@@ -27,6 +27,12 @@ public class AuthenticationController {
         return ResponseEntity.ok().body("pong");
     }
 
+    /**
+     * Creates a new user.
+     *
+     * @param student The student to create
+     * @return The newly created user
+     */
     @PostMapping("public/student/create")
     public ResponseEntity<User> createUser(@RequestBody StudentRequest student) {
         var res = userService.createStudent(student);

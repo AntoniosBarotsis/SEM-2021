@@ -13,7 +13,7 @@ public class Student extends User {
     }
 
     /**
-     * Creates a user if the username and password are valid
+     * Creates a user if the username and password are valid.
      *
      * @param username The username
      * @param password The password

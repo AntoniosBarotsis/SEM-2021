@@ -9,7 +9,7 @@ public class Password {
     String password;
 
     /**
-     * Creates a Password if the input is valid
+     * Creates a Password if the input is valid.
      *
      * @param password The password
      * @return The newly created Password
@@ -26,14 +26,14 @@ public class Password {
     }
 
     /**
-     * Ensures that the <code>password</code> is has these properties:
+     * Ensures that the <code>password</code> is has certain properties.
      *
      * <ul>
-     *     <li>A length of 6 or more characters</li>
+     *     <li>A length of 6 or more characters.</li>
      * </ul>
      */
     private static void verify(String password) {
-        final int PASSWORD_MIN_LENGTH = 6;
+        final int PasswordMinLength = 6;
 
         // Password cannot be null
         if (password == null) {
@@ -41,10 +41,10 @@ public class Password {
         }
 
         // Check character length
-        if (password.length() < PASSWORD_MIN_LENGTH) {
-            final String message = "The password cannot be less than " +
-                PASSWORD_MIN_LENGTH +
-                "characters long";
+        if (password.length() < PasswordMinLength) {
+            final String message = "The password cannot be less than "
+                + PasswordMinLength
+                + "characters long";
 
             throw new InvalidPasswordException(message);
         }
