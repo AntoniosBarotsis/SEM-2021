@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.entities;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import nl.tudelft.sem.template.enums.Status;
 
@@ -10,7 +11,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @Entity
-public class StudentOffer extends Offer{
+@EqualsAndHashCode(callSuper = true)
+public class StudentOffer extends Offer {
     private double pricePerHour;
     private String studentId;
 

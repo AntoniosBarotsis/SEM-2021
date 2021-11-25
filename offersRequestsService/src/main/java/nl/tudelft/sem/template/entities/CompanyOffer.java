@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.entities;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import nl.tudelft.sem.template.converters.StringListConverter;
 import nl.tudelft.sem.template.enums.Status;
@@ -12,6 +13,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @Entity
+@EqualsAndHashCode(callSuper = true)
 public abstract class CompanyOffer extends Offer {
     @Convert(converter = StringListConverter.class)
     private List<String> requirements;

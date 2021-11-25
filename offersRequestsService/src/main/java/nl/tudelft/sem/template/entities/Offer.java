@@ -11,6 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import nl.tudelft.sem.template.converters.StringListConverter;
 import nl.tudelft.sem.template.enums.Status;
@@ -19,11 +20,12 @@ import nl.tudelft.sem.template.enums.Status;
 @NoArgsConstructor
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@EqualsAndHashCode
 public abstract class Offer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    private Long id;
     private String title;
     private String description;
     private double hoursPerWeek;

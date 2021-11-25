@@ -1,9 +1,8 @@
 package nl.tudelft.sem.template.entities;
 
 import lombok.Data;
-import lombok.Getter;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import nl.tudelft.sem.template.enums.Status;
 
 
@@ -13,6 +12,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @Entity
+@EqualsAndHashCode(callSuper = true)
 public class NonTargetedCompanyOffer extends CompanyOffer {
     public NonTargetedCompanyOffer(String title, String description, double hoursPerWeek,
                                    double totalHours, List<String> expertise, Status status,
