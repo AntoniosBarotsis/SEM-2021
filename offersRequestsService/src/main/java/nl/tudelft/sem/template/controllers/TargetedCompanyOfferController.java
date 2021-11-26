@@ -1,12 +1,11 @@
 package nl.tudelft.sem.template.controllers;
 
+import java.util.List;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.services.TargetedCompanyOfferService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import java.util.List;
-
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -45,8 +44,9 @@ public class TargetedCompanyOfferController {
     @GetMapping("/company/targeted/getOffersById/{companyId}")
     public ResponseEntity<?> getCompanyOffersById(@PathVariable String companyId) {
         //Authenticate and check if the requester is a company.
-        try{
-            List<TargetedCompanyOffer> offers = targetedCompanyOfferService.getOffersById(companyId);
+        try {
+            List<TargetedCompanyOffer> offers =
+                    targetedCompanyOfferService.getOffersById(companyId);
             return ResponseEntity.ok(offers);
         } catch (IllegalArgumentException exception) {
             exception.printStackTrace();
@@ -60,14 +60,15 @@ public class TargetedCompanyOfferController {
     /**
      * Endpoint for getting TargetedCompanyOffers by a company, which created them.
      *
-     * @param StudentOfferId - the offer's id
+     * @param studentOfferId - the offer's id.
      * @return 200 OK and a list of offers targeting the StudentOffer if everything goes smoothly,
      *          else we return 400 Bad_Request and the message of the error which occurred.
      */
-    @GetMapping("/company/targeted/getOffersByOffer/{StudentOfferId}")
-    public ResponseEntity<?> getCompanyOffersByStudentOffer(@PathVariable Long StudentOfferId) {
-        try{
-            List<TargetedCompanyOffer> offers = targetedCompanyOfferService.getOffersByStudentOffer(StudentOfferId);
+    @GetMapping("/company/targeted/getOffersByOffer/{studentOfferId}")
+    public ResponseEntity<?> getCompanyOffersByStudentOffer(@PathVariable Long studentOfferId) {
+        try {
+            List<TargetedCompanyOffer> offers =
+                    targetedCompanyOfferService.getOffersByStudentOffer(studentOfferId);
             return ResponseEntity.ok(offers);
         } catch (IllegalArgumentException exception) {
             exception.printStackTrace();

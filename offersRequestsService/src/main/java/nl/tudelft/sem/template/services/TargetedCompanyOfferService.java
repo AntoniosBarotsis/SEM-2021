@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.services;
 
+import java.util.List;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
@@ -7,8 +8,6 @@ import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import nl.tudelft.sem.template.repositories.TargetedCompanyOfferRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class TargetedCompanyOfferService extends OfferService {
@@ -19,7 +18,8 @@ public class TargetedCompanyOfferService extends OfferService {
     @Autowired
     private transient StudentOfferRepository studentOfferRepository;
 
-    public Offer saveOffer(TargetedCompanyOffer targetedCompanyOffer, Long id) throws IllegalArgumentException {
+    public Offer saveOffer(TargetedCompanyOffer targetedCompanyOffer, Long id)
+            throws IllegalArgumentException {
         StudentOffer studentOffer = studentOfferRepository.getById(id);
         if(studentOffer == null) {
             throw new IllegalArgumentException("Student offer does not exist");
@@ -35,10 +35,11 @@ public class TargetedCompanyOfferService extends OfferService {
      * @return - A list of Targeted Requests, which are all created by the Company.
      */
     public List<TargetedCompanyOffer> getOffersById(String companyId) {
-        List<TargetedCompanyOffer> offers = targetedCompanyOfferRepository.findAllByCompanyId(companyId);
-            if (offers.size() == 0) {
-                throw new IllegalArgumentException("No such company has made offers!");
-            }
+        List<TargetedCompanyOffer> offers =
+                targetedCompanyOfferRepository.findAllByCompanyId(companyId);
+        if (offers.size() == 0) {
+            throw new IllegalArgumentException("No such company has made offers!");
+        }
 
         return offers;
     }
@@ -46,16 +47,17 @@ public class TargetedCompanyOfferService extends OfferService {
     /**
      * Service, which provides Targeted offers, related to a specific Student offer.
      *
-     * @param StudentOfferId - the id of the Student offer that we want to specify.
+     * @param studentOfferId - the id of the Student offer that we want to specify.
      * @return - A list of Targeted requests, which satisfy our condition.
      */
-    public List<TargetedCompanyOffer> getOffersByStudentOffer(Long StudentOfferId) {
-        StudentOffer studentOffer = studentOfferRepository.getById(StudentOfferId);
-        if(studentOffer == null) {
+    public List<TargetedCompanyOffer> getOffersByStudentOffer(Long studentOfferId) {
+        StudentOffer studentOffer = studentOfferRepository.getById(studentOfferId);
+        if (studentOffer == null) {
             throw new IllegalArgumentException("Student offer does not exist");
         }
-        List<TargetedCompanyOffer> offers = targetedCompanyOfferRepository.findAllByStudentOffer(studentOffer);
-        if (offers.size() == 0) {
+        List<TargetedCompanyOffer> offers =
+                targetedCompanyOfferRepository.findAllByStudentOffer(studentOffer);
+        if (offers.isEmpty()) {
             throw new IllegalArgumentException("No such company has made offers!");
         }
         return offers;

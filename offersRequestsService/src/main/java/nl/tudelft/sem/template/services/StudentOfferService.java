@@ -1,11 +1,10 @@
 package nl.tudelft.sem.template.services;
 
+import java.util.List;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class StudentOfferService extends OfferService {
@@ -18,7 +17,7 @@ public class StudentOfferService extends OfferService {
      *
      * @return - A list of Pending Student Offers.
      */
-    public List<StudentOffer> getOffers(){
+    public List<StudentOffer> getOffers() {
         return studentOfferRepository.findAllActive();
     }
 
@@ -28,12 +27,13 @@ public class StudentOfferService extends OfferService {
      * @param studentId - the ID of the Student.
      * @return - A list of the Student's Offers.
      */
-    public List<StudentOffer> getOffersById(String studentId){
-        if(studentId.length() != 7){
+    public List<StudentOffer> getOffersById(String studentId) {
+        int netIDLength = 7;
+        if (studentId.length() != netIDLength) {
             throw new IllegalArgumentException("An invalid NetId has been entered!");
         }
         List<StudentOffer> offer = studentOfferRepository.findAllByStudentId(studentId);
-        if(offer.size() == 0){
+        if (offer.isEmpty()) {
             throw new IllegalArgumentException("No such student has made offers!");
         }
         return offer;
