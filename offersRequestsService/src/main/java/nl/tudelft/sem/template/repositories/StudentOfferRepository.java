@@ -41,9 +41,10 @@ public interface StudentOfferRepository extends JpaRepository<StudentOffer, Long
     @Modifying
     @Query("UPDATE StudentOffer o SET o.pricePerHour = ?2 WHERE o.id = ?1")
     void updatePricePerHour(Long studentOfferId, double pricePerHour);
-
+    
     @Query("SELECT s FROM StudentOffer s WHERE s.studentId = ?1")
     List<StudentOffer> findAllByStudentId(String studentId);
 
-
+    @Query(value = "SELECT * FROM offer WHERE dtype = 'StudentOffer' AND id = ?1", nativeQuery = true)
+    StudentOffer getById(Long id);
 }

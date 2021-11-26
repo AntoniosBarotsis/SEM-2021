@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.repositories;
 import java.util.List;
 import javax.transaction.Transactional;
 import lombok.NonNull;
+import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -44,7 +45,7 @@ public interface TargetedCompanyOfferRepository extends JpaRepository<TargetedCo
     @Query("SELECT t FROM TargetedCompanyOffer t WHERE t.companyId = ?1")
     List<TargetedCompanyOffer> findAllByCompanyId(String companyId);
 
-    @Query("SELECT t FROM TargetedCompanyOffer t WHERE t.studentId = ?1")
-    List<TargetedCompanyOffer> findAllByStudentId(String studentId);
+    @Query("SELECT t FROM TargetedCompanyOffer t WHERE t.studentOffer = ?1")
+    List<TargetedCompanyOffer> findAllByStudentOffer(StudentOffer studentoffer);
 
 }

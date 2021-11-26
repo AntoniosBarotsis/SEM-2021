@@ -1,11 +1,16 @@
 package nl.tudelft.sem.template.entities;
 
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import nl.tudelft.sem.template.enums.Status;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Data
 @NoArgsConstructor
@@ -13,7 +18,10 @@ import nl.tudelft.sem.template.enums.Status;
 @EqualsAndHashCode(callSuper = true)
 public class TargetedCompanyOffer extends CompanyOffer {
 
-    private String studentId;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "student_offer_id", referencedColumnName = "id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private StudentOffer studentOffer;
 
     /** Constructor for the TargetedCompanyOffer class.
      *
@@ -25,13 +33,14 @@ public class TargetedCompanyOffer extends CompanyOffer {
      * @param status Status of type enum indicating, can be accepted/declined/pending/disabled.
      * @param requirements Requirements for this company offer of type List of String.
      * @param companyId String of the company ID.
-     * @param studentId String of the student ID.
+     * @param studentOffer StudentOffer
      */
     public TargetedCompanyOffer(String title, String description, double hoursPerWeek,
                                 double totalHours, List<String> expertise, Status status,
-                                List<String> requirements, String companyId, String studentId) {
+                                List<String> requirements, String companyId,
+                                StudentOffer studentOffer) {
         super(title, description, hoursPerWeek, totalHours, expertise,
                 status, requirements, companyId);
-        this.studentId = studentId;
+        this.studentOffer = studentOffer;
     }
 }
