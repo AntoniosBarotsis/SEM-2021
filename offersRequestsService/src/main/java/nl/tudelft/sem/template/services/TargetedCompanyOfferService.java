@@ -13,7 +13,7 @@ public class TargetedCompanyOfferService {
     private static final transient double  MAX_WEEKS = 26;
 
     @Autowired
-    private TargetedCompanyOfferRepository targetedCompanyOfferRepository;
+    private transient TargetedCompanyOfferRepository targetedCompanyOfferRepository;
 
     /**
      * Method for saving offers.

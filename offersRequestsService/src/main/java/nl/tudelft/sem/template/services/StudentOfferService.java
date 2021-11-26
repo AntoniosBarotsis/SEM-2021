@@ -13,7 +13,7 @@ public class StudentOfferService {
     private static final transient double  MAX_WEEKS = 26;
 
     @Autowired
-    private StudentOfferRepository studentOfferRepository;
+    private transient StudentOfferRepository studentOfferRepository;
 
     /**
      * Method for saving offers.
