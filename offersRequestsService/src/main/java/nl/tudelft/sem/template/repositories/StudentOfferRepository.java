@@ -13,15 +13,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface StudentOfferRepository extends JpaRepository<StudentOffer, Long> {
 
-    StudentOffer findByIdEquals(Long id);
-
-    List<StudentOffer> findAllByExpertiseContainsAndStatusEquals(String expertise, Status status);
-
-    List<StudentOffer> findAllByStudentIdEquals(String studentId);
-
-    List<StudentOffer> findAllByStudentIdEqualsAndStatusEquals(String studentId, Status status);
-
-    void deleteById(@NonNull Long id);
 
     //------------
     // UPDATES:

@@ -12,19 +12,6 @@ import org.springframework.data.jpa.repository.Query;
 public interface NonTargetedCompanyOfferRepository extends
         JpaRepository<NonTargetedCompanyOffer, Long> {
 
-    NonTargetedCompanyOffer findByIdEquals(Long id);
-
-    List<NonTargetedCompanyOffer> getAll();
-
-    List<NonTargetedCompanyOffer> findAllByCompanyIdEquals(String companyId);
-
-    List<NonTargetedCompanyOffer> findAllByStatusEquals(Status status);
-
-    List<NonTargetedCompanyOffer> findAllByCompanyIdEqualsAndStatusEquals(
-            String companyId, Status status);
-
-
-    void deleteById(@NonNull Long id);
 
     //------------
     // UPDATES:

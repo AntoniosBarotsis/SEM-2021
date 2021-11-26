@@ -10,14 +10,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 public interface TargetedCompanyOfferRepository extends JpaRepository<TargetedCompanyOffer, Long> {
-    TargetedCompanyOffer findByIdEquals(Long id);
 
-    List<TargetedCompanyOffer> findAllByStudentIdEquals(String studentId);
-
-    List<TargetedCompanyOffer> findAllByStudentIdEqualsAndStatusEquals(
-            String studentId, Status status);
-
-    void deleteById(@NonNull Long id);
 
     //------------
     // UPDATES:
