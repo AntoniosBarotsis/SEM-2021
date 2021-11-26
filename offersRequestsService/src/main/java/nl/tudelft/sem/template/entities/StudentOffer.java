@@ -1,7 +1,9 @@
 package nl.tudelft.sem.template.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 import javax.persistence.Entity;
+import javax.persistence.OneToMany;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -15,6 +17,10 @@ public class StudentOffer extends Offer {
 
     private double pricePerHour;
     private String studentId;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "studentOffer")
+    private List<TargetedCompanyOffer> targetedCompanyOffers;
 
     /**
      * Constructor for the StudentOffer class.
