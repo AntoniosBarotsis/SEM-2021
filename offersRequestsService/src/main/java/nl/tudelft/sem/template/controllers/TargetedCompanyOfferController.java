@@ -35,6 +35,13 @@ public class TargetedCompanyOfferController {
         }
     }
 
+    /**
+     * Endpoint for getting TargetedCompanyOffers by a company, which created them.
+     *
+     * @param companyId - the company's id
+     * @return 200 OK and a list of offers if everything goes smoothly,
+     *          else we return 400 Bad_Request and the message of the error which occurred.
+     */
     @GetMapping("/company/targeted/getOffersById/{companyId}")
     public ResponseEntity<?> getCompanyOffersById(@PathVariable String companyId) {
         //Authenticate and check if the requester is a company.
@@ -50,6 +57,13 @@ public class TargetedCompanyOfferController {
         }
     }
 
+    /**
+     * Endpoint for getting TargetedCompanyOffers by a company, which created them.
+     *
+     * @param StudentOfferId - the offer's id
+     * @return 200 OK and a list of offers targeting the StudentOffer if everything goes smoothly,
+     *          else we return 400 Bad_Request and the message of the error which occurred.
+     */
     @GetMapping("/company/targeted/getOffersByOffer/{StudentOfferId}")
     public ResponseEntity<?> getCompanyOffersByStudentOffer(@PathVariable Long StudentOfferId) {
         try{

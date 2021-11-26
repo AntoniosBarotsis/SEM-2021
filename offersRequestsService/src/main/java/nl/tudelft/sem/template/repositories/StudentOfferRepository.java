@@ -45,6 +45,9 @@ public interface StudentOfferRepository extends JpaRepository<StudentOffer, Long
     @Query("SELECT s FROM StudentOffer s WHERE s.studentId = ?1")
     List<StudentOffer> findAllByStudentId(String studentId);
 
+    @Query("select s FROM StudentOffer s WHERE s.status = 'PENDING'")
+    List<StudentOffer> findAllActive();
+
     @Query(value = "SELECT * FROM offer WHERE dtype = 'StudentOffer' AND id = ?1", nativeQuery = true)
     StudentOffer getById(Long id);
 }

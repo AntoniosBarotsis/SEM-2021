@@ -13,10 +13,21 @@ public class StudentOfferService extends OfferService {
     @Autowired
     private transient StudentOfferRepository studentOfferRepository;
 
+    /**
+     * Service, which returns all active StudentOffers, which are stored in the repository.
+     *
+     * @return - A list of Pending Student Offers.
+     */
     public List<StudentOffer> getOffers(){
-        return studentOfferRepository.findAll();
+        return studentOfferRepository.findAllActive();
     }
 
+    /**
+     * Service, which returns all offers created by a Student.
+     *
+     * @param studentId - the ID of the Student.
+     * @return - A list of the Student's Offers.
+     */
     public List<StudentOffer> getOffersById(String studentId){
         if(studentId.length() != 7){
             throw new IllegalArgumentException("An invalid NetId has been entered!");

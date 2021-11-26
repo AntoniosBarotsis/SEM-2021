@@ -28,6 +28,12 @@ public class TargetedCompanyOfferService extends OfferService {
         return super.saveOffer(targetedCompanyOffer);
     }
 
+    /**
+     * Service, which profides Targeted offers, created by a specific Company.
+     *
+     * @param companyId - the ID of the Company.
+     * @return - A list of Targeted Requests, which are all created by the Company.
+     */
     public List<TargetedCompanyOffer> getOffersById(String companyId) {
         List<TargetedCompanyOffer> offers = targetedCompanyOfferRepository.findAllByCompanyId(companyId);
             if (offers.size() == 0) {
@@ -37,6 +43,12 @@ public class TargetedCompanyOfferService extends OfferService {
         return offers;
     }
 
+    /**
+     * Service, which provides Targeted offers, related to a specific Student offer.
+     *
+     * @param StudentOfferId - the id of the Student offer that we want to specify.
+     * @return - A list of Targeted requests, which satisfy our condition.
+     */
     public List<TargetedCompanyOffer> getOffersByStudentOffer(Long StudentOfferId) {
         StudentOffer studentOffer = studentOfferRepository.getById(StudentOfferId);
         if(studentOffer == null) {
