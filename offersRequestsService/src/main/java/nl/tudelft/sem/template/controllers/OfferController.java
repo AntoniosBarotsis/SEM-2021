@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class OfferController {
 
     @Autowired
-    private OfferService offerService;
+    private transient OfferService offerService;
 
     /**
      * Endpoint for creating StudentOffers.

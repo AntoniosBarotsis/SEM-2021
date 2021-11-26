@@ -12,8 +12,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class OfferService {
 
+    private static final transient double MAX_HOURS = 20;
+    private static final transient double  MAX_WEEKS = 26;
+
     @Autowired
-    private OfferRepository offerRepository;
+    private transient OfferRepository offerRepository;
 
     @Autowired
     private StudentOfferRepository studentOfferRepository;
@@ -34,10 +37,10 @@ public class OfferService {
      *                                  e.g. exceeds 20 hours per week or 6 month duration
      */
     public Offer saveOffer(Offer offer) throws IllegalArgumentException {
-        if (offer.getHoursPerWeek() > 20) {
+        if (offer.getHoursPerWeek() > MAX_HOURS) {
             throw new IllegalArgumentException("Offer exceeds 20 hours per week");
         }
-        if (offer.getTotalHours() / offer.getHoursPerWeek() > 26) {
+        if (offer.getTotalHours() / offer.getHoursPerWeek() > MAX_WEEKS) {
             throw new IllegalArgumentException("Offer exceeds 6 month duration");
         }
         offer.setStatus(Status.PENDING);
