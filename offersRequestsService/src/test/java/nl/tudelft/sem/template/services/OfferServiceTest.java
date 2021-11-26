@@ -21,51 +21,51 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 class OfferServiceTest {
 
     @Autowired
-    private OfferService offerService;
+    private transient OfferService offerService;
 
     @MockBean
-    private OfferRepository offerRepository;
+    private transient OfferRepository offerRepository;
 
-    StudentOffer studentOffer;
+    private transient StudentOffer studentOffer;
 
-    //    @BeforeEach
-    //    void setup() {
-    //        studentOffer = new StudentOffer("This is a title", "This is a description", 20, 520,
-    //            Arrays.asList("Expertise 1", "Expertise 2", "Expertise 3"), Status.DISABLED,
-    //            32, "Student");
-    //    }
-    //
-    //    @Test
-    //    void saveOfferValidTest() {
-    //        Mockito.when(offerRepository.save(studentOffer))
-    //            .thenReturn(studentOffer);
-    //
-    //        assertEquals(studentOffer, offerService.saveOffer(studentOffer));
-    //    }
-    //
-    //    @Test
-    //    void saveOfferPendingTest() {
-    //        studentOffer = Mockito.mock(StudentOffer.class);
-    //        offerService.saveOffer(studentOffer);
-    //        Mockito.verify(studentOffer).setStatus(Status.PENDING);
-    //    }
-    //
-    //    @Test
-    //    void saveOfferTooManyHoursTest() {
-    //        studentOffer.setHoursPerWeek(21);
-    //        String errorMessage = "Offer exceeds 20 hours per week";
-    //        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-    //            () -> offerService.saveOffer(studentOffer));
-    //        assertEquals(errorMessage, exception.getMessage());
-    //    }
-    //
-    //    @Test
-    //    void saveOfferTooLongDurationTest() {
-    //        studentOffer.setTotalHours(521);
-    //        String errorMessage = "Offer exceeds 6 month duration";
-    //        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-    //            () -> offerService.saveOffer(studentOffer), errorMessage);
-    //        assertEquals(errorMessage, exception.getMessage());
-    //    }
+    @BeforeEach
+    void setup() {
+        studentOffer = new StudentOffer("This is a title", "This is a description", 20, 520,
+            Arrays.asList("Expertise 1", "Expertise 2", "Expertise 3"), Status.DISABLED,
+            32, "Student");
+    }
+
+    @Test
+    void saveOfferValidTest() {
+        Mockito.when(offerRepository.save(studentOffer))
+            .thenReturn(studentOffer);
+
+        assertEquals(studentOffer, offerService.saveOffer(studentOffer));
+    }
+
+    @Test
+    void saveOfferPendingTest() {
+        studentOffer = Mockito.mock(StudentOffer.class);
+        offerService.saveOffer(studentOffer);
+        Mockito.verify(studentOffer).setStatus(Status.PENDING);
+    }
+
+    @Test
+    void saveOfferTooManyHoursTest() {
+        studentOffer.setHoursPerWeek(21);
+        String errorMessage = "Offer exceeds 20 hours per week";
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> offerService.saveOffer(studentOffer));
+        assertEquals(errorMessage, exception.getMessage());
+    }
+
+    @Test
+    void saveOfferTooLongDurationTest() {
+        studentOffer.setTotalHours(521);
+        String errorMessage = "Offer exceeds 6 month duration";
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> offerService.saveOffer(studentOffer), errorMessage);
+        assertEquals(errorMessage, exception.getMessage());
+    }
 
 }
