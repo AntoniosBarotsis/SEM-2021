@@ -41,4 +41,10 @@ public interface TargetedCompanyOfferRepository extends JpaRepository<TargetedCo
     @Query("UPDATE TargetedCompanyOffer o SET o.requirements = ?2 WHERE o.id = ?1")
     void updateRequirements(Long studentOfferId, List<String> requirements);
 
+    @Query("SELECT t FROM TargetedCompanyOffer t WHERE t.companyId = ?1")
+    List<TargetedCompanyOffer> findAllByCompanyId(String companyId);
+
+    @Query("SELECT t FROM TargetedCompanyOffer t WHERE t.studentId = ?1")
+    List<TargetedCompanyOffer> findAllByStudentId(String studentId);
+
 }
