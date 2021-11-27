@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.controllers;
 
+import nl.tudelft.sem.template.domain.DTOs.UserLoginRequest;
 import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
 import nl.tudelft.sem.template.exceptions.UserNotFound;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Optional;
 
 @RestController
 public class UserController {
@@ -103,5 +106,21 @@ public class UserController {
         } catch (UserNotFound e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
+    }
+
+    /** Login
+     *
+     * @param user User ID and password to login
+     * @return 200 OK with JWT token if user is logged in,
+     *         else 401 UNAUTHORIZED
+     */
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody UserLoginRequest user) {
+        Optional<User> u = userService.getUser(user.getId());
+        if (u.isPresent() && userService.verifyPassword(u.get(), user.getPassword())) {
+            String token = userService.generateJWTToken(u.get());
+            return ResponseEntity.ok(token);
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 }

@@ -1,11 +1,16 @@
 package nl.tudelft.sem.template.services;
 
+import java.util.Date;
 import java.util.Optional;
+
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
 import nl.tudelft.sem.template.exceptions.UserNotFound;
 import nl.tudelft.sem.template.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,6 +18,9 @@ public class UserService {
 
     @Autowired
     private transient UserRepository userRepository;
+
+    @Autowired
+    private transient BCryptPasswordEncoder bCryptPasswordEncoder;
 
     /**
      * Get user by their id.
@@ -25,8 +33,7 @@ public class UserService {
     }
 
     /**
-     * Get user by their id, throws UserNotFound if user is not found.
-     *
+     * Get user by their id, throws UserNotFound if user is not found.*
      * @param username - the username.
      * @return User object.
      * @throws UserNotFound if user is not found.
@@ -50,6 +57,7 @@ public class UserService {
         if (userRepository.existsByUsername(user.getUsername())) {
             throw new UserAlreadyExists(user);
         }
+        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
@@ -78,5 +86,20 @@ public class UserService {
     public void deleteUser(String username) throws UserNotFound {
         getUserOrRaise(username);
         userRepository.deleteById(username);
+    }
+
+    public Boolean verifyPassword(User user, String password) {
+        return bCryptPasswordEncoder.matches(password, user.getPassword());
+    }
+
+    public String generateJWTToken(User user) {
+        Algorithm algorithm = Algorithm.HMAC256("secret"); // TODO MAKE THIS CONFIGURABLE!!
+        String token = JWT.create()
+                .withExpiresAt(new Date(System.currentTimeMillis() + 60 * 60 * 1000))
+                .withIssuer("Nathan Test")
+                .withClaim("userId", user.getId())
+                .withClaim("userRole", user.getRole().toString())
+                .sign(algorithm);
+        return token;
     }
 }
