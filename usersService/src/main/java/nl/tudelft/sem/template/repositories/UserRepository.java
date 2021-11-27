@@ -1,11 +1,12 @@
 package nl.tudelft.sem.template.repositories;
 
-import nl.tudelft.sem.template.entities.User;
+import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import nl.tudelft.sem.template.entities.User;
 
-import javax.transaction.Transactional;
 
 public interface UserRepository extends JpaRepository<User, String> {
 
@@ -13,6 +14,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     /**
      * Change User password.
+     *
      * @param userId     User's ID.
      * @param password   New password.
      */
@@ -23,6 +25,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     /**
      * Change User's name.
+     *
      * @param userId     User's ID.
      * @param name   New name.
      */
