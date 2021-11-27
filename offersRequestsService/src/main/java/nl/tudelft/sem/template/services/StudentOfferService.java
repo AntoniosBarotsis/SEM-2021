@@ -28,8 +28,8 @@ public class StudentOfferService extends OfferService {
      * @return - A list of the Student's Offers.
      */
     public List<StudentOffer> getOffersById(String studentId) {
-        int netIDLength = 7;
-        if (studentId.length() != netIDLength) {
+        int netIdLength = 7;
+        if (studentId.length() != netIdLength) {
             throw new IllegalArgumentException("An invalid NetId has been entered!");
         }
         List<StudentOffer> offer = studentOfferRepository.findAllByStudentId(studentId);

@@ -18,10 +18,17 @@ public class TargetedCompanyOfferService extends OfferService {
     @Autowired
     private transient StudentOfferRepository studentOfferRepository;
 
+    /** Method for saving a TargetedCompanyOffer.
+     *
+     * @param targetedCompanyOffer Offer we want to save.
+     * @param id Long with the StudentOffer this CompanyOffer targets.
+     * @return The saved Offer.
+     * @throws IllegalArgumentException Thrown if any of the conditions are not met.
+     */
     public Offer saveOffer(TargetedCompanyOffer targetedCompanyOffer, Long id)
             throws IllegalArgumentException {
         StudentOffer studentOffer = studentOfferRepository.getById(id);
-        if(studentOffer == null) {
+        if (studentOffer == null) {
             throw new IllegalArgumentException("Student offer does not exist");
         }
         targetedCompanyOffer.setStudentOffer(studentOffer);
