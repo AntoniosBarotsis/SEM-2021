@@ -69,15 +69,6 @@ public class StudentOfferServiceTest {
     }
 
     @Test
-    void getOffersByIdTestFailLength() {
-        student = "student1";
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-            () -> studentOfferService.getOffersById(student));
-        String message = "An invalid NetId has been entered!";
-        assertEquals(message, exception.getMessage());
-    }
-
-    @Test
     void getOffersByIdTestFailEmpty() {
         Mockito.when(studentOfferRepository.findAllByStudentId(student))
                 .thenReturn(new ArrayList<>());

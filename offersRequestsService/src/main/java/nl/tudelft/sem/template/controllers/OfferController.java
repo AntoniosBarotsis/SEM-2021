@@ -22,7 +22,7 @@ public class OfferController {
      *
      * @param username String of the username
      * @return 200 OK ResponseEntity
-     * if correct with a response of all StudentOffers in the body.
+     *     if correct with a response of all StudentOffers in the body.
      */
     @GetMapping("/offers/{username}")
     public ResponseEntity<Response<Map<String, List<Offer>>>>

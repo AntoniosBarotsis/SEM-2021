@@ -24,8 +24,8 @@ public class TargetedCompanyOfferController {
      *
      * @param targetedCompanyOffer TargetedCompanyOffer that needs to be saved
      * @return 201 CREATED ResponseEntity
-     * with a Response containing the saved TargetedCompanyOffer in body if valid
-     *         otherwise 400 BAD REQUEST with a Response with the error message.
+     *     with a Response containing the saved TargetedCompanyOffer in body if valid
+     *     otherwise 400 BAD REQUEST with a Response with the error message.
      */
     @PostMapping("/company/targeted/create/{id}")
     public ResponseEntity<Response<Offer>> saveTargetedCompanyOffer(
@@ -91,8 +91,9 @@ public class TargetedCompanyOfferController {
      *
      * @param studentOfferId - the offer's id.
      * @return 200 OK and a Response which contains a list of offers targeting the StudentOffer
-     * if everything goes smoothly,
-     * else we return 400 Bad_Request and a Response with the message of the error which occurred.
+     *     if everything goes smoothly,
+     *     else we return 400 Bad_Request
+     *     and a Response with the message of the error which occurred.
      */
     @GetMapping("/company/targeted/getOffersByOffer/{studentOfferId}")
     public ResponseEntity<Response<List<TargetedCompanyOffer>>>

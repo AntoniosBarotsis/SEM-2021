@@ -25,8 +25,8 @@ public class StudentOfferController {
      *
      * @param studentOffer StudentOffer than needs to bed created.
      * @return 201 CREATED ResponseEntity with
-     * a Response with saved StudentOffer in body if valid
-     *          otherwise 400 BAD REQUEST with a Response with error message.
+     *     a Response with saved StudentOffer in body if valid
+     *     otherwise 400 BAD REQUEST with a Response with error message.
      */
     @PostMapping("/student/create")
     public ResponseEntity<Response<Offer>>
@@ -54,8 +54,8 @@ public class StudentOfferController {
      * Endpoint for getting all StudentOffers.
      *
      * @return 200 OK ResponseEntity with a Response with a list of StudentOffers
-     * if the requester has permission.
-     *          It is to be decided how the authentication will handle the other case.
+     *     if the requester has permission.
+     *     It is to be decided how the authentication will handle the other case.
      */
     @GetMapping("/student/getAllOffers")
     public ResponseEntity<Response<List<StudentOffer>>>
@@ -72,8 +72,8 @@ public class StudentOfferController {
      *
      * @param studentId the id of the student.
      * @return 200 OK ResponseEntity with a Response
-     * which contains list of StudentOffers if valid
-     * and 400 BAD Request with a Response containing error message otherwise.
+     *     which contains list of StudentOffers if valid
+     *     and 400 BAD Request with a Response containing error message otherwise.
      */
     @GetMapping("/student/getOffers/{studentId}")
     public ResponseEntity<Response<List<StudentOffer>>>

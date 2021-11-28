@@ -28,10 +28,6 @@ public class StudentOfferService extends OfferService {
      * @return - A list of the Student's Offers.
      */
     public List<StudentOffer> getOffersById(String studentId) {
-        int netIdLength = 7;
-        if (studentId.length() != netIdLength) {
-            throw new IllegalArgumentException("An invalid NetId has been entered!");
-        }
         List<StudentOffer> offer = studentOfferRepository.findAllByStudentId(studentId);
         if (offer.isEmpty()) {
             throw new IllegalArgumentException("No such student has made offers!");
