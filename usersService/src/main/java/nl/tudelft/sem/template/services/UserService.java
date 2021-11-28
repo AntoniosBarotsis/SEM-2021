@@ -88,11 +88,22 @@ public class UserService {
         userRepository.deleteById(username);
     }
 
+    /**
+     * Verify if the password matches the user's password.
+     * @param user user to verify password for.
+     * @param password plaintext password to verify.
+     * @return true if password matches, false otherwise.
+     */
     public Boolean verifyPassword(User user, String password) {
         return bCryptPasswordEncoder.matches(password, user.getPassword());
     }
 
-    public String generateJWTToken(User user) {
+    /** Generate a JWT token for the user.
+     *
+     * @param user user to generate token for.
+     * @return generated token
+     */
+    public String generateJwtToken(User user) {
         Algorithm algorithm = Algorithm.HMAC256("secret"); // TODO MAKE THIS CONFIGURABLE!!
         return JWT.create()
                 .withExpiresAt(new Date(System.currentTimeMillis() + 60 * 60 * 1000))

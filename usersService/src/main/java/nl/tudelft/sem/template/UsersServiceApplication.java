@@ -17,11 +17,11 @@ public class UsersServiceApplication {
         SpringApplication.run(UsersServiceApplication.class, args);
     }
 
-    @Bean
-    @LoadBalanced
-    public RestTemplate getRestTemplate() {
-        return new RestTemplate();
-    }
+	@Bean
+	@LoadBalanced
+	public RestTemplate getRestTemplate() {
+		return new RestTemplate();
+	}
 
 	@Bean
 	BCryptPasswordEncoder getPasswordEncoder() {
