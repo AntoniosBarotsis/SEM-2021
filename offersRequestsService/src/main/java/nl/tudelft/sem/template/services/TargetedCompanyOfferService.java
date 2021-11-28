@@ -69,4 +69,8 @@ public class TargetedCompanyOfferService extends OfferService {
         }
         return offers;
     }
+
+    public List<TargetedCompanyOffer> getAllByStudent(String student) {
+        return targetedCompanyOfferRepository.getAllByStudent(student);
+    }
 }

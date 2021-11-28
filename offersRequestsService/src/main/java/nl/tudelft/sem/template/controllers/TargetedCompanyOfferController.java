@@ -82,4 +82,10 @@ public class TargetedCompanyOfferController {
                     .body(exception.getMessage());
         }
     }
+
+    @GetMapping("/company/targeted/student/{student}")
+    public ResponseEntity<?> getAllByStudent(@PathVariable String student) {
+        return new ResponseEntity<>(targetedCompanyOfferService
+            .getAllByStudent(student), HttpStatus.OK);
+    }
 }

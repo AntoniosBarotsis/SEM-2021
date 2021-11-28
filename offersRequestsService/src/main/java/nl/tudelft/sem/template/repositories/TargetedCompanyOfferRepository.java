@@ -48,4 +48,10 @@ public interface TargetedCompanyOfferRepository extends JpaRepository<TargetedCo
     @Query("SELECT t FROM TargetedCompanyOffer t WHERE t.studentOffer = ?1")
     List<TargetedCompanyOffer> findAllByStudentOffer(StudentOffer studentoffer);
 
+    @Query(value = "SELECT * FROM offer t "
+        + "JOIN (SELECT id, student_id AS s_id FROM offer WHERE dtype = 'StudentOffer') s "
+        + "ON t.student_offer_id = s.id "
+        + "WHERE s.s_id = ?1 AND t.dtype = 'TargetedCompanyOffer'\n", nativeQuery = true)
+    List<TargetedCompanyOffer> getAllByStudent(String student);
+
 }

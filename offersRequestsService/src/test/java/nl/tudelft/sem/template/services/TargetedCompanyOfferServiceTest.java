@@ -97,10 +97,10 @@ class TargetedCompanyOfferServiceTest {
     //    @Test
     //    void getOffersByIdTestFail() {
     //        Mockito.when(targetedCompanyOfferRepository.findAllByCompanyId(any()))
-    //                .thenReturn(new ArrayList<>());
+    //            .thenReturn(new ArrayList<>());
     //
     //        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-    //                () -> targetedCompanyOfferService.getOffersById("CompanyOne"));
+    //            () -> targetedCompanyOfferService.getOffersById("CompanyOne"));
     //        String message = "No such company has made offers!";
     //        assertEquals(message, exception.getMessage());
     //    }
@@ -110,7 +110,7 @@ class TargetedCompanyOfferServiceTest {
     //        List<TargetedCompanyOffer> returned = new ArrayList<>();
     //        returned.add(targetedCompanyOffer);
     //        Mockito.when(targetedCompanyOfferRepository.findAllByCompanyId("MyCompany"))
-    //                .thenReturn(returned);
+    //            .thenReturn(returned);
     //
     //        assertEquals(returned, targetedCompanyOfferService.getOffersById("MyCompany"));
     //    }
@@ -121,10 +121,10 @@ class TargetedCompanyOfferServiceTest {
     //        returned.add(targetedCompanyOffer);
     //
     //        Mockito.when(studentOfferRepository.getById(any()))
-    //                .thenReturn(studentOffer);
+    //            .thenReturn(studentOffer);
     //
     //        Mockito.when(targetedCompanyOfferRepository.findAllByStudentOffer(studentOffer))
-    //                .thenReturn(returned);
+    //            .thenReturn(returned);
     //
     //        assertEquals(returned,
     //            targetedCompanyOfferService.getOffersByStudentOffer(studentOffer.getId()));
@@ -154,6 +154,16 @@ class TargetedCompanyOfferServiceTest {
     //                .getOffersByStudentOffer(studentOffer.getId()));
     //        String message = "No such company has made offers!";
     //        assertEquals(message, exception.getMessage());
+    //    }
+    //
+    //    @Test
+    //    void getTargetedByStudentTest() {
+    //        Mockito.when(targetedCompanyOfferService.getAllByStudent("Student"))
+    //            .thenReturn(Arrays.asList(targetedCompanyOffer));
+    //        List<TargetedCompanyOffer> result = targetedCompanyOfferService
+    //            .getAllByStudent("Student");
+    //        assertEquals(List.of(targetedCompanyOffer), result);
+    //
     //    }
 
 }
