@@ -94,12 +94,11 @@ public class UserService {
 
     public String generateJWTToken(User user) {
         Algorithm algorithm = Algorithm.HMAC256("secret"); // TODO MAKE THIS CONFIGURABLE!!
-        String token = JWT.create()
+        return JWT.create()
                 .withExpiresAt(new Date(System.currentTimeMillis() + 60 * 60 * 1000))
-                .withIssuer("Nathan Test")
+                .withIssuer("SEM3B-TUD")
                 .withClaim("userId", user.getId())
                 .withClaim("userRole", user.getRole().toString())
                 .sign(algorithm);
-        return token;
     }
 }
