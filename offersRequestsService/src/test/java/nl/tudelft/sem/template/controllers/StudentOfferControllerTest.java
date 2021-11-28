@@ -29,15 +29,16 @@ class StudentOfferControllerTest {
     private transient StudentOfferService studentOfferService;
 
     private transient StudentOffer studentOffer;
+    private transient String student;
 
     //    @BeforeEach
     //    void setup() {
     //        List<String> expertise = Arrays.asList("Expertise 1", "Expertise 2", "Expertise 3");
-    //        String studentId = "Student";
+    //        student = "Student";
     //        studentOffer = new StudentOffer("This is a title",
     //            "This is a description", 20, 520,
     //            expertise, Status.DISABLED,
-    //            32, studentId);
+    //            32, student);
     //    }
     //
     //
@@ -65,6 +66,37 @@ class StudentOfferControllerTest {
     //        ResponseEntity<?> response = studentOfferController.saveStudentOffer(studentOffer);
     //        assertEquals(errorMessage, response.getBody());
     //        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    //    }
+    //
+    //    @Test
+    //    void getAllStudentOffersTest() {
+    //        List<StudentOffer> list = List.of(studentOffer);
+    //        Mockito.when(studentOfferService.getOffers())
+    //            .thenReturn(list);
+    //        ResponseEntity<?> response = studentOfferController.getAllStudentOffers();
+    //        assertEquals(HttpStatus.OK, response.getStatusCode());
+    //        assertEquals(list, response.getBody());
+    //    }
+    //
+    //    @Test
+    //    void getStudentOffersByIdValidTest() {
+    //        List<StudentOffer> studentOffers = List.of(studentOffer);
+    //        Mockito.when(studentOfferService.getOffersById(student))
+    //            .thenReturn(studentOffers);
+    //        ResponseEntity<?> response = studentOfferController.getStudentOffersById(student);
+    //        assertEquals(HttpStatus.OK, response.getStatusCode());
+    //        assertEquals(studentOffers, response.getBody());
+    //    }
+    //
+    //    @Test
+    //    void getStudentOffersByIdIllegalTest() {
+    //        String errorMessage = "Error";
+    //        Mockito.when(studentOfferService.getOffersById(student))
+    //            .thenThrow(new IllegalArgumentException(errorMessage));
+    //        ResponseEntity<?> response = studentOfferController
+    //            .getStudentOffersById(student);
+    //        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    //        assertEquals(errorMessage, response.getBody());
     //    }
 
 }
