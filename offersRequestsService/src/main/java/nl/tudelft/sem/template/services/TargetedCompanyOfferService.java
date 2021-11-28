@@ -36,7 +36,7 @@ public class TargetedCompanyOfferService extends OfferService {
     }
 
     /**
-     * Service, which profides Targeted offers, created by a specific Company.
+     * Service, which provides Targeted offers, created by a specific Company.
      *
      * @param companyId - the ID of the Company.
      * @return - A list of Targeted Requests, which are all created by the Company.
@@ -70,7 +70,19 @@ public class TargetedCompanyOfferService extends OfferService {
         return offers;
     }
 
+    /**
+     * Service, which provides a list of offers, which target a specific student.
+     *
+     * @param student - the targeted student.
+     * @return - a list of TargetedCompanyOffers.
+     */
     public List<TargetedCompanyOffer> getAllByStudent(String student) {
-        return targetedCompanyOfferRepository.getAllByStudent(student);
+        List<TargetedCompanyOffer> offers =
+                targetedCompanyOfferRepository.getAllByStudent(student);
+        if (offers.isEmpty()) {
+            throw new IllegalArgumentException("Such student has not been"
+                    + " targeted by company offers!");
+        }
+        return offers;
     }
 }

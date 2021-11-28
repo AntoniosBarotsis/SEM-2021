@@ -27,67 +27,65 @@ public class StudentOfferServiceTest {
     @MockBean
     private transient StudentOfferRepository studentOfferRepository;
 
-    private transient StudentOffer offerOne;
     private transient StudentOffer offerTwo;
     private transient StudentOffer offerThree;
     private transient String student;
 
-    //    @BeforeEach
-    //    void setUp() {
-    //        student = "Student";
-    //        offerOne = new StudentOffer();
-    //        offerTwo = new StudentOffer("Rado's services", "Hey I'm Rado",
-    //            10, 100,
-    //            Arrays.asList("Drawing", "Swimming", "Running"),
-    //            Status.PENDING,
-    //            50, "0123454");
-    //        offerThree = new StudentOffer("Ben's services", "Hey I'm Ben",
-    //            15, 150,
-    //            Arrays.asList("Singing", "Web Dev", "Care-taking"), Status.ACCEPTED,
-    //            50, student);
-    //    }
-    //
-    //    @Test
-    //    void getOffersTest() {
-    //        List<StudentOffer> returned = new ArrayList<>();
-    //        returned.add(offerTwo);
-    //
-    //
-    //        Mockito.when(studentOfferRepository.findAllActive())
-    //                .thenReturn(returned);
-    //
-    //        assertEquals(returned, studentOfferService.getOffers());
-    //    }
-    //
-    //    @Test
-    //    void getOffersByIdTestPass() {
-    //        List<StudentOffer> returned = new ArrayList<>();
-    //        returned.add(offerThree);
-    //
-    //        Mockito.when(studentOfferRepository.findAllByStudentId(student))
-    //                .thenReturn(returned);
-    //
-    //        assertEquals(returned, studentOfferService.getOffersById(student));
-    //    }
-    //
-    //    @Test
-    //    void getOffersByIdTestFailLength() {
-    //        student = "student1";
-    //        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-    //            () -> studentOfferService.getOffersById(student));
-    //        String message = "An invalid NetId has been entered!";
-    //        assertEquals(message, exception.getMessage());
-    //    }
-    //
-    //    @Test
-    //    void getOffersByIdTestFailEmpty() {
-    //        Mockito.when(studentOfferRepository.findAllByStudentId(student))
-    //                .thenReturn(new ArrayList<>());
-    //
-    //        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-    //                () -> studentOfferService.getOffersById(student));
-    //        String message = "No such student has made offers!";
-    //        assertEquals(message, exception.getMessage());
-    //    }
+    @BeforeEach
+    void setUp() {
+        student = "Student";
+        offerTwo = new StudentOffer("Rado's services", "Hey I'm Rado",
+            10, 100,
+            Arrays.asList("Drawing", "Swimming", "Running"),
+            Status.PENDING,
+            50, "0123454");
+        offerThree = new StudentOffer("Ben's services", "Hey I'm Ben",
+            15, 150,
+            Arrays.asList("Singing", "Web Dev", "Care-taking"), Status.ACCEPTED,
+            50, student);
+    }
+
+    @Test
+    void getOffersTest() {
+        List<StudentOffer> returned = new ArrayList<>();
+        returned.add(offerTwo);
+
+
+        Mockito.when(studentOfferRepository.findAllActive())
+                .thenReturn(returned);
+
+        assertEquals(returned, studentOfferService.getOffers());
+    }
+
+    @Test
+    void getOffersByIdTestPass() {
+        List<StudentOffer> returned = new ArrayList<>();
+        returned.add(offerThree);
+
+        Mockito.when(studentOfferRepository.findAllByStudentId(student))
+                .thenReturn(returned);
+
+        assertEquals(returned, studentOfferService.getOffersById(student));
+    }
+
+    @Test
+    void getOffersByIdTestFailLength() {
+        student = "student1";
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> studentOfferService.getOffersById(student));
+        String message = "An invalid NetId has been entered!";
+        assertEquals(message, exception.getMessage());
+    }
+
+    @Test
+    void getOffersByIdTestFailEmpty() {
+        Mockito.when(studentOfferRepository.findAllByStudentId(student))
+                .thenReturn(new ArrayList<>());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> studentOfferService.getOffersById(student));
+        String message = "No such student has made offers!";
+        assertEquals(message, exception.getMessage());
+    }
 
 }

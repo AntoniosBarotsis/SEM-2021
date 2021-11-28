@@ -10,6 +10,7 @@ import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.responses.Response;
 import nl.tudelft.sem.template.services.OfferService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,33 +35,38 @@ class OfferControllerTest {
     private transient StudentOffer studentOffer;
     private transient TargetedCompanyOffer targetedCompanyOffer;
 
-    //    @BeforeEach
-    //    void setup() {
-    //        List<String> expertise = Arrays.asList("Expertise 1", "Expertise 2", "Expertise 3");
-    //        String studentId = "Student";
-    //        studentOffer = new StudentOffer("This is a title",
-    //            "This is a description", 20, 520,
-    //            expertise, Status.DISABLED,
-    //            32, studentId);
-    //        targetedCompanyOffer = new TargetedCompanyOffer("This is a company title",
-    //            "This is a company description",
-    //            20, 520, expertise, Status.DISABLED,
-    //            Arrays.asList("Requirement 1", "Requirement 2", "Requirement 3"),
-    //            "Company", null);
-    //    }
-    //
-    //    @Test
-    //    void getAllByUsernameTest() {
-    //        targetedCompanyOffer.setStudentOffer(studentOffer);
-    //        Map<String, List<Offer>> expectedMap = new HashMap<>();
-    //        expectedMap.put("studentOffers", List.of(studentOffer));
-    //        expectedMap.put("targetedCompanyOffers", List.of(targetedCompanyOffer));
-    //        Mockito.when(offerService.getAllByUsername("Student"))
-    //            .thenReturn(expectedMap);
-    //        ResponseEntity<?> response = offerController
-    //            .getAllByUsername("Student");
-    //        assertEquals(expectedMap, response.getBody());
-    //        assertEquals(HttpStatus.OK, response.getStatusCode());
-    //    }
+    @BeforeEach
+    void setup() {
+        List<String> expertise = Arrays.asList("Expertise 1", "Expertise 2", "Expertise 3");
+        String studentId = "Student";
+        studentOffer = new StudentOffer("This is a title",
+            "This is a description", 20, 520,
+            expertise, Status.DISABLED,
+            32, studentId);
+        targetedCompanyOffer = new TargetedCompanyOffer("This is a company title",
+            "This is a company description",
+            20, 520, expertise, Status.DISABLED,
+            Arrays.asList("Requirement 1", "Requirement 2", "Requirement 3"),
+            "Company", null);
+    }
+
+    @Test
+    void getAllByUsernameTest() {
+        targetedCompanyOffer.setStudentOffer(studentOffer);
+        Map<String, List<Offer>> expectedMap = new HashMap<>();
+        expectedMap.put("studentOffers", List.of(studentOffer));
+        expectedMap.put("targetedCompanyOffers", List.of(targetedCompanyOffer));
+        Mockito.when(offerService.getAllByUsername("Student"))
+            .thenReturn(expectedMap);
+
+        ResponseEntity<Response<Map<String, List<Offer>>>> response
+                = offerController
+            .getAllByUsername("Student");
+        Response<Map<String, List<Offer>>> res
+                = new Response<>(expectedMap, null);
+
+        assertEquals(res, response.getBody());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
 
 }
