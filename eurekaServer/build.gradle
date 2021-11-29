@@ -36,3 +36,13 @@ dependencyManagement {
 test {
 	useJUnitPlatform()
 }
+
+sourceSets {
+	main {
+		java{
+			srcDirs '../envLoader/src/main/java' /* include proto files from base project level */
+		}
+	}
+}
+
+sourceCompatibility = 1.11

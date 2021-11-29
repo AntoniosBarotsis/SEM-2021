@@ -7,11 +7,13 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
-
-import javax.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 public class ExpandJWTFilter extends ZuulFilter {
+    @Autowired
+    private JwtConfig jwtConfig;
+
     @Override
     public String filterType() {
         return "pre";
@@ -24,7 +26,13 @@ public class ExpandJWTFilter extends ZuulFilter {
 
     @Override
     public boolean shouldFilter() {
-        return true;
+        // TODO Discuss whether we want to keep this.
+        
+        RequestContext ctx = RequestContext.getCurrentContext();
+        var path = ctx.getRequest().getRequestURI().replace("/api/", "");
+        var type = ctx.getRequest().getMethod();
+
+        return (!path.equals("users") && !path.equals("users/login")) || !type.equals("POST");
     }
 
     @Override
@@ -36,7 +44,7 @@ public class ExpandJWTFilter extends ZuulFilter {
             DecodedJWT decodedJWT = JWT.decode(token);
             ctx.addZuulRequestHeader("x-user-role", decodedJWT.getClaim("userRole").asString());
             ctx.addZuulRequestHeader("x-user-id", decodedJWT.getClaim("userId").asString());
-        }else{
+        } else {
             ctx.addZuulRequestHeader("x-user-role", null);
             ctx.addZuulRequestHeader("x-user-id", null);
         }
@@ -45,28 +53,31 @@ public class ExpandJWTFilter extends ZuulFilter {
 
     /**
      * Get the token from the request context.
+     *
      * @param ctx request context
      * @return token
      */
-    private String getToken(RequestContext ctx){
+    private String getToken(RequestContext ctx) {
         String token = ctx.getRequest().getHeader("Authorization");
         return token.replace("Bearer ", "");
     }
 
     /**
      * Verify the JWT token.
+     *
      * @param token token
      * @return true if token is valid
      */
-    private boolean verifyToken(String token){
-        if (token != null){
+    private boolean verifyToken(String token) {
+        if (token != null) {
             System.out.println("Token: " + token);
-            Algorithm algorithm = Algorithm.HMAC256("secret");  // TODO should be configurable!!!
+            Algorithm algorithm = Algorithm.HMAC256(jwtConfig.getJwtSecret());
             JWTVerifier verifier = JWT.require(algorithm).build();
             try {
                 verifier.verify(token);
                 return true;
-            } catch (JWTVerificationException ignored) {}
+            } catch (JWTVerificationException ignored) {
+            }
         }
         return false;
     }
