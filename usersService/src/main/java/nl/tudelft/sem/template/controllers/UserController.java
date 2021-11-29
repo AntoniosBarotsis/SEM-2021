@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.controllers;
 import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
 import nl.tudelft.sem.template.exceptions.UserNotFound;
+import nl.tudelft.sem.template.responses.Response;
 import nl.tudelft.sem.template.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,11 +29,15 @@ public class UserController {
      *             else 404 NOT FOUND.
      */
     @GetMapping("/{username}")
-    public ResponseEntity<?> getUser(@PathVariable String username) {
+    public ResponseEntity<Response<User>> getUser(@PathVariable String username) {
         try {
-            return new ResponseEntity<>(userService.getUserOrRaise(username), HttpStatus.OK);
+            return new ResponseEntity<>(
+                    new Response<>(userService.getUserOrRaise(username), null),
+                    HttpStatus.OK);
         } catch (UserNotFound e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(
+                    new Response<>(null, e.getMessage()),
+                    HttpStatus.NOT_FOUND);
         }
     }
 
@@ -44,13 +49,19 @@ public class UserController {
      *         else 400 BAD REQUEST
      */
     @PostMapping("/")
-    public ResponseEntity<?> createUser(@RequestBody User user) {
+    public ResponseEntity<Response<User>> createUser(@RequestBody User user) {
         try {
-            return new ResponseEntity<>(userService.createUser(user), HttpStatus.CREATED);
+            return new ResponseEntity<>(
+                    new Response<>(userService.createUser(user), null),
+                    HttpStatus.CREATED);
         } catch (UserAlreadyExists e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+            return new ResponseEntity<>(
+                    new Response<>(null, e.getMessage()),
+                    HttpStatus.CONFLICT);
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(
+                    new Response<>(null, e.getMessage()),
+                    HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -62,13 +73,19 @@ public class UserController {
      *         else 400 BAD REQUEST
      */
     @PutMapping("/")
-    public ResponseEntity<?> updateUser(@RequestBody User user) {
+    public ResponseEntity<Response<User>> updateUser(@RequestBody User user) {
         try {
-            return new ResponseEntity<>(userService.updateUser(user), HttpStatus.OK);
+            return new ResponseEntity<>(
+                    new Response<>(userService.updateUser(user), null),
+                    HttpStatus.OK);
         } catch (UserNotFound e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(
+                    new Response<>(null, e.getMessage()),
+                    HttpStatus.NOT_FOUND);
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(
+                    new Response<>(null, e.getMessage()),
+                    HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -79,7 +96,7 @@ public class UserController {
      *         404 NOT FOUND if the user is not found.
      */
     @DeleteMapping("/{username}")
-    public ResponseEntity<?> deleteUser(@PathVariable String username) {
+    public ResponseEntity<String> deleteUser(@PathVariable String username) {
         try {
             userService.deleteUser(username);
             return new ResponseEntity<>(HttpStatus.OK);
