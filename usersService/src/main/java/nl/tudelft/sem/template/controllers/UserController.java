@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.controllers;
 
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
@@ -8,9 +9,14 @@ import nl.tudelft.sem.template.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @AllArgsConstructor
 @RestController
@@ -35,7 +41,7 @@ public class UserController {
         }
     }
 
-    /** Create a new user
+    /** Create a new user.
      *
      * @param user User to create
      * @return 201 CREATED if the user is created,
@@ -49,14 +55,14 @@ public class UserController {
             return new ResponseEntity<>(userService.createUser(user), HttpStatus.CREATED);
         } catch (UserAlreadyExists e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
-        }catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
-    /** Update a user
+    /** Update a user.
      *
-     * @param user User to update
+     * @param user User to update.
      * @return 200 OK if the user is updated,
      *         404 NOT FOUND if the user is not found
      *         else 400 BAD REQUEST
@@ -73,11 +79,11 @@ public class UserController {
         }
     }
 
-    /** Delete a user
+    /** Delete a user.
      *
-     * @param id User's id
+     * @param id User's id.
      * @return 200 OK if the user is deleted,
-     *         404 NOT FOUND if the user is not found
+     *         404 NOT FOUND if the user is not found.
      */
     @DeleteMapping("/{id}")
     @ResponseBody

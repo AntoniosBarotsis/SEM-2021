@@ -1,13 +1,11 @@
 package nl.tudelft.sem.template.repositories;
 
 import javax.transaction.Transactional;
-
+import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.enums.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import nl.tudelft.sem.template.entities.User;
-
 
 public interface UserRepository extends JpaRepository<User, String> {
 
