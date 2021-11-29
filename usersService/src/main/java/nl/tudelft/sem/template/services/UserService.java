@@ -110,7 +110,7 @@ public class UserService {
     public String generateJwtToken(User user) {
         Algorithm algorithm = Algorithm.HMAC256(jwtConfig.getJwtSecret());
         return JWT.create()
-                .withExpiresAt(new Date(System.currentTimeMillis() + 60 * 60 * 1000))
+                .withExpiresAt(new Date(System.currentTimeMillis() + jwtConfig.getLifetime()))
                 .withIssuer("SEM3B-TUD")
                 .withClaim("userId", user.getId())
                 .withClaim("userRole", user.getRole().toString())

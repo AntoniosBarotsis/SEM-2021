@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtConfig {
     private final String JwtSecret;
+    private final long Lifetime;
 
     public JwtConfig() throws FileNotFoundException {
         var loader = new envLoaderBuilder()
@@ -16,5 +17,6 @@ public class JwtConfig {
             .load();
 
         JwtSecret = loader.get("JWT_SECRET", "secret");
+        Lifetime = Long.parseLong(loader.get("JWT_LIFETIME",  "" + (60 * 60 * 1000)));
     }
 }
