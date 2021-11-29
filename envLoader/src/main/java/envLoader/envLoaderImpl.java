@@ -3,7 +3,7 @@ package envLoader;
 import java.util.Map;
 
 class envLoaderImpl implements envLoader {
-    private final Map<String, String> envVars;
+    private transient final Map<String, String> envVars;
 
     public envLoaderImpl(Map<String, String> envVars) {
         this.envVars = envVars;

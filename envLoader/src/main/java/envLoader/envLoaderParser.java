@@ -9,19 +9,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 
 class envLoaderParser {
-    private final String directory;
-    private final String filename;
-    private final Function<String, Boolean> isComment = s -> s.startsWith("#");
-    private final Function<String, Boolean> isWhiteSpace = s -> matches("^\\s*$", s);
-    private final Function<String, Boolean> isBlank = s -> s == null || s.trim().isEmpty();
-    private final Function<String, Boolean> isInvalid = s -> !s.contains("=");
-    private final Function<String, Boolean> shouldNotSkip = s ->
+    private transient final String directory;
+    private transient final String filename;
+    private transient final Function<String, Boolean> isComment = s -> s.startsWith("#");
+    private transient final Function<String, Boolean> isWhiteSpace = s -> matches("^\\s*$", s);
+    private transient final Function<String, Boolean> isBlank = s -> s == null || s.trim().isEmpty();
+    private transient final Function<String, Boolean> isInvalid = s -> !s.contains("=");
+    private transient final Function<String, Boolean> shouldNotSkip = s ->
         !isComment.apply(s) && !isBlank.apply(s) && !isWhiteSpace.apply(s) && !isInvalid.apply(s);
-    private final Function<String, Boolean> isQuoted = s -> s.startsWith("\"") && s.endsWith("\"");
+    private transient final Function<String, Boolean> isQuoted = s -> s.startsWith("\"") && s.endsWith("\"");
 
     public envLoaderParser(String path, String directory) {
         this.directory = path;
@@ -60,7 +61,7 @@ class envLoaderParser {
      * @throws FileNotFoundException If the file does not exist.
      */
     private List<String> read() throws FileNotFoundException {
-        var location = (directory + "/" + filename).toLowerCase();
+        var location = (directory + "/" + filename).toUpperCase(Locale.ROOT);
         var path = Path.of(new File(location).getAbsolutePath());
 
         if (Files.exists(path)) {

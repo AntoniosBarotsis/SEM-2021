@@ -24,7 +24,7 @@ public class UserService {
     private transient BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    private JwtConfig jwtConfig;
+    private transient JwtConfig jwtConfig;
 
 
     /** Get user by their id.

@@ -28,13 +28,13 @@ import java.util.HashMap;
  * </pre>
  */
 public class envLoaderBuilder {
-    private String filename = ".env";
-    private String path = "src/main/resources";
-    private String packageName = null;
-    private boolean throwFileNotFoundException = false;
+    private transient String _filename = ".env";
+    private transient String _path = "src/main/resources";
+    private transient String _packageName = null;
+    private transient boolean _throwFileNotFoundException = false;
 
     public envLoaderBuilder filename(String filename) {
-        this.filename = filename;
+        this._filename = filename;
 
         return this;
     }
@@ -46,7 +46,7 @@ public class envLoaderBuilder {
      * @return envLoaderBuilder
      */
     public envLoaderBuilder path(String path) {
-        this.path = path;
+        this._path = path;
 
         return this;
     }
@@ -58,7 +58,7 @@ public class envLoaderBuilder {
      * @return envLoaderBuilder
      */
     public envLoaderBuilder packageName(String packageName) {
-        this.packageName = packageName;
+        this._packageName = packageName;
 
         return this;
     }
@@ -70,7 +70,7 @@ public class envLoaderBuilder {
      * @return envLoaderBuilder
      */
     public envLoaderBuilder throwFileNotFoundException() {
-        this.throwFileNotFoundException = true;
+        this._throwFileNotFoundException = true;
 
         return this;
     }
@@ -82,18 +82,18 @@ public class envLoaderBuilder {
      * @throws FileNotFoundException If the file cannot be found.
      */
     public envLoader load() throws FileNotFoundException {
-        if (packageName == null) {
+        if (_packageName == null) {
             throw new PackageNameNotDefined();
         }
 
-        var parser = new envLoaderParser(packageName + "/" + path, filename);
+        var parser = new envLoaderParser(_packageName + "/" + _path, _filename);
 
         try {
             var res = parser.parse();
 
             return new envLoaderImpl(res);
         } catch (FileNotFoundException e) {
-            if (throwFileNotFoundException)
+            if (_throwFileNotFoundException)
                 throw e;
             else
                 return new envLoaderImpl(new HashMap<>());
