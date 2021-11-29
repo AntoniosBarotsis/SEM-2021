@@ -2,6 +2,7 @@ package envLoader;
 
 import envLoader.exceptions.PackageNameNotDefined;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
 
 /**
  * The <code>envLoader</code> builder class.
@@ -30,6 +31,7 @@ public class envLoaderBuilder {
     private String filename = ".env";
     private String path = "src/main/resources";
     private String packageName = null;
+    private boolean throwFileNotFoundException = false;
 
     public envLoaderBuilder filename(String filename) {
         this.filename = filename;
@@ -62,6 +64,18 @@ public class envLoaderBuilder {
     }
 
     /**
+     * Makes it so the envLoader will throw an exception if the file is not found instead of
+     * returning nulls.
+     *
+     * @return envLoaderBuilder
+     */
+    public envLoaderBuilder throwFileNotFoundException() {
+        this.throwFileNotFoundException = true;
+
+        return this;
+    }
+
+    /**
      * Loads and parses the file.
      *
      * @return envLoader
@@ -74,8 +88,15 @@ public class envLoaderBuilder {
 
         var parser = new envLoaderParser(packageName + "/" + path, filename);
 
-        var res = parser.parse();
+        try {
+            var res = parser.parse();
 
-        return new envLoaderImpl(res);
+            return new envLoaderImpl(res);
+        } catch (FileNotFoundException e) {
+            if (throwFileNotFoundException)
+                throw e;
+            else
+                return new envLoaderImpl(new HashMap<>());
+        }
     }
 }
