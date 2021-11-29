@@ -17,26 +17,26 @@ public class UserService {
     /**
      * Get user by their id.
      *
-     * @param userId User Id.
+     * @param username User's username.
      * @return User object.
      */
-    public Optional<User> getUser(String userId) {
-        return userRepository.findById(userId);
+    public Optional<User> getUser(String username) {
+        return userRepository.findById(username);
     }
 
     /**
      * Get user by their id, throws UserNotFound if user is not found.
      *
-     * @param userId User Id.
+     * @param username - the username.
      * @return User object.
      * @throws UserNotFound if user is not found.
      */
-    public User getUserOrRaise(String userId) throws UserNotFound {
-        Optional<User> u = userRepository.findById(userId);
+    public User getUserOrRaise(String username) throws UserNotFound {
+        Optional<User> u = userRepository.findById(username);
         if (u.isPresent()) {
             return u.get();
         }
-        throw new UserNotFound(userId);
+        throw new UserNotFound(username);
     }
 
     /**
@@ -47,7 +47,7 @@ public class UserService {
      * @throws UserAlreadyExists if a user with same id already exists.
      */
     public User createUser(User user) throws UserAlreadyExists {
-        if (userRepository.findById(user.getId()).isPresent()) {
+        if (userRepository.existsByUsername(user.getUsername())) {
             throw new UserAlreadyExists(user);
         }
         return userRepository.save(user);
@@ -61,17 +61,22 @@ public class UserService {
      * @throws UserNotFound if user is not found.
      */
     public User updateUser(User user) throws UserNotFound {
-        if (userRepository.updateUserById(user.getId(),
-                user.getRole(), user.getName(), user.getPassword()) > 0) {
-            return user;
+        if (userRepository.existsByUsername(user.getUsername())) {
+            return userRepository.save(user);
         }
 
-        throw new UserNotFound(user.getId());
+        throw new UserNotFound(user.getUsername());
 
     }
 
-    public void deleteUser(String userId) throws UserNotFound {
-        getUserOrRaise(userId);
-        userRepository.deleteById(userId);
+    /**
+     * Deletes a user.
+     *
+     * @param username - the username of the User.
+     * @throws UserNotFound - is thrown if such a User doesn't exist.
+     */
+    public void deleteUser(String username) throws UserNotFound {
+        getUserOrRaise(username);
+        userRepository.deleteById(username);
     }
 }

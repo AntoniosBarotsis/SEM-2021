@@ -7,7 +7,7 @@ public class UserAlreadyExists extends Exception {
     public static final long serialVersionUID = 4328743;
 
     public UserAlreadyExists(User user) {
-        super("User with id " + user.getId() + " already exists");
+        super("User with id " + user.getUsername() + " already exists");
     }
 
 }

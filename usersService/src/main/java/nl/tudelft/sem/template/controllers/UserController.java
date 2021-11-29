@@ -1,7 +1,5 @@
 package nl.tudelft.sem.template.controllers;
 
-import java.util.Optional;
-import lombok.AllArgsConstructor;
 import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
 import nl.tudelft.sem.template.exceptions.UserNotFound;
@@ -15,10 +13,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-@AllArgsConstructor
 @RestController
 public class UserController {
 
@@ -27,15 +23,14 @@ public class UserController {
 
     /** Get a user by id.
      *
-     * @param id   User's id.
+     * @param username   User's username.
      * @return     200 OK with the user entity if the user is found,
-     *             else 404 NOT FOUND
+     *             else 404 NOT FOUND.
      */
-    @GetMapping("/{id}")
-    @ResponseBody
-    public ResponseEntity<?> getUser(@PathVariable String id) {
+    @GetMapping("/{username}")
+    public ResponseEntity<?> getUser(@PathVariable String username) {
         try {
-            return new ResponseEntity<>(userService.getUserOrRaise(id), HttpStatus.OK);
+            return new ResponseEntity<>(userService.getUserOrRaise(username), HttpStatus.OK);
         } catch (UserNotFound e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
@@ -49,7 +44,6 @@ public class UserController {
      *         else 400 BAD REQUEST
      */
     @PostMapping("/")
-    @ResponseBody
     public ResponseEntity<?> createUser(@RequestBody User user) {
         try {
             return new ResponseEntity<>(userService.createUser(user), HttpStatus.CREATED);
@@ -68,7 +62,6 @@ public class UserController {
      *         else 400 BAD REQUEST
      */
     @PutMapping("/")
-    @ResponseBody
     public ResponseEntity<?> updateUser(@RequestBody User user) {
         try {
             return new ResponseEntity<>(userService.updateUser(user), HttpStatus.OK);
@@ -81,15 +74,14 @@ public class UserController {
 
     /** Delete a user.
      *
-     * @param id User's id.
+     * @param username User's id.
      * @return 200 OK if the user is deleted,
      *         404 NOT FOUND if the user is not found.
      */
-    @DeleteMapping("/{id}")
-    @ResponseBody
-    public ResponseEntity<?> deleteUser(@PathVariable String id) {
+    @DeleteMapping("/{username}")
+    public ResponseEntity<?> deleteUser(@PathVariable String username) {
         try {
-            userService.deleteUser(id);
+            userService.deleteUser(username);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (UserNotFound e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
