@@ -120,3 +120,13 @@ pitest {
 	outputFormats = ['XML', 'HTML']
 	timestampedReports = false
 }
+
+sourceSets {
+	main {
+		java{
+			srcDirs '../envLoader/src/main/java' /* include proto files from base project level */
+		}
+	}
+}
+
+sourceCompatibility = 1.11

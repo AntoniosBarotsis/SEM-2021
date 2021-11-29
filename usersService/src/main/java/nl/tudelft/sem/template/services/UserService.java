@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import nl.tudelft.sem.template.entities.JwtConfig;
 import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
 import nl.tudelft.sem.template.exceptions.UserNotFound;
@@ -22,8 +23,11 @@ public class UserService {
     @Autowired
     private transient BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    /**
-     * Get user by their id.
+    @Autowired
+    private JwtConfig jwtConfig;
+
+
+    /** Get user by their id.
      *
      * @param username User's username.
      * @return User object.
@@ -104,7 +108,7 @@ public class UserService {
      * @return generated token
      */
     public String generateJwtToken(User user) {
-        Algorithm algorithm = Algorithm.HMAC256("secret"); // TODO MAKE THIS CONFIGURABLE!!
+        Algorithm algorithm = Algorithm.HMAC256(jwtConfig.getJwtSecret());
         return JWT.create()
                 .withExpiresAt(new Date(System.currentTimeMillis() + 60 * 60 * 1000))
                 .withIssuer("SEM3B-TUD")
