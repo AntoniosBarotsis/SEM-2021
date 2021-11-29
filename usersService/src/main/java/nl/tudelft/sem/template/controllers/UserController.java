@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.controllers;
 
+import lombok.AllArgsConstructor;
 import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
 import nl.tudelft.sem.template.exceptions.UserNotFound;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
+@AllArgsConstructor
 @RestController
 public class UserController {
 
