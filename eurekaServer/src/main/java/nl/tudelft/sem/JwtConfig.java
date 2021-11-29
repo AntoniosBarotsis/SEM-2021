@@ -1,6 +1,6 @@
 package nl.tudelft.sem;
 
-import envLoader.envLoaderBuilder;
+import envloader.EnvLoaderBuilder;
 import java.io.FileNotFoundException;
 import org.springframework.stereotype.Component;
 
@@ -9,7 +9,7 @@ public class JwtConfig {
     private final String JwtSecret;
 
     public JwtConfig() throws FileNotFoundException {
-        var loader = new envLoaderBuilder()
+        var loader = new EnvLoaderBuilder()
             .packageName("usersService")
             .load();
 

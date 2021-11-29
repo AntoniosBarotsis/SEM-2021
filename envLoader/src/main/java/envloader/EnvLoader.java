@@ -1,6 +1,6 @@
-package envLoader;
+package envloader;
 
-public interface envLoader {
+public interface EnvLoader {
     /**
      * Gets the environment variable with the given key.
      *

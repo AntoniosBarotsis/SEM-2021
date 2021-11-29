@@ -1,11 +1,11 @@
-package envLoader;
+package envloader;
 
 import java.util.Map;
 
-class envLoaderImpl implements envLoader {
-    private transient final Map<String, String> envVars;
+class EnvLoaderImpl implements EnvLoader {
+    private final transient Map<String, String> envVars;
 
-    public envLoaderImpl(Map<String, String> envVars) {
+    public EnvLoaderImpl(Map<String, String> envVars) {
         this.envVars = envVars;
     }
 

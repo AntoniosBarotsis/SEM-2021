@@ -1,4 +1,4 @@
-package envLoader.exceptions;
+package envloader.exceptions;
 
 public class PackageNameNotDefined extends RuntimeException {
     private static final long serialVersionUID = 1L;

@@ -1,4 +1,4 @@
-package envLoader;
+package envloader;
 
 import static java.util.regex.Pattern.matches;
 
@@ -13,18 +13,20 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 
-class envLoaderParser {
-    private transient final String directory;
-    private transient final String filename;
-    private transient final Function<String, Boolean> isComment = s -> s.startsWith("#");
-    private transient final Function<String, Boolean> isWhiteSpace = s -> matches("^\\s*$", s);
-    private transient final Function<String, Boolean> isBlank = s -> s == null || s.trim().isEmpty();
-    private transient final Function<String, Boolean> isInvalid = s -> !s.contains("=");
-    private transient final Function<String, Boolean> shouldNotSkip = s ->
+class EnvLoaderParser {
+    private final transient String directory;
+    private final transient String filename;
+    private final transient Function<String, Boolean> isComment = s -> s.startsWith("#");
+    private final transient Function<String, Boolean> isWhiteSpace = s -> matches("^\\s*$", s);
+    private final transient Function<String, Boolean> isBlank = s ->
+        s == null || s.trim().isEmpty();
+    private final transient Function<String, Boolean> isInvalid = s -> !s.contains("=");
+    private final transient Function<String, Boolean> shouldNotSkip = s ->
         !isComment.apply(s) && !isBlank.apply(s) && !isWhiteSpace.apply(s) && !isInvalid.apply(s);
-    private transient final Function<String, Boolean> isQuoted = s -> s.startsWith("\"") && s.endsWith("\"");
+    private final transient Function<String, Boolean> isQuoted = s ->
+        s.startsWith("\"") && s.endsWith("\"");
 
-    public envLoaderParser(String path, String directory) {
+    public EnvLoaderParser(String path, String directory) {
         this.directory = path;
         this.filename = directory;
     }

@@ -1,6 +1,6 @@
 package nl.tudelft.sem.template.entities;
 
-import envLoader.envLoaderBuilder;
+import envloader.EnvLoaderBuilder;
 import java.io.FileNotFoundException;
 import lombok.Data;
 import org.springframework.stereotype.Component;
@@ -8,15 +8,21 @@ import org.springframework.stereotype.Component;
 @Data
 @Component
 public class JwtConfig {
-    private final String JwtSecret;
-    private final long Lifetime;
+    private final String jwtSecret;
+    private final long lifetime;
 
+    /**
+     * Creates a new JwtConfig instance.
+     *
+     * @throws FileNotFoundException If the env file is not found and the
+     * <code>throwFileNotFoundException()</code> method is used.
+     */
     public JwtConfig() throws FileNotFoundException {
-        var loader = new envLoaderBuilder()
+        var loader = new EnvLoaderBuilder()
             .packageName("usersService")
             .load();
 
-        JwtSecret = loader.get("JWT_SECRET", "secret");
-        Lifetime = Long.parseLong(loader.get("JWT_LIFETIME",  "" + (60 * 60 * 1000)));
+        jwtSecret = loader.get("JWT_SECRET", "secret");
+        lifetime = Long.parseLong(loader.get("JWT_LIFETIME",  "" + (60 * 60 * 1000)));
     }
 }
