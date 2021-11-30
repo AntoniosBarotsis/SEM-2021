@@ -10,10 +10,18 @@ import com.netflix.zuul.context.RequestContext;
 import com.sun.istack.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 
-
 public class ExpandJWTFilter extends ZuulFilter {
     @Autowired
     private JwtConfig jwtConfig;
+
+    ExpandJWTFilter(){
+        super();
+    }
+
+    ExpandJWTFilter(JwtConfig jwtConfig) {
+        super();
+        this.jwtConfig = jwtConfig;
+    }
 
     @Override
     public String filterType() {
