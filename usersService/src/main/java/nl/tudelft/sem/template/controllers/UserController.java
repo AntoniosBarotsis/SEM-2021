@@ -1,11 +1,12 @@
 package nl.tudelft.sem.template.controllers;
 
-import nl.tudelft.sem.template.domain.DTOs.UserLoginRequest;
-import nl.tudelft.sem.template.domain.DTOs.UserLoginResponse;
+import java.util.Optional;
+import nl.tudelft.sem.template.domain.dtos.Response;
+import nl.tudelft.sem.template.domain.dtos.UserLoginRequest;
+import nl.tudelft.sem.template.domain.dtos.UserLoginResponse;
 import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
 import nl.tudelft.sem.template.exceptions.UserNotFound;
-import nl.tudelft.sem.template.domain.DTOs.Response;
 import nl.tudelft.sem.template.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
 
 @RestController
 public class UserController {
@@ -109,7 +109,7 @@ public class UserController {
         }
     }
 
-    /** Login
+    /** Login a user.
      *
      * @param user User ID and password to login
      * @return 200 OK with JWT token if user is logged in,

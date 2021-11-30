@@ -1,10 +1,9 @@
 package nl.tudelft.sem.template.services;
 
-import java.util.Date;
-import java.util.Optional;
-
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import java.util.Date;
+import java.util.Optional;
 import nl.tudelft.sem.template.entities.JwtConfig;
 import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
@@ -21,7 +20,7 @@ public class UserService {
     private transient UserRepository userRepository;
 
     @Autowired
-    private transient BCryptPasswordEncoder bCryptPasswordEncoder;
+    private transient BCryptPasswordEncoder bcryptPasswordEncoder;
 
     @Autowired
     private transient JwtConfig jwtConfig;
@@ -37,7 +36,8 @@ public class UserService {
     }
 
     /**
-     * Get user by their id, throws UserNotFound if user is not found.*
+     * Get user by their id, throws UserNotFound if user is not found.
+     *
      * @param username - the username.
      * @return User object.
      * @throws UserNotFound if user is not found.
@@ -61,7 +61,7 @@ public class UserService {
         if (userRepository.existsByUsername(user.getUsername())) {
             throw new UserAlreadyExists(user);
         }
-        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        user.setPassword(bcryptPasswordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
@@ -92,12 +92,13 @@ public class UserService {
 
     /**
      * Verify if the password matches the user's password.
+     *
      * @param user user to verify password for.
      * @param password plaintext password to verify.
      * @return true if password matches, false otherwise.
      */
     public Boolean verifyPassword(User user, String password) {
-        return bCryptPasswordEncoder.matches(password, user.getPassword());
+        return bcryptPasswordEncoder.matches(password, user.getPassword());
     }
 
     /** Generate a JWT token for the user.
