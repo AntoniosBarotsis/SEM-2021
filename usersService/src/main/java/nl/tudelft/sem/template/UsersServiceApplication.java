@@ -11,11 +11,13 @@ import org.springframework.web.client.RestTemplate;
 @SpringBootApplication
 public class UsersServiceApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(UsersServiceApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(UsersServiceApplication.class, args);
+    }
 
-	@Bean
-	@LoadBalanced
-	public RestTemplate getRestTemplate() { return new RestTemplate(); }
+    @Bean
+    @LoadBalanced
+    public RestTemplate getRestTemplate() {
+        return new RestTemplate();
+    }
 }
