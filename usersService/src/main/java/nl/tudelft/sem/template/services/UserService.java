@@ -4,6 +4,8 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import java.util.Date;
 import java.util.Optional;
+
+import com.sun.istack.NotNull;
 import nl.tudelft.sem.template.entities.JwtConfig;
 import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
@@ -61,7 +63,7 @@ public class UserService {
         if (userRepository.existsByUsername(user.getUsername())) {
             throw new UserAlreadyExists(user);
         }
-        user.setPassword(bcryptPasswordEncoder.encode(user.getPassword()));
+        user.setPassword(hashPassword(user.getPassword()));
         return userRepository.save(user);
     }
 
@@ -88,6 +90,16 @@ public class UserService {
     public void deleteUser(String username) throws UserNotFound {
         getUserOrRaise(username);
         userRepository.deleteById(username);
+    }
+
+    /**
+     * Hash a password.
+     *
+     * @param password plaintext password to hash.
+     * @return hashed password
+     */
+    public String hashPassword(@NotNull String password) {
+        return bcryptPasswordEncoder.encode(password);
     }
 
     /**

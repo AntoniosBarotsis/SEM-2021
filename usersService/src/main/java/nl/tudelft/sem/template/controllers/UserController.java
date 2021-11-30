@@ -62,10 +62,6 @@ public class UserController {
             return new ResponseEntity<>(
                     new Response<>(null, e.getMessage()),
                     HttpStatus.CONFLICT);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(
-                    new Response<>(null, e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -86,10 +82,6 @@ public class UserController {
             return new ResponseEntity<>(
                     new Response<>(null, e.getMessage()),
                     HttpStatus.NOT_FOUND);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(
-                    new Response<>(null, e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
         }
     }
 
