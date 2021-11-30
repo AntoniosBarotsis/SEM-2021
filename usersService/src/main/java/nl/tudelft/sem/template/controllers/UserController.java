@@ -1,10 +1,11 @@
 package nl.tudelft.sem.template.controllers;
 
 import nl.tudelft.sem.template.domain.DTOs.UserLoginRequest;
+import nl.tudelft.sem.template.domain.DTOs.UserLoginResponse;
 import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
 import nl.tudelft.sem.template.exceptions.UserNotFound;
-import nl.tudelft.sem.template.responses.Response;
+import nl.tudelft.sem.template.domain.DTOs.Response;
 import nl.tudelft.sem.template.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -115,11 +116,13 @@ public class UserController {
      *         else 401 UNAUTHORIZED
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserLoginRequest user) {
+    public ResponseEntity<Response<UserLoginResponse>> login(@RequestBody UserLoginRequest user) {
         Optional<User> u = userService.getUser(user.getUsername());
         if (u.isPresent() && userService.verifyPassword(u.get(), user.getPassword())) {
             String token = userService.generateJwtToken(u.get());
-            return ResponseEntity.ok(token);
+            return new ResponseEntity<>(
+                    new Response<>(new UserLoginResponse(token), null),
+                    HttpStatus.OK);
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
