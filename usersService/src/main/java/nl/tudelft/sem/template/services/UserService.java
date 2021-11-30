@@ -76,9 +76,7 @@ public class UserService {
         if (userRepository.existsByUsername(user.getUsername())) {
             return userRepository.save(user);
         }
-
         throw new UserNotFound(user.getUsername());
-
     }
 
     /**
@@ -112,7 +110,7 @@ public class UserService {
         return JWT.create()
                 .withExpiresAt(new Date(System.currentTimeMillis() + jwtConfig.getLifetime()))
                 .withIssuer("SEM3B-TUD")
-                .withClaim("userId", user.getId())
+                .withClaim("userName", user.getUsername())
                 .withClaim("userRole", user.getRole().toString())
                 .sign(algorithm);
     }

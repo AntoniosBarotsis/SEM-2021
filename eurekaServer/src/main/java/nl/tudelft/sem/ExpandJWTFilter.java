@@ -27,7 +27,7 @@ public class ExpandJWTFilter extends ZuulFilter {
     @Override
     public boolean shouldFilter() {
         // TODO Discuss whether we want to keep this.
-        
+
         RequestContext ctx = RequestContext.getCurrentContext();
         var path = ctx.getRequest().getRequestURI().replace("/api/", "");
         var type = ctx.getRequest().getMethod();
@@ -43,10 +43,10 @@ public class ExpandJWTFilter extends ZuulFilter {
         if (verifyToken(token)) {
             DecodedJWT decodedJWT = JWT.decode(token);
             ctx.addZuulRequestHeader("x-user-role", decodedJWT.getClaim("userRole").asString());
-            ctx.addZuulRequestHeader("x-user-id", decodedJWT.getClaim("userId").asString());
+            ctx.addZuulRequestHeader("x-user-name", decodedJWT.getClaim("userName").asString());
         } else {
             ctx.addZuulRequestHeader("x-user-role", null);
-            ctx.addZuulRequestHeader("x-user-id", null);
+            ctx.addZuulRequestHeader("x-user-name", null);
         }
         return null;
     }
