@@ -1,11 +1,17 @@
 package nl.tudelft.sem.template.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import java.util.Optional;
 import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.enums.Role;
@@ -126,5 +132,31 @@ public class UserServiceTest {
                 () -> userService.createUser(user));
 
         assertEquals(errorMessage, exception.getMessage());
+    }
+
+    @Test
+    void testHashPassword() {
+        String password = "test";
+        String hashedPassword = userService.hashPassword(password);
+        assertNotEquals(password, hashedPassword);
+    }
+
+    @Test
+    void testVerifyPassword() {
+        String password = "test_password";
+        User hashedPasswordUser = new User(
+                "test2", userService.hashPassword(password), Role.STUDENT
+        );
+        assertTrue(userService.verifyPassword(hashedPasswordUser, password));
+        assertFalse(userService.verifyPassword(hashedPasswordUser, "different_test_password"));
+    }
+
+    @Test
+    void testGenerateJwtToken() {
+        String token = userService.generateJwtToken(user);
+        assertNotNull(token);
+        DecodedJWT decodedToken = JWT.decode(token);
+        assertEquals(user.getUsername(), decodedToken.getClaim("userName").asString());
+        assertEquals(user.getRole().toString(), decodedToken.getClaim("userRole").asString());
     }
 }

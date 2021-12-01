@@ -1,17 +1,21 @@
 package nl.tudelft.sem.template.controllers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 
+import nl.tudelft.sem.template.domain.dtos.Response;
+import nl.tudelft.sem.template.domain.dtos.UserLoginRequest;
+import nl.tudelft.sem.template.domain.dtos.UserLoginResponse;
 import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.enums.Role;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
 import nl.tudelft.sem.template.exceptions.UserNotFound;
-import nl.tudelft.sem.template.responses.Response;
 import nl.tudelft.sem.template.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -135,5 +139,46 @@ public class UserControllerTests {
                 new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 
         assertEquals(entity, userController.updateUser(user));
+    }
+
+    @Test
+    void loginUserTest() {
+        Mockito.when(userService.getUser(user.getUsername()))
+                .thenReturn(java.util.Optional.ofNullable(user));
+        Mockito.when(userService.verifyPassword(user, user.getPassword())).thenReturn(true);
+        Mockito.when(userService.generateJwtToken(user)).thenReturn("generated_token_test");
+
+        ResponseEntity<Response<UserLoginResponse>> loginResponse = userController.login(
+                new UserLoginRequest(user.getUsername(), user.getPassword())
+        );
+
+        assertEquals(HttpStatus.OK, loginResponse.getStatusCode());
+        assertNotNull(loginResponse.getBody());
+        assertEquals("generated_token_test", loginResponse.getBody().getData().getToken());
+    }
+
+    @Test
+    void loginUserTestPasswordIncorrect() {
+        Mockito.when(userService.getUser(user.getUsername()))
+                .thenReturn(java.util.Optional.ofNullable(user));
+        Mockito.when(userService.verifyPassword(user, user.getPassword())).thenReturn(true);
+        Mockito.when(userService.generateJwtToken(user)).thenReturn("generated_token_test");
+
+        ResponseEntity<Response<UserLoginResponse>> loginResponse = userController.login(
+                new UserLoginRequest(user.getUsername(), "this_is_not_the_password")
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, loginResponse.getStatusCode());
+    }
+
+    @Test
+    void loginUserTestUserNotFound() {
+        Mockito.when(userService.getUser(any())).thenReturn(java.util.Optional.empty());
+
+        ResponseEntity<Response<UserLoginResponse>> loginResponse = userController.login(
+                new UserLoginRequest(user.getUsername(), user.getPassword())
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, loginResponse.getStatusCode());
     }
 }

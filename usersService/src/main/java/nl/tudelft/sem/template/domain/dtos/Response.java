@@ -1,4 +1,4 @@
-package nl.tudelft.sem.template.responses;
+package nl.tudelft.sem.template.domain.dtos;
 
 
 import lombok.AllArgsConstructor;
