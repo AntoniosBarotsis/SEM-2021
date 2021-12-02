@@ -32,6 +32,12 @@ public class NonTargetedCompanyOfferService extends OfferService {
         if (nonTargetedCompanyOffer.getStatus() != Status.PENDING) {
             throw new IllegalArgumentException("This offer is not active anymore");
         }
+        if (applicationRepository
+                .existsByStudentIdAndNonTargetedCompanyOffer(
+                        application.getStudentId(),
+                        nonTargetedCompanyOffer)) {
+            throw new IllegalArgumentException("Student already applied to this offer");
+        }
         application.setNonTargetedCompanyOffer(nonTargetedCompanyOffer);
         return applicationRepository.save(application);
     }
