@@ -85,7 +85,7 @@ public class NonTargetedCompanyOfferController {
         if (!userName.equals(application.getStudentId())
                 || !userRole.equals("STUDENT")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new Response<>(null, "User can not make this offer"));
+                    .body(new Response<>(null, "User can not make this application"));
         }
 
         try {
