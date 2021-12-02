@@ -1,7 +1,9 @@
 package nl.tudelft.sem.template.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 import javax.persistence.Entity;
+import javax.persistence.OneToMany;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -12,6 +14,10 @@ import nl.tudelft.sem.template.enums.Status;
 @Entity
 @EqualsAndHashCode(callSuper = true)
 public class NonTargetedCompanyOffer extends CompanyOffer {
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "nonTargetedCompanyOffer")
+    private List<Application> applications;
 
     /** Constructor for the NonTargetedCompanyOffer class.
      *
