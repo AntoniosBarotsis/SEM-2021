@@ -1,5 +1,7 @@
 package nl.tudelft.sem.template.entities;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -23,6 +25,8 @@ public class Application {
     private String studentId;
     private double pricePerHour;
 
+    @JsonProperty("nonTargetedCompanyOfferId")
+    @JsonIdentityReference(alwaysAsId = true)
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "non_targeted_company_offer_id", referencedColumnName = "id")
     @OnDelete(action = OnDeleteAction.CASCADE)

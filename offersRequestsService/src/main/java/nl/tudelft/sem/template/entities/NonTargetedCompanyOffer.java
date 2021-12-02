@@ -1,6 +1,8 @@
 package nl.tudelft.sem.template.entities;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
@@ -13,6 +15,7 @@ import nl.tudelft.sem.template.enums.Status;
 @NoArgsConstructor
 @Entity
 @EqualsAndHashCode(callSuper = true)
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class NonTargetedCompanyOffer extends CompanyOffer {
 
     @JsonIgnore
