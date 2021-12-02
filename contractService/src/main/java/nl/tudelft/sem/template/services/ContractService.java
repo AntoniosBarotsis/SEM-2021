@@ -18,7 +18,7 @@ public class ContractService {
     private static final transient double MAX_WEEKS = 26;
 
     /**
-     * PRIVATE method which finds the most recent active contract between 2 parties.
+     * PRIVATE HELPER METHOD which finds the most recent active contract between 2 parties.
      * Can be used to check if an active contract already exists, or to get a contract.
      *
      * @param companyId The id of the company.
@@ -31,7 +31,7 @@ public class ContractService {
     }
 
     /**
-     * PRIVATE method which validates a contract's parameters.
+     * PRIVATE HELPER METHOD which validates a contract's parameters.
      *
      * @param contract The contract to be validated.
      * @throws IllegalArgumentException Thrown when the contract is not valid
@@ -65,12 +65,20 @@ public class ContractService {
     public Contract saveContract(Contract contract) throws IllegalArgumentException {
         validateContract(contract);
 
+        // Set startDate:
+        if (contract.getStartDate() == null) {
+            contract.setStartDate(LocalDate.now());
+        }
+
         // Set endDate:
         if (contract.getEndDate() == null) {
             int weeks = (int) Math.ceil(contract.getTotalHours() / contract.getHoursPerWeek());
             LocalDate date = contract.getStartDate().plusWeeks(weeks);
             contract.setEndDate(date);    //LocalDate is immutable, so different memory address here
         }
+
+        // Set as active
+        contract.setActive(true);
 
         return contractRepository.save(contract);
     }
@@ -98,8 +106,12 @@ public class ContractService {
      * Terminates a contract.
      *
      * @param contractId The contract that is to be terminated.
+     * @throws ContractNotFoundException Thrown if a contract doesn't exist.
      */
-    public void terminateContract(Long contractId) {
+    public void terminateContract(Long contractId) throws ContractNotFoundException {
+        if (contractRepository.findById(contractId).isEmpty()) {
+            throw new ContractNotFoundException(contractId);
+        }
         contractRepository.terminateContract(contractId);
     }
 }
