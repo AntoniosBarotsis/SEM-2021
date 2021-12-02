@@ -24,18 +24,4 @@ public class ContractServiceApplication {
     public RestTemplate getRestTemplate() {
         return new RestTemplate();
     }
-
-    @Data
-    @RestController
-    static class TestController {
-        @Autowired
-        private RestTemplate restTemplate;
-
-        @GetMapping("")
-        public String serviceInstancesByApplicationName() {
-            return "Response from auth service is: \""
-				+ restTemplate
-				.getForObject("http://authentication-service/", String.class) + "\"";
-        }
-    }
 }
