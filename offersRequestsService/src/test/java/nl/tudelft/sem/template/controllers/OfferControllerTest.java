@@ -69,4 +69,13 @@ class OfferControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
+    @
+    Test
+    void getAllByUsernameNotAuthenticatedTest() {
+        ResponseEntity<Response<Map<String, List<Offer>>>> response = offerController
+                .getAllByUsername("");
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("User is not authenticated", response.getBody().getErrorMessage());
+    }
+
 }

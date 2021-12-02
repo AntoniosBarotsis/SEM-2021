@@ -10,6 +10,7 @@ import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.exceptions.UserNotAuthorException;
 import nl.tudelft.sem.template.responses.Response;
 import nl.tudelft.sem.template.services.TargetedCompanyOfferService;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +40,7 @@ class TargetedCompanyOfferControllerTest {
     private transient String company;
     private transient String companyRole;
     private transient String studentRole;
+    private transient String authenticationError = "User is not authenticated";
 
     @BeforeEach
     void setup() {
@@ -200,6 +202,90 @@ class TargetedCompanyOfferControllerTest {
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals(res, response.getBody());
+    }
+
+    @Test
+    void saveTargetedCompanyOfferUnauthenticatedTest() {
+        ResponseEntity<Response<Offer>> response = targetedCompanyOfferController
+                .saveTargetedCompanyOffer("", "", targetedCompanyOffer, 3L);
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals(authenticationError, response.getBody().getErrorMessage());
+    }
+
+    @Test
+    void saveTargetedCompanyOfferNotAuthorTest() {
+        ResponseEntity<Response<Offer>> response = targetedCompanyOfferController
+                .saveTargetedCompanyOffer("fake", companyRole, targetedCompanyOffer, 3L);
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals("User not allowed to post this TargetedCompanyOffer",
+                response.getBody().getErrorMessage());
+    }
+
+    @Test
+    void saveTargetedCompanyOfferNotCompanyTest() {
+        ResponseEntity<Response<Offer>> response = targetedCompanyOfferController
+                .saveTargetedCompanyOffer(student, studentRole, targetedCompanyOffer, 3L);
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals("User not allowed to post this TargetedCompanyOffer",
+                response.getBody().getErrorMessage());
+    }
+
+    @Test
+    void getCompanyOffersByIdNotAuthenticatedTest() {
+        ResponseEntity<Response<List<TargetedCompanyOffer>>> response =
+                targetedCompanyOfferController
+                        .getCompanyOffersById("", companyRole);
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals(authenticationError, response.getBody().getErrorMessage());
+    }
+
+    @Test
+    void getCompanyOffersByIdNotCompanyTest() {
+        ResponseEntity<Response<List<TargetedCompanyOffer>>> response =
+                targetedCompanyOfferController
+                        .getCompanyOffersById("test", studentRole);
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals("User is not a company", response.getBody().getErrorMessage());
+    }
+
+    @Test
+    void getCompanyOffersByStudentOfferUnauthenticatedTest() {
+        ResponseEntity<Response<List<TargetedCompanyOffer>>> response =
+                targetedCompanyOfferController
+                        .getCompanyOffersByStudentOffer("", 3L);
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals(authenticationError, response.getBody().getErrorMessage());
+    }
+
+    @Test
+    void getCompanyOffersByStudentOfferNotAuthorTest() {
+        Mockito.when(targetedCompanyOfferService
+                        .getOffersByStudentOffer(3L, student))
+                .thenThrow(new UserNotAuthorException(student));
+        ResponseEntity<Response<List<TargetedCompanyOffer>>> response =
+                targetedCompanyOfferController
+                        .getCompanyOffersByStudentOffer(student, 3L);
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals("User with id Student is not the author of this offer",
+                response.getBody().getErrorMessage());
+    }
+
+    @Test
+    void getAllByStudentUnauthenticatedTest() {
+        ResponseEntity<Response<List<TargetedCompanyOffer>>> response =
+                targetedCompanyOfferController
+                        .getAllByStudent("", studentRole);
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals(authenticationError, response.getBody().getErrorMessage());
+    }
+
+    @Test
+    void getAllByStudentNotStudentTest() {
+        ResponseEntity<Response<List<TargetedCompanyOffer>>> response =
+                targetedCompanyOfferController
+                        .getAllByStudent(company, companyRole);
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals("User is not a student", response.getBody().getErrorMessage());
     }
 
 }

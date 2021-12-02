@@ -122,4 +122,31 @@ class StudentOfferControllerTest {
         assertEquals(responseError, response.getBody());
     }
 
+    @Test
+    void saveStudentOfferUnauthenticatedTest() {
+        ResponseEntity<Response<Offer>> response = studentOfferController
+                .saveStudentOffer("", "", studentOffer);
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("User is not authenticated", response.getBody().getErrorMessage());
+
+    }
+
+    @Test
+    void saveStudentOfferNotAuthorTest() {
+        ResponseEntity<Response<Offer>> response = studentOfferController
+                .saveStudentOffer("fake", "STUDENT", studentOffer);
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals("User not allowed to post this StudentOffer",
+                response.getBody().getErrorMessage());
+    }
+
+    @Test
+    void saveStudentOfferNotStudentTest() {
+        ResponseEntity<Response<Offer>> response = studentOfferController
+                .saveStudentOffer("fake", "COMPANY", studentOffer);
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals("User not allowed to post this StudentOffer",
+                response.getBody().getErrorMessage());
+    }
+
 }
