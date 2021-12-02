@@ -130,3 +130,7 @@ sourceSets {
 }
 
 sourceCompatibility = 1.11
+
+tasks.withType(Test) {
+	systemProperty'eureka.client.enabled', 'false'
+}
