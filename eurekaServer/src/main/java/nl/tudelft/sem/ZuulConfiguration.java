@@ -46,6 +46,11 @@ public class ZuulConfiguration {
         return new ZuulPostProcessor(routeLocator, zuulController, errorController);
     }
 
+    @Bean
+    public ExpandJWTFilter expandJWTFilter() {
+        return new ExpandJWTFilter();
+    }
+
     private enum LookupHandlerCallbackFilter implements CallbackFilter {
         INSTANCE;
 
