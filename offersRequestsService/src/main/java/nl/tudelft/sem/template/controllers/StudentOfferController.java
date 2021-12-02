@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -20,19 +21,32 @@ public class StudentOfferController {
     @Autowired
     private transient StudentOfferService studentOfferService;
 
-    /**
-     * Endpoint for creating StudentOffers.
+    /** Endpoint for creating StudentOffers.
      *
+     * @param userName Name of person making the request.
+     * @param userRole Role of the person making the request.
      * @param studentOffer StudentOffer than needs to bed created.
-     * @return 201 CREATED ResponseEntity with
-     *     a Response with saved StudentOffer in body if valid
-     *     otherwise 400 BAD REQUEST with a Response with error message.
+     * @return ResponseEntity that can take various codes.
+     *          401 UNAUTHORIZED if user not authenticated.
+     *          403 FORBIDDEN if user not a student or not author of offer.
+     *          400 BAD REQUEST if conditions for offer are not met.
+     *          201 CREATED with Offer in body if successfull.
      */
     @PostMapping("/student/create")
     public ResponseEntity<Response<Offer>>
-        saveStudentOffer(@RequestBody StudentOffer studentOffer) {
-        //Here we will also get authorization checks,
-        // who is the user posting and is their ID in the studentOffer
+        saveStudentOffer(@RequestHeader("x-user-name") String userName,
+                         @RequestHeader("x-user-role") String userRole,
+                         @RequestBody StudentOffer studentOffer) {
+        if (userName.isBlank()) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new Response<>(null, "User is not authenticated"));
+        }
+        if (!studentOffer.getStudentId().equals(userName) || !userRole.equals("STUDENT")) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(new Response<>(null, "User not allowed to post this StudentOffer"));
+        }
         Response<Offer> response;
         try {
             response =

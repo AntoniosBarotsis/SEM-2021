@@ -40,14 +40,21 @@ class TargetedCompanyOfferServiceTest {
     private transient StudentOffer studentOffer;
     private transient TargetedCompanyOffer targetedCompanyOffer;
     private transient List<String> expertise;
+    private transient String student;
+    private transient String company;
+    private transient String companyRole;
+    private transient String studentRole;
 
     @BeforeEach
     void setup() {
         expertise = Arrays.asList("Expertise 1", "Expertise 2", "Expertise 3");
-        String studentId = "Student";
+        student = "Student";
+        company = "Company";
+        studentRole = "STUDENT";
+        companyRole = "COMPANY";
         studentOffer = new StudentOffer("This is a title", "This is a description", 20, 520,
             expertise, Status.DISABLED,
-            32, studentId);
+            32, student);
 
         targetedCompanyOffer = new TargetedCompanyOffer("This is a company title",
             "This is a company description",
@@ -127,7 +134,7 @@ class TargetedCompanyOfferServiceTest {
             .thenReturn(returned);
 
         assertEquals(returned,
-            targetedCompanyOfferService.getOffersByStudentOffer(studentOffer.getId()));
+            targetedCompanyOfferService.getOffersByStudentOffer(studentOffer.getId(), student));
     }
 
     @Test
@@ -137,7 +144,7 @@ class TargetedCompanyOfferServiceTest {
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> targetedCompanyOfferService
-                .getOffersByStudentOffer(studentOffer.getId()));
+                .getOffersByStudentOffer(studentOffer.getId(), student));
         String message = "Student offer does not exist";
         assertEquals(message, exception.getMessage());
     }
@@ -151,7 +158,7 @@ class TargetedCompanyOfferServiceTest {
             .thenReturn(new ArrayList<>());
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> targetedCompanyOfferService
-                .getOffersByStudentOffer(studentOffer.getId()));
+                .getOffersByStudentOffer(studentOffer.getId(), student));
         String message = "No such company has made offers!";
         assertEquals(message, exception.getMessage());
     }
