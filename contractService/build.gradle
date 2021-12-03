@@ -67,17 +67,38 @@ dependencyManagement {
     }
 }
 
+def jacocoExclude = [
+        'nl.tudelft.sem.template.entities',
+        'nl.tudelft.sem.template.repositories',
+        'nl.tudelft.sem.template.exceptions',
+        'nl.tudelft.sem.template.ContractServiceApplication.class'
+]
+
 test {
     useJUnitPlatform()
     jacoco {
         enabled = true
         includes = ['nl.tudelft.sem.template.*']
-        excludes = []
+        excludes = jacocoExclude
     }
 }
 
 repositories {
     mavenCentral()
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination file("${buildDir}/reports/jacoco/html")
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: jacocoExclude)
+        }))
+    }
 }
 
 jacocoTestCoverageVerification() {
@@ -87,6 +108,7 @@ jacocoTestCoverageVerification() {
             enabled = true
             element = 'CLASS'
             includes = ['nl.tudelft.sem.template.*']
+            excludes = jacocoExclude
 
             limit {
                 counter = 'BRANCH'
