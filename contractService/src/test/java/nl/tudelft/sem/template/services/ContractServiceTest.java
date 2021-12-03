@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.util.Optional;
 import nl.tudelft.sem.template.entities.Contract;
+import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
 import nl.tudelft.sem.template.repositories.ContractRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,21 +42,21 @@ class ContractServiceTest {
         LocalDate startDate = LocalDate.of(2021, 12, 25);
         LocalDate endDate = startDate.plusWeeks(3);
         contract = new Contract(1L, companyId, studentId, startDate, endDate, 14,
-                42, 15, true);
+                42, 15, Status.ACTIVE);
     }
 
     @Test
     void saveValidContractSuccess() {
         when(contractRepository
-                .findByCompanyIdEqualsAndStudentIdEqualsAndActiveTrue(companyId, studentId))
-                .thenReturn(Optional.empty());
-        contract.setActive(false);     //not active
+                .findActiveContract(companyId, studentId))
+                .thenReturn(null);
+        contract.setStatus(null);     //not active
         contract.setEndDate(null);     //no end date!
 
         contractService.saveContract(contract);
 
         contract.setEndDate(LocalDate.of(2021, 12, 25).plusWeeks(3));
-        contract.setActive(true);
+        contract.setStatus(Status.ACTIVE);
 
         ArgumentCaptor<Contract> contractArgumentCaptor = ArgumentCaptor.forClass(Contract.class);
         verify(contractRepository).save(contractArgumentCaptor.capture());
@@ -66,8 +67,8 @@ class ContractServiceTest {
     void saveInvalidContractSameParties() {
         contract.setStudentId(contract.getCompanyId());
         when(contractRepository
-                .findByCompanyIdEqualsAndStudentIdEqualsAndActiveTrue(companyId, studentId))
-                .thenReturn(Optional.empty());
+                .findActiveContract(companyId, studentId))
+                .thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> contractService.saveContract(contract),
                 invalidParamsError);
@@ -77,8 +78,8 @@ class ContractServiceTest {
     void saveInvalidContractExceedsHoursPerWeek() {
         contract.setHoursPerWeek(20.1);
         when(contractRepository
-                .findByCompanyIdEqualsAndStudentIdEqualsAndActiveTrue(companyId, studentId))
-                .thenReturn(Optional.empty());
+                .findActiveContract(companyId, studentId))
+                .thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> contractService.saveContract(contract),
                 invalidParamsError);
@@ -89,8 +90,8 @@ class ContractServiceTest {
         contract.setHoursPerWeek(2);
         contract.setTotalHours(52.5);  //52 total hours is exactly 26 weeks
         when(contractRepository
-                .findByCompanyIdEqualsAndStudentIdEqualsAndActiveTrue(companyId, studentId))
-                .thenReturn(Optional.empty());
+                .findActiveContract(companyId, studentId))
+                .thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> contractService.saveContract(contract));
     }
@@ -98,8 +99,8 @@ class ContractServiceTest {
     @Test
     void saveContractAlreadyExists() {
         when(contractRepository
-                .findByCompanyIdEqualsAndStudentIdEqualsAndActiveTrue(companyId, studentId))
-                .thenReturn(Optional.of(contract));
+                .findActiveContract(companyId, studentId))
+                .thenReturn(contract);
 
         assertThrows(IllegalArgumentException.class, () -> contractService.saveContract(contract),
                 contractExistsError);
@@ -108,8 +109,8 @@ class ContractServiceTest {
     @Test
     void getContractSuccess() throws ContractNotFoundException {
         when(contractRepository
-                .findByCompanyIdEqualsAndStudentIdEqualsAndActiveTrue(companyId, studentId))
-                .thenReturn(Optional.of(contract));
+                .findActiveContract(companyId, studentId))
+                .thenReturn(contract);
 
         assertEquals(contractService.getContract(companyId, studentId), contract);
     }
@@ -117,8 +118,8 @@ class ContractServiceTest {
     @Test
     void getContractNotFoundError() {
         when(contractRepository
-                .findByCompanyIdEqualsAndStudentIdEqualsAndActiveTrue(companyId, studentId))
-                .thenReturn(Optional.empty());
+                .findActiveContract(companyId, studentId))
+                .thenReturn(null);
 
         assertThrows(ContractNotFoundException.class,
                 () -> contractService.getContract(companyId, studentId));

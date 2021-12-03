@@ -1,9 +1,8 @@
 package nl.tudelft.sem.template.services;
 
 import java.time.LocalDate;
-import java.util.Optional;
-
 import nl.tudelft.sem.template.entities.Contract;
+import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
 import nl.tudelft.sem.template.repositories.ContractRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,19 +16,6 @@ public class ContractService {
 
     private static final transient double MAX_HOURS = 20;
     private static final transient double MAX_WEEKS = 26;
-
-    /**
-     * PRIVATE HELPER METHOD which finds the most recent active contract between 2 parties.
-     * Can be used to check if an active contract already exists, or to get a contract.
-     *
-     * @param companyId The id of the company.
-     * @param studentId The id of the student.
-     * @return the found contract or null if not found.
-     */
-    private Optional<Contract> findActiveContract(String companyId, String studentId) {
-        return contractRepository
-                .findByCompanyIdEqualsAndStudentIdEqualsAndActiveTrue(companyId, studentId);
-    }
 
     /**
      * PRIVATE HELPER METHOD which validates a contract's parameters.
@@ -52,8 +38,10 @@ public class ContractService {
 
             throw new IllegalArgumentException("One or more contract parameters are invalid.");
         }
-        if (findActiveContract(contract.getCompanyId(), contract.getStudentId()).isPresent()) {
-            throw new IllegalArgumentException("Please cancel the existing contract with this party.");
+        if (contractRepository.findActiveContract(contract.getCompanyId(),
+                contract.getStudentId()) != null) {
+            throw new IllegalArgumentException(
+                    "Please cancel the existing contract with this party.");
         }
     }
 
@@ -81,7 +69,7 @@ public class ContractService {
         }
 
         // Set as active
-        contract.setActive(true);
+        contract.setStatus(Status.ACTIVE);
 
         return contractRepository.save(contract);
     }
@@ -96,12 +84,12 @@ public class ContractService {
      */
     public Contract getContract(String companyId, String studentId)
             throws ContractNotFoundException {
-        Optional<Contract> contract = findActiveContract(companyId, studentId);
+        Contract contract = contractRepository.findActiveContract(companyId, studentId);
 
-        if (contract.isEmpty()) {
+        if (contract == null) {
             throw new ContractNotFoundException(companyId, studentId);
         } else {
-            return contract.get();
+            return contract;
         }
     }
 
