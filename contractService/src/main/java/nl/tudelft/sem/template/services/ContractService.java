@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.services;
 
 import java.time.LocalDate;
 import java.util.Optional;
+
 import nl.tudelft.sem.template.entities.Contract;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
 import nl.tudelft.sem.template.repositories.ContractRepository;
@@ -42,15 +43,17 @@ public class ContractService {
     private void validateContract(Contract contract) throws IllegalArgumentException {
         // contract between the same user:
         if (contract.getCompanyId().equals(contract.getStudentId())
-                //an active contract already exists:
-                || findActiveContract(contract.getCompanyId(), contract.getStudentId()).isPresent()
 
-                || contract.getHoursPerWeek() > MAX_HOURS              //max no of hours exceeded
+                //max no of hours exceeded:
+                || contract.getHoursPerWeek() > MAX_HOURS
 
                 //no of weeks exceeded:
                 || contract.getTotalHours() / contract.getHoursPerWeek() > MAX_WEEKS) {
-            throw new IllegalArgumentException("One or more contract parameters are invalid "
-                    + "or one contract already exists");
+
+            throw new IllegalArgumentException("One or more contract parameters are invalid.");
+        }
+        if (findActiveContract(contract.getCompanyId(), contract.getStudentId()).isPresent()) {
+            throw new IllegalArgumentException("Please cancel the existing contract with this party.");
         }
     }
 

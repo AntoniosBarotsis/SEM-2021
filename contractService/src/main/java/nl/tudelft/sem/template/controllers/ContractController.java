@@ -26,7 +26,7 @@ public class ContractController {
      *
      * @param contract The contract to create.
      * @return 201 CREATED along with the created contract entity,
-     *         else 409 CONFLICT if there already exists a contract between the 2 parties,
+     *         else 400 BAD REQUEST if there already exists a contract between the 2 parties.
      */
     @PostMapping("/")
     public ResponseEntity<Object> createContract(@RequestBody Contract contract) {
@@ -34,7 +34,7 @@ public class ContractController {
             Contract c = contractService.saveContract(contract);
             return new ResponseEntity<>(c, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
