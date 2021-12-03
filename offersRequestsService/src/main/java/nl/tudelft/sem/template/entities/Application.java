@@ -27,7 +27,7 @@ public class Application {
 
     @JsonProperty("nonTargetedCompanyOfferId")
     @JsonIdentityReference(alwaysAsId = true)
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "non_targeted_company_offer_id", referencedColumnName = "id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private NonTargetedCompanyOffer nonTargetedCompanyOffer;
