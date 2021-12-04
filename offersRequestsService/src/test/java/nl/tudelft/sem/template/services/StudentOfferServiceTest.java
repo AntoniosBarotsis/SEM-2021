@@ -2,6 +2,8 @@ package nl.tudelft.sem.template.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,13 +11,16 @@ import java.util.List;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
+import org.hibernate.mapping.Any;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.mockito.junit.MockitoRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -26,6 +31,9 @@ public class StudentOfferServiceTest {
 
     @MockBean
     private transient StudentOfferRepository studentOfferRepository;
+
+    @MockBean
+    private transient Utility utility;
 
     private transient StudentOffer offerTwo;
     private transient StudentOffer offerThree;
@@ -61,6 +69,8 @@ public class StudentOfferServiceTest {
     void getOffersByIdTestPass() {
         List<StudentOffer> returned = new ArrayList<>();
         returned.add(offerThree);
+
+        Mockito.doNothing().when(utility).userExists(any(), any());
 
         Mockito.when(studentOfferRepository.findAllByStudentId(student))
                 .thenReturn(returned);

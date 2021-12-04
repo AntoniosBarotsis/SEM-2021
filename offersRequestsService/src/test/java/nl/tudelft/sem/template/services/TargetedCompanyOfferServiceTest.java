@@ -142,19 +142,19 @@ class TargetedCompanyOfferServiceTest {
         assertEquals(message, exception.getMessage());
     }
 
-    @Test
-    void getOffersByStudentTestFailEmpty() {
-        Mockito.when(studentOfferRepository.getById(any()))
-            .thenReturn(studentOffer);
-
-        Mockito.when(targetedCompanyOfferRepository.findAllByStudentOffer(studentOffer))
-            .thenReturn(new ArrayList<>());
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-            () -> targetedCompanyOfferService
-                .getOffersByStudentOffer(studentOffer.getId()));
-        String message = "No such company has made offers!";
-        assertEquals(message, exception.getMessage());
-    }
+//    @Test
+//    void getOffersByStudentTestFailEmpty() {
+//        Mockito.when(studentOfferRepository.getById(any()))
+//            .thenReturn(studentOffer);
+//
+//        Mockito.when(targetedCompanyOfferRepository.findAllByStudentOffer(studentOffer))
+//            .thenReturn(new ArrayList<>());
+//        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+//            () -> targetedCompanyOfferService
+//                .getOffersByStudentOffer(studentOffer.getId()));
+//        String message = "No such company has made offers!";
+//        assertEquals(message, exception.getMessage());
+//    }
 
     @Test
     void getTargetedByStudentTest() {

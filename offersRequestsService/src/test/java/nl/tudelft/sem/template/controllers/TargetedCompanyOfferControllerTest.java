@@ -181,21 +181,21 @@ class TargetedCompanyOfferControllerTest {
         assertEquals(res, response.getBody());
     }
 
-    @Test
-    void getTargetedByStudentTestError() {
-        String errorMessage = "Such student has not been"
-                + " targeted by company offers!";
-        Mockito.when(targetedCompanyOfferService.getAllByStudent(student))
-                .thenThrow(new IllegalArgumentException(errorMessage));
-
-        Response<List<TargetedCompanyOffer>> res
-                = new Response<>(null, errorMessage);
-        ResponseEntity<Response<List<TargetedCompanyOffer>>> response
-                = targetedCompanyOfferController
-                .getAllByStudent(student);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals(res, response.getBody());
-    }
+//    @Test
+//    void getTargetedByStudentTestError() {
+//        String errorMessage = "Such student has not been"
+//                + " targeted by company offers!";
+//        Mockito.when(targetedCompanyOfferService.getAllByStudent(student))
+//                .thenThrow(new IllegalArgumentException(errorMessage));
+//
+//        Response<List<TargetedCompanyOffer>> res
+//                = new Response<>(null, errorMessage);
+//        ResponseEntity<Response<List<TargetedCompanyOffer>>> response
+//                = targetedCompanyOfferController
+//                .getAllByStudent(student);
+//
+//        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+//        assertEquals(res, response.getBody());
+//    }
 
 }
