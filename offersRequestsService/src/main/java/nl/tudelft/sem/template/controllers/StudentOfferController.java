@@ -3,23 +3,22 @@ package nl.tudelft.sem.template.controllers;
 import java.util.List;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
+import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.responses.Response;
 import nl.tudelft.sem.template.services.StudentOfferService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class StudentOfferController {
 
     @Autowired
     private transient StudentOfferService studentOfferService;
+
+    private final transient String nameHeader = "x-user-name";
+    private final transient String roleHeader = "x-user-role";
 
     /** Endpoint for creating StudentOffers.
      *
@@ -30,12 +29,12 @@ public class StudentOfferController {
      *          401 UNAUTHORIZED if user not authenticated.
      *          403 FORBIDDEN if user not a student or not author of offer.
      *          400 BAD REQUEST if conditions for offer are not met.
-     *          201 CREATED with Offer in body if successfull.
+     *          201 CREATED with Offer in body if successful.
      */
     @PostMapping("/student/create")
     public ResponseEntity<Response<Offer>>
-        saveStudentOffer(@RequestHeader("x-user-name") String userName,
-                         @RequestHeader("x-user-role") String userRole,
+        saveStudentOffer(@RequestHeader(nameHeader) String userName,
+                         @RequestHeader(roleHeader) String userRole,
                          @RequestBody StudentOffer studentOffer) {
         if (userName.isBlank()) {
             return ResponseEntity
@@ -113,5 +112,41 @@ public class StudentOfferController {
                     .status(HttpStatus.BAD_REQUEST)
                     .body(responseOffersById);
         }
+    }
+
+    /**
+     * Endpoint, which accepts a Targeted Offer.
+     *
+     * @param userName - the name of the user.
+     * @param userRole - the role of the user.
+     * @param targetedCompanyOffer - the offer, which the user wants to be accepted.
+     * @return - A Response with a success or an error message!
+     */
+    @PutMapping("/student/accept")
+    public ResponseEntity<Response<String>>
+        acceptTargetedOffer(
+            @RequestHeader(nameHeader) String userName,
+            @RequestHeader(roleHeader) String userRole,
+            @RequestBody TargetedCompanyOffer targetedCompanyOffer) {
+        if (userName.isBlank()) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new Response<>(null, "User is not authenticated"));
+        }
+        if (!targetedCompanyOffer
+                .getStudentOffer()
+                .getStudentId()
+                .equals(userName) || !userRole.equals("STUDENT")) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(new Response<>(null,
+                            "User not allowed to post this StudentOffer"));
+        }
+      
+            studentOfferService.acceptOffer(targetedCompanyOffer);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new Response<>("The Company Offer was accepted successfully",
+                            null));
+
     }
 }
