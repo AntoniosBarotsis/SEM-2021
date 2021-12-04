@@ -1,7 +1,5 @@
 package nl.tudelft.sem.template.services;
 
-import static nl.tudelft.sem.template.services.Utility.userExists;
-
 import java.util.List;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
@@ -16,6 +14,8 @@ public class StudentOfferService extends OfferService {
     private transient StudentOfferRepository studentOfferRepository;
     @Autowired
     private transient RestTemplate restTemplate;
+    @Autowired
+    private transient Utility utility;
 
     /**
      * Service, which returns all active StudentOffers, which are stored in the repository.
@@ -33,7 +33,7 @@ public class StudentOfferService extends OfferService {
      * @return - A list of the Student's Offers.
      */
     public List<StudentOffer> getOffersById(String studentId) {
-        userExists(studentId, restTemplate);
+        utility.userExists(studentId, restTemplate);
 
 
         List<StudentOffer> offer = studentOfferRepository.findAllByStudentId(studentId);

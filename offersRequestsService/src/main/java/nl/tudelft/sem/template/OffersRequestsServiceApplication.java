@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template;
 
+import nl.tudelft.sem.template.services.Utility;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
@@ -20,4 +21,7 @@ public class OffersRequestsServiceApplication {
     public RestTemplate getRestTemplate() {
         return new RestTemplate();
     }
+
+    @Bean
+    public Utility getUtility() { return new Utility(); }
 }
