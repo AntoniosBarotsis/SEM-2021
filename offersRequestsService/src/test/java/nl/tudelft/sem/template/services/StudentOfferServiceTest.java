@@ -1,5 +1,11 @@
 package nl.tudelft.sem.template.services;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,12 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -95,7 +95,7 @@ public class StudentOfferServiceTest {
     @Test
     void acceptOfferTest() {
         TargetedCompanyOffer declined = new TargetedCompanyOffer();
-        offerTwo.setTargetedCompanyOffers(List.of(declined,accepted));
+        offerTwo.setTargetedCompanyOffers(List.of(declined, accepted));
 
         Mockito.when(studentOfferRepository.getById(offerTwo.getId()))
                 .thenReturn(offerTwo);
@@ -104,9 +104,9 @@ public class StudentOfferServiceTest {
 
         Mockito.verify(studentOfferRepository, times(1)).save(any());
         Mockito.verify(targetedCompanyOfferRepository, times(2)).save(any());
-        assertSame(accepted.getStatus(),Status.ACCEPTED);
-        assertSame(offerTwo.getStatus(),Status.DISABLED);
-        assertSame(declined.getStatus(),Status.DECLINED);
+        assertSame(accepted.getStatus(), Status.ACCEPTED);
+        assertSame(offerTwo.getStatus(), Status.DISABLED);
+        assertSame(declined.getStatus(), Status.DECLINED);
     }
 
     @Test
@@ -116,7 +116,7 @@ public class StudentOfferServiceTest {
 
         IllegalArgumentException exception
                 = assertThrows(IllegalArgumentException.class,
-                () -> studentOfferService.acceptOffer(accepted));
+                    () -> studentOfferService.acceptOffer(accepted));
         String errorMessage = "Offer is not valid!";
         assertEquals(errorMessage, exception.getMessage());
     }
@@ -129,7 +129,7 @@ public class StudentOfferServiceTest {
 
         IllegalArgumentException exception
                 = assertThrows(IllegalArgumentException.class,
-                () -> studentOfferService.acceptOffer(accepted));
+                    () -> studentOfferService.acceptOffer(accepted));
         String errorMessage = "Student Offer does not contain this Targeted Offer";
         assertEquals(errorMessage, exception.getMessage());
     }

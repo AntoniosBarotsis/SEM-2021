@@ -4,8 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
+import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.responses.Response;
 import nl.tudelft.sem.template.services.StudentOfferService;
@@ -32,6 +34,7 @@ class StudentOfferControllerTest {
     private transient StudentOffer studentOffer;
     private transient String student;
     private transient String studentRole;
+    private transient TargetedCompanyOffer targetedCompanyOffer;
 
     @BeforeEach
     void setup() {
@@ -42,6 +45,11 @@ class StudentOfferControllerTest {
             "This is a description", 20, 520,
             expertise, Status.DISABLED,
             32, student);
+        targetedCompanyOffer = new TargetedCompanyOffer("Ben's services", "Hey I'm Ben",
+                15, 150,
+                Arrays.asList("Singing", "Web Dev", "Care-taking"), Status.PENDING,
+                Arrays.asList("Singing", "Web Dev", "Care-taking"),
+                "Our Company", studentOffer);
     }
 
 
@@ -127,7 +135,8 @@ class StudentOfferControllerTest {
         ResponseEntity<Response<Offer>> response = studentOfferController
                 .saveStudentOffer("", "", studentOffer);
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals("User is not authenticated", response.getBody().getErrorMessage());
+        assertEquals("User is not authenticated",
+                Objects.requireNonNull(response.getBody()).getErrorMessage());
 
     }
 
@@ -137,7 +146,7 @@ class StudentOfferControllerTest {
                 .saveStudentOffer("fake", "STUDENT", studentOffer);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         assertEquals("User not allowed to post this StudentOffer",
-                response.getBody().getErrorMessage());
+                Objects.requireNonNull(response.getBody()).getErrorMessage());
     }
 
     @Test
@@ -146,7 +155,69 @@ class StudentOfferControllerTest {
                 .saveStudentOffer("fake", "COMPANY", studentOffer);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         assertEquals("User not allowed to post this StudentOffer",
-                response.getBody().getErrorMessage());
+                Objects.requireNonNull(response.getBody()).getErrorMessage());
+    }
+
+    @Test
+    void acceptTargetedOfferTest() {
+        Mockito.doNothing()
+                .when(studentOfferService)
+                .acceptOffer(targetedCompanyOffer);
+
+        ResponseEntity<Response<String>> res
+                = studentOfferController
+                .acceptTargetedOffer(student, studentRole, targetedCompanyOffer);
+        Response<String> response =
+                new Response<>("The Company Offer was accepted successfully!",
+                        null);
+
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void acceptTargetedOfferTestFailUserName() {
+        student = "";
+        ResponseEntity<Response<String>> res
+                = studentOfferController
+                .acceptTargetedOffer(student, studentRole, targetedCompanyOffer);
+        Response<String> response =
+                new Response<>(null, "User has not been authenticated");
+
+        assertEquals(HttpStatus.UNAUTHORIZED, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void acceptTargetedOfferTestFailRole() {
+        studentRole = "COMPANY";
+        ResponseEntity<Response<String>> res
+                = studentOfferController
+                .acceptTargetedOffer(student, studentRole, targetedCompanyOffer);
+        Response<String> response =
+                new Response<>(null,
+                        "User not allowed to accept this TargetedOffer");
+
+        assertEquals(HttpStatus.FORBIDDEN, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void acceptTargetedOfferTestFailIllegalArgument() {
+        String message = "Student Offer does not contain this Targeted Offer";
+        Mockito
+                .doThrow(new IllegalArgumentException(
+                        message))
+                .when(studentOfferService).acceptOffer(targetedCompanyOffer);
+
+        ResponseEntity<Response<String>> res
+                = studentOfferController
+                .acceptTargetedOffer(student, studentRole, targetedCompanyOffer);
+        Response<String> response =
+                new Response<>(null, message);
+
+        assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
+        assertEquals(response, res.getBody());
     }
 
 }

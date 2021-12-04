@@ -137,7 +137,7 @@ public class StudentOfferController {
         if (userName.isBlank()) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
-                    .body(new Response<>(null, "User is not authenticated"));
+                    .body(new Response<>(null, "User has not been authenticated"));
         }
         if (!targetedCompanyOffer
                 .getStudentOffer()
@@ -146,12 +146,12 @@ public class StudentOfferController {
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
                     .body(new Response<>(null,
-                            "User not allowed to post this StudentOffer"));
+                            "User not allowed to accept this TargetedOffer"));
         }
         try {
             studentOfferService.acceptOffer(targetedCompanyOffer);
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(new Response<>("The Company Offer was accepted successfully",
+                    .body(new Response<>("The Company Offer was accepted successfully!",
                             null));
         } catch (IllegalArgumentException exception) {
             exception.printStackTrace();
