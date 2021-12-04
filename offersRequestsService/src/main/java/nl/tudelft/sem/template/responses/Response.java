@@ -8,4 +8,8 @@ import lombok.Data;
 public class Response<E> {
     private E data;
     private String errorMessage;
+
+    public Response(E data) {
+        this.data = data;
+    }
 }

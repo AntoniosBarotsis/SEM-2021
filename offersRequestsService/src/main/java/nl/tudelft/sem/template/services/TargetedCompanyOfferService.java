@@ -4,6 +4,7 @@ import java.util.List;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
+import nl.tudelft.sem.template.exceptions.UserNotAuthorException;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import nl.tudelft.sem.template.repositories.TargetedCompanyOfferRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,16 +52,20 @@ public class TargetedCompanyOfferService extends OfferService {
         return offers;
     }
 
-    /**
-     * Service, which provides Targeted offers, related to a specific Student offer.
+    /** Service, which provides Targeted offers, related to a specific Student offer.
      *
      * @param studentOfferId - the id of the Student offer that we want to specify.
-     * @return - A list of Targeted requests, which satisfy our condition.
+     * @param username Name of the person making the request.
+     * @return List of TargetedCompanyOffers belonging to the StudentOffer.
      */
-    public List<TargetedCompanyOffer> getOffersByStudentOffer(Long studentOfferId) {
+    public List<TargetedCompanyOffer> getOffersByStudentOffer(Long studentOfferId,
+                                                              String username) {
         StudentOffer studentOffer = studentOfferRepository.getById(studentOfferId);
         if (studentOffer == null) {
             throw new IllegalArgumentException("Student offer does not exist");
+        }
+        if (!username.equals(studentOffer.getStudentId())) {
+            throw new UserNotAuthorException(username);
         }
         List<TargetedCompanyOffer> offers =
                 targetedCompanyOfferRepository.findAllByStudentOffer(studentOffer);
