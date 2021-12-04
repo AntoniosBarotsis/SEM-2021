@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.enums.Status;
@@ -177,6 +176,7 @@ class StudentOfferControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
         assertEquals(response, res.getBody());
     }
+
     @Test
     void saveStudentOfferUnauthenticatedTest() {
         ResponseEntity<Response<Offer>> response = studentOfferController

@@ -41,7 +41,7 @@ public class NonTargetedCompanyOfferController {
             @RequestHeader("x-user-role") String userRole) {
         if (userName.isBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new Response(null, "User has not been authenticated"));
+                    .body(new Response<>(null, "User has not been authenticated"));
         }
         if (!userName.equals(nonTargetedCompanyOffer.getCompanyId())
                 || !userRole.equals("COMPANY")) {
@@ -80,7 +80,7 @@ public class NonTargetedCompanyOfferController {
             @PathVariable Long offerId) {
         if (userName.isBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new Response(null, "User has not been authenticated"));
+                    .body(new Response<>(null, "User has not been authenticated"));
         }
         if (!userName.equals(application.getStudentId())
                 || !userRole.equals("STUDENT")) {
