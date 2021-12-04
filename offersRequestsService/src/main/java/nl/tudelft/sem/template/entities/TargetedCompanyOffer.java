@@ -18,7 +18,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @EqualsAndHashCode(callSuper = true)
 public class TargetedCompanyOffer extends CompanyOffer {
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "student_offer_id", referencedColumnName = "id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private StudentOffer studentOffer;

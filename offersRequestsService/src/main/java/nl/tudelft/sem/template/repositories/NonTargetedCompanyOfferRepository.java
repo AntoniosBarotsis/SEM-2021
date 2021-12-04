@@ -13,32 +13,7 @@ public interface NonTargetedCompanyOfferRepository extends
         JpaRepository<NonTargetedCompanyOffer, Long> {
 
 
-    //------------
-    // UPDATES:
-    //------------
-
-    @Transactional
-    @Modifying
-    @Query("UPDATE NonTargetedCompanyOffer o SET o.hoursPerWeek = ?2 WHERE o.id = ?1")
-    void updateHoursPerWeek(Long studentOfferId, double hoursPerWeek);
-
-    @Transactional
-    @Modifying
-    @Query("UPDATE NonTargetedCompanyOffer o SET o.totalHours = ?2 WHERE o.id = ?1")
-    void updateTotalHours(Long studentOfferId, double totalHours);
-
-    @Transactional
-    @Modifying
-    @Query("UPDATE NonTargetedCompanyOffer o SET o.expertise = ?2 WHERE o.id = ?1")
-    void updateExpertise(Long studentOfferId, List<String> expertise);
-
-    @Transactional
-    @Modifying
-    @Query("UPDATE NonTargetedCompanyOffer o SET o.status = ?2 WHERE o.id = ?1")
-    void updateStatus(Long studentOfferId, Status status);
-
-    @Transactional
-    @Modifying
-    @Query("UPDATE NonTargetedCompanyOffer o SET o.requirements = ?2 WHERE o.id = ?1")
-    void updateRequirements(Long studentOfferId, List<String> requirements);
+    @Query(value = "SELECT * FROM offer "
+            + "WHERE id = ?1 AND dtype = 'NonTargetedCompanyOffer'", nativeQuery = true)
+    NonTargetedCompanyOffer getOfferById(Long offerId);
 }
