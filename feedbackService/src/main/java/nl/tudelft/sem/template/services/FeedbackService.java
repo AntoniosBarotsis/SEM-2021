@@ -1,14 +1,15 @@
 package nl.tudelft.sem.template.services;
 
 import com.netflix.discovery.shared.Pair;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import nl.tudelft.sem.template.controllers.UserRole;
+import jdk.jshell.Snippet;
+import nl.tudelft.sem.template.domain.dtos.enums.Status;
+import nl.tudelft.sem.template.domain.dtos.enums.UserRole;
 import nl.tudelft.sem.template.domain.Feedback;
-import nl.tudelft.sem.template.domain.Response;
-import nl.tudelft.sem.template.domain.dtos.FeedbackRequest;
-import nl.tudelft.sem.template.domain.dtos.FeedbackRequestWrapper;
-import nl.tudelft.sem.template.domain.dtos.FeedbackResponse;
+import nl.tudelft.sem.template.domain.dtos.requests.FeedbackRequest;
+import nl.tudelft.sem.template.domain.dtos.responses.ContractResponse;
+import nl.tudelft.sem.template.domain.dtos.responses.FeedbackResponseWrapper;
+import nl.tudelft.sem.template.domain.dtos.responses.FeedbackResponse;
+import nl.tudelft.sem.template.exceptions.ContractNotExpiredException;
 import nl.tudelft.sem.template.exceptions.FeedbackNotFoundException;
 import nl.tudelft.sem.template.exceptions.InvalidFeedbackDetailsException;
 import nl.tudelft.sem.template.exceptions.InvalidRoleException;
@@ -16,13 +17,7 @@ import nl.tudelft.sem.template.exceptions.InvalidUserException;
 import nl.tudelft.sem.template.exceptions.NoExistingContractException;
 import nl.tudelft.sem.template.exceptions.UserServiceUnavailableException;
 import nl.tudelft.sem.template.repositories.FeedbackRepository;
-import org.h2.engine.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
@@ -31,9 +26,9 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class FeedbackService {
     @Autowired
-    private FeedbackRepository feedbackRepository;
+    private transient FeedbackRepository feedbackRepository;
     @Autowired
-    private RestTemplate restTemplate;
+    private transient RestTemplate restTemplate;
 
     public FeedbackResponse getById(Long id) {
         var res = feedbackRepository.findById(id);
@@ -63,17 +58,13 @@ public class FeedbackService {
             var urlRecipient = baseUserUrl + feedbackRequest.getTo();
 
             // Get the target role
-            UserRole targetRole;
-            if (UserRole.valueOf(userRole) == UserRole.STUDENT) {
-                targetRole = UserRole.COMPANY;
-            } else if (UserRole.valueOf(userRole) == UserRole.COMPANY) {
-                targetRole = UserRole.STUDENT;
-            } else {
-                throw new InvalidRoleException("Role " + userRole + " is invalid.");
-            }
+
+            var targetRole =
+                UserRole.valueOf(userRole) == UserRole.STUDENT ?
+                    UserRole.COMPANY : UserRole.STUDENT;
 
             var resTo =
-                restTemplate.getForObject(urlRecipient, FeedbackRequestWrapper.class);
+                restTemplate.getForObject(urlRecipient, FeedbackResponseWrapper.class);
 
             if (resTo == null) {
                 throw new UserServiceUnavailableException();
@@ -104,9 +95,13 @@ public class FeedbackService {
 
             // Check if there exists a contract between the two parties.
             try {
-                restTemplate
-                    .getForEntity(contractUrl, String.class)
-                    .getStatusCode();
+                var contract = restTemplate
+                    .getForObject(contractUrl, ContractResponse.class);
+
+                if (Status.valueOf(contract.getStatus()) != Status.ACTIVE) {
+                    var msg = "Can't leave feedback while contract is still active.";
+                    throw new ContractNotExpiredException(msg);
+                }
             } catch (HttpClientErrorException e) {
                 var msg = "No contract found between " + feedbackRequest.getFrom()
                     + " and " + feedbackRequest.getTo();
