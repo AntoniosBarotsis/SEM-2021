@@ -9,7 +9,13 @@ import nl.tudelft.sem.template.services.StudentOfferService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class StudentOfferController {
@@ -142,11 +148,17 @@ public class StudentOfferController {
                     .body(new Response<>(null,
                             "User not allowed to post this StudentOffer"));
         }
-      
+        try {
             studentOfferService.acceptOffer(targetedCompanyOffer);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(new Response<>("The Company Offer was accepted successfully",
                             null));
+        } catch (IllegalArgumentException exception) {
+            exception.printStackTrace();
 
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new Response<>(null, exception.getMessage()));
+        }
     }
 }

@@ -6,6 +6,8 @@ import static org.mockito.ArgumentMatchers.any;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
@@ -40,7 +42,7 @@ class TargetedCompanyOfferControllerTest {
     private transient String company;
     private transient String companyRole;
     private transient String studentRole;
-    private transient String authenticationError = "User is not authenticated";
+    private final transient String authenticationError = "User is not authenticated";
 
     @BeforeEach
     void setup() {
@@ -209,7 +211,8 @@ class TargetedCompanyOfferControllerTest {
         ResponseEntity<Response<Offer>> response = targetedCompanyOfferController
                 .saveTargetedCompanyOffer("", "", targetedCompanyOffer, 3L);
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals(authenticationError, response.getBody().getErrorMessage());
+        assertEquals(authenticationError,
+                Objects.requireNonNull(response.getBody()).getErrorMessage());
     }
 
     @Test
@@ -218,7 +221,7 @@ class TargetedCompanyOfferControllerTest {
                 .saveTargetedCompanyOffer("fake", companyRole, targetedCompanyOffer, 3L);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         assertEquals("User not allowed to post this TargetedCompanyOffer",
-                response.getBody().getErrorMessage());
+                Objects.requireNonNull(response.getBody()).getErrorMessage());
     }
 
     @Test
@@ -227,7 +230,7 @@ class TargetedCompanyOfferControllerTest {
                 .saveTargetedCompanyOffer(student, studentRole, targetedCompanyOffer, 3L);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         assertEquals("User not allowed to post this TargetedCompanyOffer",
-                response.getBody().getErrorMessage());
+                Objects.requireNonNull(response.getBody()).getErrorMessage());
     }
 
     @Test
@@ -236,7 +239,8 @@ class TargetedCompanyOfferControllerTest {
                 targetedCompanyOfferController
                         .getCompanyOffersById("", companyRole);
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals(authenticationError, response.getBody().getErrorMessage());
+        assertEquals(authenticationError,
+                Objects.requireNonNull(response.getBody()).getErrorMessage());
     }
 
     @Test
@@ -245,7 +249,8 @@ class TargetedCompanyOfferControllerTest {
                 targetedCompanyOfferController
                         .getCompanyOffersById("test", studentRole);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        assertEquals("User is not a company", response.getBody().getErrorMessage());
+        assertEquals("User is not a company",
+                Objects.requireNonNull(response.getBody()).getErrorMessage());
     }
 
     @Test
@@ -254,7 +259,8 @@ class TargetedCompanyOfferControllerTest {
                 targetedCompanyOfferController
                         .getCompanyOffersByStudentOffer("", 3L);
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals(authenticationError, response.getBody().getErrorMessage());
+        assertEquals(authenticationError,
+                Objects.requireNonNull(response.getBody()).getErrorMessage());
     }
 
     @Test
@@ -267,7 +273,7 @@ class TargetedCompanyOfferControllerTest {
                         .getCompanyOffersByStudentOffer(student, 3L);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         assertEquals("User with id Student is not the author of this offer",
-                response.getBody().getErrorMessage());
+                Objects.requireNonNull(response.getBody()).getErrorMessage());
     }
 
     @Test
@@ -276,7 +282,8 @@ class TargetedCompanyOfferControllerTest {
                 targetedCompanyOfferController
                         .getAllByStudent("", studentRole);
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals(authenticationError, response.getBody().getErrorMessage());
+        assertEquals(authenticationError,
+                Objects.requireNonNull(response.getBody()).getErrorMessage());
     }
 
     @Test
@@ -285,7 +292,8 @@ class TargetedCompanyOfferControllerTest {
                 targetedCompanyOfferController
                         .getAllByStudent(company, companyRole);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        assertEquals("User is not a student", response.getBody().getErrorMessage());
+        assertEquals("User is not a student",
+                Objects.requireNonNull(response.getBody()).getErrorMessage());
     }
 
 }

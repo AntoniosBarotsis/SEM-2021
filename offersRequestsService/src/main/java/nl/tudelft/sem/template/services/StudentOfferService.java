@@ -40,13 +40,24 @@ public class StudentOfferService extends OfferService {
         return offer;
     }
 
-    public void acceptOffer(TargetedCompanyOffer targetedCompanyOffer){
+    /**
+     * Service, which accepts the given targeted offer and declines all others.
+     *
+     * @param targetedCompanyOffer - the offer, which will be accepted.
+     */
+    public void acceptOffer(TargetedCompanyOffer targetedCompanyOffer) {
         StudentOffer offer = studentOfferRepository
                 .getById(targetedCompanyOffer
                         .getStudentOffer().getId());
-
-        for (TargetedCompanyOffer t : offer.getTargetedCompanyOffers()){
-            if(!t.equals(targetedCompanyOffer)){
+        if (offer == null) {
+            throw new IllegalArgumentException("Offer is not valid!");
+        }
+        if (!offer.getTargetedCompanyOffers().contains(targetedCompanyOffer)) {
+            throw new IllegalArgumentException(
+                    "Student Offer does not contain this Targeted Offer");
+        }
+        for (TargetedCompanyOffer t : offer.getTargetedCompanyOffers()) {
+            if (!t.equals(targetedCompanyOffer)) {
                 t.setStatus(Status.DECLINED);
             } else {
                 t.setStatus(Status.ACCEPTED);
