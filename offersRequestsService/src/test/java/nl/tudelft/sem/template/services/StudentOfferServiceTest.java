@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.repositories.OfferRepository;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,8 @@ public class StudentOfferServiceTest {
 
     @MockBean
     private transient StudentOfferRepository studentOfferRepository;
+    @MockBean
+    private transient OfferRepository offerRepository;
 
     private transient StudentOffer offerTwo;
     private transient StudentOffer offerThree;
@@ -90,7 +93,7 @@ public class StudentOfferServiceTest {
                 .thenReturn(offerTwo);
 
         studentOfferService.updateStudentOffer(edited);
-        Mockito.verify(studentOfferRepository).save(edited);
+        Mockito.verify(offerRepository).save(edited);
     }
 
     @Test
