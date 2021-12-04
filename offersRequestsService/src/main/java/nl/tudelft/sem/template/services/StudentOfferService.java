@@ -48,11 +48,7 @@ public class StudentOfferService extends OfferService {
         if (current.getStatus() != studentOffer.getStatus()) {
             throw new IllegalArgumentException("You are not allowed to edit the Status");
         }
-        if (!current.getTargetedCompanyOffers()
-                .equals(studentOffer.getTargetedCompanyOffers())) {
-            throw  new IllegalArgumentException(
-                   "You are not allowed to edit the associated Company Offers");
-        }
+
         studentOfferRepository.save(studentOffer);
     }
 }

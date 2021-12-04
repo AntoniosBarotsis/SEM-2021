@@ -2,13 +2,11 @@ package nl.tudelft.sem.template.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import nl.tudelft.sem.template.entities.StudentOffer;
-import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -108,20 +106,6 @@ public class StudentOfferServiceTest {
         assertEquals(message, exception.getMessage());
     }
 
-    @Test
-    void updateStudentOfferTestFailList() {
-        StudentOffer edited = offerThree;
-        edited.setId(offerTwo.getId());
-        edited.setStatus(Status.PENDING);
-        edited.setTargetedCompanyOffers(List.of(new TargetedCompanyOffer()));
-        Mockito.when(studentOfferRepository.getById(offerTwo.getId()))
-                .thenReturn(offerTwo);
-
-        String message = "You are not allowed to edit the associated Company Offers";
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> studentOfferService.updateStudentOffer(edited));
-        assertEquals(message, exception.getMessage());
-    }
 
     @Test
     void updateStudentOfferTestFailId() {
