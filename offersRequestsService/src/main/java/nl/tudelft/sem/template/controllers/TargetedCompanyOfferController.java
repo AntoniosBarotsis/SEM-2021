@@ -20,12 +20,13 @@ public class TargetedCompanyOfferController {
     @Autowired
     private transient TargetedCompanyOfferService targetedCompanyOfferService;
 
-    /** Endpoint for creating TargetedCompanyOffers.
+    /**
+     * Endpoint for creating TargetedCompanyOffers.
      *
      * @param targetedCompanyOffer TargetedCompanyOffer that needs to be saved
      * @return 201 CREATED ResponseEntity
-     *     with a Response containing the saved TargetedCompanyOffer in body if valid
-     *     otherwise 400 BAD REQUEST with a Response with the error message.
+     * with a Response containing the saved TargetedCompanyOffer in body if valid
+     * otherwise 400 BAD REQUEST with a Response with the error message.
      */
     @PostMapping("/company/targeted/create/{id}")
     public ResponseEntity<Response<Offer>> saveTargetedCompanyOffer(
@@ -35,21 +36,21 @@ public class TargetedCompanyOfferController {
         Response<Offer> responseSave;
         try {
             responseSave =
-                    new Response<>(targetedCompanyOfferService
-                            .saveOffer(targetedCompanyOffer, id),
-                            null);
+                new Response<>(targetedCompanyOfferService
+                    .saveOffer(targetedCompanyOffer, id),
+                    null);
 
             return new ResponseEntity<>(
-                    responseSave,
-                    HttpStatus.CREATED);
+                responseSave,
+                HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
 
             responseSave =
-                    new Response<>(null,
-                            e.getMessage());
+                new Response<>(null,
+                    e.getMessage());
 
             return new ResponseEntity<>(responseSave,
-                    HttpStatus.BAD_REQUEST);
+                HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -58,31 +59,31 @@ public class TargetedCompanyOfferController {
      *
      * @param companyId - the company's id
      * @return 200 OK and a Response with a list of offers if everything goes smoothly,
-     *          else we return 400 Bad_Request and
-     *          the Response containing the message of the error which occurred.
+     * else we return 400 Bad_Request and
+     * the Response containing the message of the error which occurred.
      */
     @GetMapping("/company/targeted/getOffersById/{companyId}")
     public ResponseEntity<Response<List<TargetedCompanyOffer>>>
-        getCompanyOffersById(@PathVariable String companyId) {
+    getCompanyOffersById(@PathVariable String companyId) {
         //Authenticate and check if the requester is a company.
         Response<List<TargetedCompanyOffer>> responseOffersById;
         try {
             responseOffersById =
-                    new Response<>(
-                            targetedCompanyOfferService.getOffersById(companyId),
-                            null);
+                new Response<>(
+                    targetedCompanyOfferService.getOffersById(companyId),
+                    null);
 
             return ResponseEntity.ok(responseOffersById);
         } catch (IllegalArgumentException exception) {
             exception.printStackTrace();
 
             responseOffersById =
-                    new Response<>(
-                            null,
-                            exception.getMessage());
+                new Response<>(
+                    null,
+                    exception.getMessage());
             return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(responseOffersById);
+                .status(HttpStatus.BAD_REQUEST)
+                .body(responseOffersById);
         }
     }
 
@@ -91,33 +92,33 @@ public class TargetedCompanyOfferController {
      *
      * @param studentOfferId - the offer's id.
      * @return 200 OK and a Response which contains a list of offers targeting the StudentOffer
-     *     if everything goes smoothly,
-     *     else we return 400 Bad_Request
-     *     and a Response with the message of the error which occurred.
+     * if everything goes smoothly,
+     * else we return 400 Bad_Request
+     * and a Response with the message of the error which occurred.
      */
     @GetMapping("/company/targeted/getOffersByOffer/{studentOfferId}")
     public ResponseEntity<Response<List<TargetedCompanyOffer>>>
-        getCompanyOffersByStudentOffer(@PathVariable Long studentOfferId) {
+    getCompanyOffersByStudentOffer(@PathVariable Long studentOfferId) {
         Response<List<TargetedCompanyOffer>> offers;
         try {
             offers =
-                    new Response<>(
-                            targetedCompanyOfferService
-                                    .getOffersByStudentOffer(studentOfferId),
-                            null);
+                new Response<>(
+                    targetedCompanyOfferService
+                        .getOffersByStudentOffer(studentOfferId),
+                    null);
 
             return ResponseEntity.ok(offers);
         } catch (IllegalArgumentException exception) {
             exception.printStackTrace();
 
             offers =
-                    new Response<>(
-                            null,
-                            exception.getMessage()
-                    );
+                new Response<>(
+                    null,
+                    exception.getMessage()
+                );
             return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(offers);
+                .status(HttpStatus.BAD_REQUEST)
+                .body(offers);
         }
     }
 
@@ -129,31 +130,18 @@ public class TargetedCompanyOfferController {
      */
     @GetMapping("/company/targeted/student/{student}")
     public ResponseEntity<Response<List<TargetedCompanyOffer>>>
-        getAllByStudent(@PathVariable String student) {
+    getAllByStudent(@PathVariable String student) {
 
         Response<List<TargetedCompanyOffer>> offers;
-        try {
-            offers =
-                    new Response<>(
-                            targetedCompanyOfferService
-                                    .getAllByStudent(student),
-                            null);
+        offers =
+            new Response<>(
+                targetedCompanyOfferService
+                    .getAllByStudent(student),
+                null);
 
-            return new ResponseEntity<>(
-                    offers,
-                    HttpStatus.OK);
-        } catch (IllegalArgumentException exception) {
-            exception.printStackTrace();
+        return new ResponseEntity<>(
+            offers,
+            HttpStatus.OK);
 
-            offers =
-                    new Response<>(
-                            null,
-                            exception.getMessage()
-                    );
-
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(offers);
-        }
     }
 }
