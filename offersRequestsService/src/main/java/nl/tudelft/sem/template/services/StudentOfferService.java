@@ -34,4 +34,25 @@ public class StudentOfferService extends OfferService {
         }
         return offer;
     }
+
+    /**
+     * Service, which updates a StudentOffer.
+     *
+     * @param studentOffer - The updated offer, which will be now stored.
+     */
+    public void updateStudentOffer(StudentOffer studentOffer) {
+        StudentOffer current =  studentOfferRepository.getById(studentOffer.getId());
+        if (current == null) {
+            throw new IllegalArgumentException("This StudentOffer does not exist!");
+        }
+        if (current.getStatus() != studentOffer.getStatus()) {
+            throw new IllegalArgumentException("You are not allowed to edit the Status");
+        }
+        if (!current.getTargetedCompanyOffers()
+                .equals(studentOffer.getTargetedCompanyOffers())) {
+            throw  new IllegalArgumentException(
+                   "You are not allowed to edit the associated Company Offers");
+        }
+        studentOfferRepository.save(studentOffer);
+    }
 }

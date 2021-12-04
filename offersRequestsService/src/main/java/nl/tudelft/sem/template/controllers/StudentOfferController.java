@@ -11,7 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -98,6 +100,45 @@ public class StudentOfferController {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(responseOffersById);
+        }
+    }
+
+    /**
+     * Endpoint for editing a StudentOffer.
+     *
+     * @param studentOffer - the updated offer.
+     * @param userName - the username of the requester.
+     * @param userRole - the role of the requester.
+     * @return - A response, which either contains an error message,
+     *      or a success message.
+     */
+    @PutMapping("student/editOffer")
+    public ResponseEntity<Response<String>>
+        editStudentOffer(
+                @RequestBody StudentOffer studentOffer,
+                @RequestHeader("x-user-name") String userName,
+                @RequestHeader("x-user-role") String userRole) {
+
+        if (userName.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new Response<>(null, "User has not been authenticated"));
+        }
+
+        if (!userName.equals(studentOffer.getStudentId())
+                || !userRole.equals("STUDENT")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new Response<>(null, "User is not allowed to edit this offer"));
+        }
+
+        try {
+            studentOfferService.updateStudentOffer(studentOffer);
+            return new ResponseEntity<>(
+                    new Response<>("Student Offer has been updated successfully!", null),
+                    HttpStatus.OK);
+        } catch (IllegalArgumentException exception) {
+            return new ResponseEntity<>(
+                    new Response<>(null, exception.getMessage()),
+                    HttpStatus.BAD_REQUEST);
         }
     }
 }
