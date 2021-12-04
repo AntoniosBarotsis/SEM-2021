@@ -2,8 +2,8 @@ package nl.tudelft.sem.template.controllers;
 
 import java.net.URI;
 import nl.tudelft.sem.template.domain.Response;
-import nl.tudelft.sem.template.domain.dtos.FeedbackRequest;
-import nl.tudelft.sem.template.domain.dtos.FeedbackResponse;
+import nl.tudelft.sem.template.domain.dtos.requests.FeedbackRequest;
+import nl.tudelft.sem.template.domain.dtos.responses.FeedbackResponse;
 import nl.tudelft.sem.template.services.FeedbackService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ import org.springframework.web.context.request.ServletWebRequest;
 @RestController
 public class FeedbackController {
     @Autowired
-    private FeedbackService feedbackService;
+    private transient FeedbackService feedbackService;
 
     @GetMapping("/{id}")
     public ResponseEntity<Response<FeedbackResponse>> getById(@PathVariable Long id) {

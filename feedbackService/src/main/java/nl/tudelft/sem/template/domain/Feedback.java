@@ -10,8 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import nl.tudelft.sem.template.domain.converters.RatingConverter;
-import nl.tudelft.sem.template.domain.dtos.FeedbackRequest;
-import nl.tudelft.sem.template.domain.dtos.FeedbackResponse;
+import nl.tudelft.sem.template.domain.dtos.requests.FeedbackRequest;
+import nl.tudelft.sem.template.domain.dtos.responses.FeedbackResponse;
 
 @Entity
 @Getter
