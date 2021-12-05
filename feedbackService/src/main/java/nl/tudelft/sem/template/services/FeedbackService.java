@@ -70,12 +70,12 @@ public class FeedbackService {
                 throw new UserServiceUnavailableException();
             }
 
-            if (UserRole.valueOf(recipientUser.getData().getRole()) != targetRole) {
-                throw new InvalidUserException("The recipient has the same role as the author.");
-            }
-
             if (recipientUser.getErrorMessage() != null) {
                 throw new InvalidUserException("Recipient does not exist.");
+            }
+
+            if (UserRole.valueOf(recipientUser.getData().getRole()) != targetRole) {
+                throw new InvalidUserException("The recipient has the same role as the author.");
             }
 
             // Author and recipient must have a contract to leave feedback.
