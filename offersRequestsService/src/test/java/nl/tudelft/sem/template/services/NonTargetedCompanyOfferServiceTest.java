@@ -1,8 +1,12 @@
 package nl.tudelft.sem.template.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 
+import java.util.ArrayList;
 import java.util.List;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
@@ -11,7 +15,6 @@ import nl.tudelft.sem.template.repositories.ApplicationRepository;
 import nl.tudelft.sem.template.repositories.NonTargetedCompanyOfferRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -43,7 +46,7 @@ class NonTargetedCompanyOfferServiceTest {
         offer = new NonTargetedCompanyOffer("title", "description",
                 20, 520, expertise,
                 Status.PENDING, requirements, "facebook");
-        application = new Application(student, 5, offer);
+        application = new Application(student, 5, Status.PENDING, offer);
     }
 
     @Test
@@ -106,6 +109,72 @@ class NonTargetedCompanyOfferServiceTest {
                 .thenReturn(application);
         service.apply(app, 3L);
         Mockito.verify(app).setNonTargetedCompanyOffer(offer);
+    }
+
+    @Test
+    void acceptTest() {
+        Application declined = new Application(student, 10, Status.PENDING, offer);
+        offer.setApplications(List.of(application, declined));
+        Mockito.when(offerRepository.getOfferById(offer.getId()))
+                .thenReturn(offer);
+
+        service.accept(application);
+        Mockito.verify(offerRepository, times(1)).save(any());
+        Mockito.verify(applicationRepository, times(2)).save(any());
+        assertSame(application.getStatus(), Status.ACCEPTED);
+        assertSame(offer.getStatus(), Status.DISABLED);
+        assertSame(declined.getStatus(), Status.DECLINED);
+    }
+
+    @Test
+    void acceptTestFailNull() {
+        Mockito.when(offerRepository.getOfferById(offer.getId()))
+                .thenReturn(null);
+
+        IllegalArgumentException exception
+                = assertThrows(IllegalArgumentException.class,
+                    () -> service.accept(application));
+        String errorMessage = "There is no offer associated with this application!";
+        assertEquals(errorMessage, exception.getMessage());
+    }
+
+    @Test
+    void acceptTestFailEmpty() {
+        offer.setApplications(new ArrayList<>());
+        Mockito.when(offerRepository.getOfferById(offer.getId()))
+                .thenReturn(offer);
+
+        IllegalArgumentException exception
+                = assertThrows(IllegalArgumentException.class,
+                    () -> service.accept(application));
+        String errorMessage = "Application is not valid!";
+        assertEquals(errorMessage, exception.getMessage());
+    }
+
+    @Test
+    void acceptTestFailStatusApplication() {
+        application.setStatus(Status.DECLINED);
+        Mockito.when(offerRepository.getOfferById(offer.getId()))
+                .thenReturn(offer);
+
+        IllegalArgumentException exception
+                = assertThrows(IllegalArgumentException.class,
+                    () -> service.accept(application));
+        String errorMessage = "The offer or application is not active anymore!";
+        assertEquals(errorMessage, exception.getMessage());
+    }
+
+    @Test
+    void acceptTestFailStatusOffer() {
+        application.setStatus(Status.DISABLED);
+        Mockito.when(offerRepository.getOfferById(offer.getId()))
+                .thenReturn(offer);
+
+        IllegalArgumentException exception
+                = assertThrows(IllegalArgumentException.class,
+                    () -> service.accept(application));
+        String errorMessage = "The offer or application is not active anymore!";
+        assertEquals(errorMessage, exception.getMessage());
     }
 
 }

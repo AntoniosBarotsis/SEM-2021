@@ -122,6 +122,32 @@ public class StudentOfferServiceTest {
     }
 
     @Test
+    void acceptOfferTestFailStatusStudent() {
+        offerTwo.setStatus(Status.DISABLED);
+        Mockito.when(studentOfferRepository.getById(offerTwo.getId()))
+                .thenReturn(offerTwo);
+
+        IllegalArgumentException exception
+                = assertThrows(IllegalArgumentException.class,
+                    () -> studentOfferService.acceptOffer(accepted));
+        String errorMessage = "The StudentOffer or TargetedRequest is not active anymore!";
+        assertEquals(errorMessage, exception.getMessage());
+    }
+
+    @Test
+    void acceptOfferTestFailStatusTargeted() {
+        accepted.setStatus(Status.DECLINED);
+        Mockito.when(studentOfferRepository.getById(offerTwo.getId()))
+                .thenReturn(offerTwo);
+
+        IllegalArgumentException exception
+                = assertThrows(IllegalArgumentException.class,
+                    () -> studentOfferService.acceptOffer(accepted));
+        String errorMessage = "The StudentOffer or TargetedRequest is not active anymore!";
+        assertEquals(errorMessage, exception.getMessage());
+    }
+
+    @Test
     void acceptOfferTestFailNotContained() {
         offerTwo.setTargetedCompanyOffers(new ArrayList<>());
         Mockito.when(studentOfferRepository.getById(offerTwo.getId()))
@@ -133,4 +159,5 @@ public class StudentOfferServiceTest {
         String errorMessage = "Student Offer does not contain this Targeted Offer";
         assertEquals(errorMessage, exception.getMessage());
     }
+
 }
