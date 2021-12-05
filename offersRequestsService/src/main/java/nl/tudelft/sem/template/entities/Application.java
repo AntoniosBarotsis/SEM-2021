@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -11,6 +13,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import nl.tudelft.sem.template.enums.Status;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -24,6 +27,8 @@ public class Application {
     private long id;
     private String studentId;
     private double pricePerHour;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
     @JsonProperty("nonTargetedCompanyOfferId")
     @JsonIdentityReference(alwaysAsId = true)
@@ -36,12 +41,14 @@ public class Application {
      *
      * @param studentId String containing the name of the student applying.
      * @param pricePerHour Double with the price the student wants.
+     * @param status Status indicating the state of the application.
      * @param nonTargetedCompanyOffer Offer the application is for.
      */
-    public Application(String studentId, double pricePerHour,
+    public Application(String studentId, double pricePerHour, Status status,
                        NonTargetedCompanyOffer nonTargetedCompanyOffer) {
         this.studentId = studentId;
         this.pricePerHour = pricePerHour;
+        this.status = status;
         this.nonTargetedCompanyOffer = nonTargetedCompanyOffer;
     }
 }

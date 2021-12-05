@@ -39,6 +39,39 @@ public class NonTargetedCompanyOfferService extends OfferService {
             throw new IllegalArgumentException("Student already applied to this offer");
         }
         application.setNonTargetedCompanyOffer(nonTargetedCompanyOffer);
+        application.setStatus(Status.PENDING);
         return applicationRepository.save(application);
+    }
+
+    /**
+     * Service, which accepts an application and declines all others.
+     *
+     * @param application - the application, which we want to accept.
+     */
+    public void accept(Application application) {
+        NonTargetedCompanyOffer nonTargetedCompanyOffer = nonTargetedCompanyOfferRepository
+                .getOfferById(application.getNonTargetedCompanyOffer().getId());
+        if (nonTargetedCompanyOffer == null) {
+            throw new IllegalArgumentException(
+                    "There is no offer associated with this application!");
+        }
+        if (nonTargetedCompanyOffer.getStatus() != Status.PENDING
+            || application.getStatus() != Status.PENDING) {
+            throw new IllegalArgumentException("The offer or application is not active anymore!");
+        }
+        if (!nonTargetedCompanyOffer.getApplications().contains(application)) {
+            throw new IllegalArgumentException("Application is not valid!");
+        }
+
+        for (Application app : nonTargetedCompanyOffer.getApplications()) {
+            if (app.equals(application)) {
+                app.setStatus(Status.ACCEPTED);
+            } else {
+                app.setStatus(Status.DECLINED);
+            }
+            applicationRepository.save(app);
+        }
+        nonTargetedCompanyOffer.setStatus(Status.DISABLED);
+        nonTargetedCompanyOfferRepository.save(nonTargetedCompanyOffer);
     }
 }

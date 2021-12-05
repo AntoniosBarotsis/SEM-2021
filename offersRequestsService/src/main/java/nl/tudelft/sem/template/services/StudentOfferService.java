@@ -52,6 +52,11 @@ public class StudentOfferService extends OfferService {
         if (offer == null) {
             throw new IllegalArgumentException("Offer is not valid!");
         }
+        if (offer.getStatus() != Status.PENDING
+                || targetedCompanyOffer.getStatus() != Status.PENDING) {
+            throw new IllegalArgumentException(
+                    "The StudentOffer or TargetedRequest is not active anymore!");
+        }
         if (!offer.getTargetedCompanyOffers().contains(targetedCompanyOffer)) {
             throw new IllegalArgumentException(
                     "Student Offer does not contain this Targeted Offer");
