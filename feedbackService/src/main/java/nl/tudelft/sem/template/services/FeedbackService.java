@@ -98,7 +98,7 @@ public class FeedbackService {
                 var contract = restTemplate
                     .getForObject(contractUrl, ContractResponse.class);
 
-                if (Status.valueOf(contract.getStatus()) != Status.ACTIVE) {
+                if (Status.valueOf(contract.getStatus()) == Status.ACTIVE) {
                     var msg = "Can't leave feedback while contract is still active.";
                     throw new ContractNotExpiredException(msg);
                 }
