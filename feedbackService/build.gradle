@@ -110,3 +110,7 @@ pitest {
 	outputFormats = ['XML', 'HTML']
 	timestampedReports = false
 }
+
+tasks.withType(Test) {
+	systemProperty 'eureka.client.enabled', 'false'
+}
