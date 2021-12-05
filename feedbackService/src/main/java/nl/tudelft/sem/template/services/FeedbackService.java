@@ -1,13 +1,12 @@
 package nl.tudelft.sem.template.services;
 
 import com.netflix.discovery.shared.Pair;
-import jdk.jshell.Snippet;
 import nl.tudelft.sem.template.domain.dtos.enums.Status;
 import nl.tudelft.sem.template.domain.dtos.enums.UserRole;
 import nl.tudelft.sem.template.domain.Feedback;
 import nl.tudelft.sem.template.domain.dtos.requests.FeedbackRequest;
 import nl.tudelft.sem.template.domain.dtos.responses.ContractResponse;
-import nl.tudelft.sem.template.domain.dtos.responses.FeedbackResponseWrapper;
+import nl.tudelft.sem.template.domain.dtos.responses.UserRoleResponseWrapper;
 import nl.tudelft.sem.template.domain.dtos.responses.FeedbackResponse;
 import nl.tudelft.sem.template.exceptions.ContractNotExpiredException;
 import nl.tudelft.sem.template.exceptions.FeedbackNotFoundException;
@@ -24,6 +23,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
+@SuppressWarnings("PMD.DataflowAnomalyAnalysis")
 public class FeedbackService {
     @Autowired
     private transient FeedbackRepository feedbackRepository;
@@ -63,18 +63,18 @@ public class FeedbackService {
                 UserRole.valueOf(userRole) == UserRole.STUDENT ?
                     UserRole.COMPANY : UserRole.STUDENT;
 
-            var resTo =
-                restTemplate.getForObject(urlRecipient, FeedbackResponseWrapper.class);
+            var recipientUser =
+                restTemplate.getForObject(urlRecipient, UserRoleResponseWrapper.class);
 
-            if (resTo == null) {
+            if (recipientUser == null) {
                 throw new UserServiceUnavailableException();
             }
 
-            if (UserRole.valueOf(resTo.getData().getRole()) != targetRole) {
+            if (UserRole.valueOf(recipientUser.getData().getRole()) != targetRole) {
                 throw new InvalidUserException("The recipient has the same role as the author.");
             }
 
-            if (resTo.getErrorMessage() != null) {
+            if (recipientUser.getErrorMessage() != null) {
                 throw new InvalidUserException("Recipient does not exist.");
             }
 
