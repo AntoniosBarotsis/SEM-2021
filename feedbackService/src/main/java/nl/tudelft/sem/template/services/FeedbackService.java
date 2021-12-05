@@ -146,4 +146,8 @@ public class FeedbackService {
 
         return targetRole;
     }
+
+    public Double getAverageRatingByUser(String userName) {
+        return feedbackRepository.getAverageRatingByUser(userName);
+    }
 }

@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.controllers;
 import java.net.URI;
 import nl.tudelft.sem.template.domain.Response;
 import nl.tudelft.sem.template.domain.dtos.requests.FeedbackRequest;
+import nl.tudelft.sem.template.domain.dtos.responses.AverageRatingResponse;
 import nl.tudelft.sem.template.domain.dtos.responses.FeedbackResponse;
 import nl.tudelft.sem.template.services.FeedbackService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,5 +59,12 @@ public class FeedbackController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new Response<>(null, e.getMessage()));
         }
+    }
+
+    @GetMapping("/user/{userName}")
+    public ResponseEntity<Response<AverageRatingResponse>> getUserFeedback(@PathVariable String userName) {
+        // TODO Should we mark this as internal only? Or should all the ratings of all the users be public?
+        double avgRating = feedbackService.getAverageRatingByUser(userName);
+        return ResponseEntity.ok(new Response<>(new AverageRatingResponse(avgRating), null));
     }
 }
