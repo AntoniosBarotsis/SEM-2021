@@ -37,7 +37,6 @@ public class FeedbackController {
     @PostMapping("/create")
     public ResponseEntity<Response<FeedbackResponse>> create(
         @RequestBody FeedbackRequest feedbackRequest,
-        ServletWebRequest servletWebRequest,
         @RequestHeader("x-user-name") String userName,
         @RequestHeader("x-user-role") String userRole
     ) {
