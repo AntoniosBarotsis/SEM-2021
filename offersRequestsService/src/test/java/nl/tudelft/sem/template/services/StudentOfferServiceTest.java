@@ -101,8 +101,8 @@ public class StudentOfferServiceTest {
         TargetedCompanyOffer declined = new TargetedCompanyOffer();
         offerTwo.setTargetedCompanyOffers(List.of(declined, accepted));
 
-        Mockito.when(studentOfferRepository.getById(offerTwo.getId()))
-                .thenReturn(offerTwo);
+        Mockito.when(targetedCompanyOfferRepository.findById(accepted.getId()))
+                        .thenReturn(Optional.of(accepted));
 
         studentOfferService.acceptOffer(student, role, accepted.getId());
 
@@ -116,7 +116,7 @@ public class StudentOfferServiceTest {
     @Test
     void acceptOfferTestFailInvalid() {
         Mockito.when(targetedCompanyOfferRepository.findById(accepted.getId()))
-                .thenReturn(null);
+                .thenReturn(Optional.empty());
 
         IllegalArgumentException exception
                 = assertThrows(IllegalArgumentException.class,
@@ -153,6 +153,7 @@ public class StudentOfferServiceTest {
 
     @Test
     void acceptOfferTestFailRole() {
+        role = "COMPANY";
         accepted.setStatus(Status.DECLINED);
         Mockito.when(targetedCompanyOfferRepository.findById(accepted.getId()))
                 .thenReturn(Optional.of(accepted));
