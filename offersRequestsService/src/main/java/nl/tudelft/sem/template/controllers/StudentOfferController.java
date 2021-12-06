@@ -125,7 +125,7 @@ public class StudentOfferController {
      * @return - A response, which either contains an error message,
      *      or a success message.
      */
-    @PutMapping("student/editOffer")
+    @PutMapping("student/offer")
     public ResponseEntity<Response<String>>
         editStudentOffer(
                 @RequestBody StudentOffer studentOffer,
