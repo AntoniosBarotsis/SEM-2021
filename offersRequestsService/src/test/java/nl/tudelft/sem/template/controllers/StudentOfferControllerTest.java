@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.enums.Status;
@@ -123,11 +124,66 @@ class StudentOfferControllerTest {
     }
 
     @Test
+    void editStudentOfferTest() {
+        Mockito.doNothing()
+                .when(studentOfferService)
+                .updateStudentOffer(studentOffer);
+
+        ResponseEntity<Response<String>> res
+                = studentOfferController.editStudentOffer(studentOffer, student, studentRole);
+        Response<String> response =
+                new Response<>("Student Offer has been updated successfully!", null);
+
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void editStudentOfferTestFailUserName() {
+        student = "";
+        ResponseEntity<Response<String>> res
+                = studentOfferController.editStudentOffer(studentOffer, student, studentRole);
+        Response<String> response =
+                new Response<>(null, "User has not been authenticated");
+
+        assertEquals(HttpStatus.UNAUTHORIZED, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void editStudentOfferTestFailRole() {
+        studentRole = "COMPANY";
+        ResponseEntity<Response<String>> res
+                = studentOfferController.editStudentOffer(studentOffer, student, studentRole);
+        Response<String> response =
+                new Response<>(null, "User is not allowed to edit this offer");
+
+        assertEquals(HttpStatus.FORBIDDEN, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void editStudentOfferTestFailIllegalArgument() {
+        Mockito
+                .doThrow(new IllegalArgumentException("You are not allowed to edit the Status"))
+                .when(studentOfferService).updateStudentOffer(studentOffer);
+
+        ResponseEntity<Response<String>> res
+                = studentOfferController.editStudentOffer(studentOffer, student, studentRole);
+        Response<String> response =
+                new Response<>(null, "You are not allowed to edit the Status");
+
+        assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
     void saveStudentOfferUnauthenticatedTest() {
         ResponseEntity<Response<Offer>> response = studentOfferController
                 .saveStudentOffer("", "", studentOffer);
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals("User is not authenticated", response.getBody().getErrorMessage());
+        assertEquals("User is not authenticated",
+                Objects.requireNonNull(response.getBody()).getErrorMessage());
 
     }
 
@@ -137,7 +193,7 @@ class StudentOfferControllerTest {
                 .saveStudentOffer("fake", "STUDENT", studentOffer);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         assertEquals("User not allowed to post this StudentOffer",
-                response.getBody().getErrorMessage());
+                Objects.requireNonNull(response.getBody()).getErrorMessage());
     }
 
     @Test
@@ -146,7 +202,7 @@ class StudentOfferControllerTest {
                 .saveStudentOffer("fake", "COMPANY", studentOffer);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         assertEquals("User not allowed to post this StudentOffer",
-                response.getBody().getErrorMessage());
+                Objects.requireNonNull(response.getBody()).getErrorMessage());
     }
 
 }
