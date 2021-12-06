@@ -74,8 +74,8 @@ public class FeedbackServiceTest {
     void getByIdTestFound() {
         when(feedbackRepository.findById(id)).thenReturn(Optional.of(feedback));
 
-        var expected = feedbackResponse;
-        var actual = feedbackService.getById(id);
+        FeedbackResponse expected = feedbackResponse;
+        FeedbackResponse actual = feedbackService.getById(id);
 
         assertEquals(expected, actual);
     }
@@ -98,17 +98,17 @@ public class FeedbackServiceTest {
         when(feedbackRepository.save(any(Feedback.class)))
             .thenReturn(feedback);
 
-        var expected = Pair.of(feedbackResponse, id);
-        var actual = feedbackService
+        Pair<FeedbackResponse, Long> expected = Pair.of(feedbackResponse, id);
+        Pair<FeedbackResponse, Long> actual = feedbackService
             .create(feedbackRequest, userName, userRole);
 
-        assertEquals(expected.getFirst(), actual.first());
+        assertEquals(expected.getFirst(), actual.getFirst());
     }
 
     @Test
     void createTest2() {
         userRoleResponseWrapper.setData(new UserRoleResponse("STUDENT"));
-        var newUserRole = "COMPANY";
+        String newUserRole = "COMPANY";
 
         when(restTemplate.getForObject(anyString(), eq(UserRoleResponseWrapper.class)))
             .thenReturn(userRoleResponseWrapper);
@@ -119,11 +119,11 @@ public class FeedbackServiceTest {
         when(feedbackRepository.save(any(Feedback.class)))
             .thenReturn(feedback);
 
-        var expected = Pair.of(feedbackResponse, id);
-        var actual = feedbackService
+        Pair<FeedbackResponse, Long> expected = Pair.of(feedbackResponse, id);
+        Pair<FeedbackResponse, Long> actual = feedbackService
             .create(feedbackRequest, userName, newUserRole);
 
-        assertEquals(expected.getFirst(), actual.first());
+        assertEquals(expected.getFirst(), actual.getFirst());
     }
 
     @Test
@@ -212,7 +212,7 @@ public class FeedbackServiceTest {
     @Test
     @SuppressWarnings("PMD.DataflowAnomalyAnalysis")
     void createWithInvalidRole() {
-        final var newUserRole = "Gamer";
+        final String newUserRole = "Gamer";
 
         when(restTemplate.getForObject(anyString(), eq(UserRoleResponseWrapper.class)))
             .thenReturn(userRoleResponseWrapper);

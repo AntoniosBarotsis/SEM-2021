@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.services;
 
-import com.netflix.discovery.shared.Pair;
+import org.springframework.data.util.Pair;
+import java.util.Optional;
 import nl.tudelft.sem.template.domain.dtos.enums.Status;
 import nl.tudelft.sem.template.domain.dtos.enums.UserRole;
 import nl.tudelft.sem.template.domain.Feedback;
@@ -31,7 +32,7 @@ public class FeedbackService {
     private transient RestTemplate restTemplate;
 
     public FeedbackResponse getById(Long id) {
-        var res = feedbackRepository.findById(id);
+        Optional<Feedback> res = feedbackRepository.findById(id);
 
         if (res.isEmpty()) {
             throw new FeedbackNotFoundException("Feedback with id " + id + " does not exist.");
@@ -54,32 +55,10 @@ public class FeedbackService {
 
             // Check if student/company exist
             // Target role should be the opposite of the user role
-            var baseUserUrl = "http://users-service/";
-            var urlRecipient = baseUserUrl + feedbackRequest.getTo();
-
-            // Get the target role
-
-            var targetRole =
-                UserRole.valueOf(userRole) == UserRole.STUDENT ?
-                    UserRole.COMPANY : UserRole.STUDENT;
-
-            var recipientUser =
-                restTemplate.getForObject(urlRecipient, UserRoleResponseWrapper.class);
-
-            if (recipientUser == null) {
-                throw new UserServiceUnavailableException();
-            }
-
-            if (recipientUser.getErrorMessage() != null) {
-                throw new InvalidUserException("Recipient does not exist.");
-            }
-
-            if (UserRole.valueOf(recipientUser.getData().getRole()) != targetRole) {
-                throw new InvalidUserException("The recipient has the same role as the author.");
-            }
+            UserRole targetRole =
+                getRecipientRole(feedbackRequest, userRole);
 
             // Author and recipient must have a contract to leave feedback.
-
             // If the target role is a student then the author is a company and vice-versa.
             String companyName;
             String studentName;
@@ -91,23 +70,10 @@ public class FeedbackService {
                 studentName = feedbackRequest.getFrom();
             }
 
-            var contractUrl = "http://contract-service/" + companyName + "/" + studentName;
+            String contractUrl = "http://contract-service/" + companyName + "/" + studentName;
 
             // Check if there exists a contract between the two parties.
-            try {
-                var contract = restTemplate
-                    .getForObject(contractUrl, ContractResponse.class);
-
-                if (Status.valueOf(contract.getStatus()) == Status.ACTIVE) {
-                    var msg = "Can't leave feedback while contract is still active.";
-                    throw new ContractNotExpiredException(msg);
-                }
-            } catch (HttpClientErrorException e) {
-                var msg = "No contract found between " + feedbackRequest.getFrom()
-                    + " and " + feedbackRequest.getTo();
-
-                throw new NoExistingContractException(msg);
-            }
+            checkExistingContract(feedbackRequest, contractUrl);
 
         } catch (RestClientException e) {
             throw new UserServiceUnavailableException(e.getMessage());
@@ -115,10 +81,54 @@ public class FeedbackService {
             throw new InvalidRoleException("Role " + userRole + " is invalid.");
         }
 
-        var feedback = Feedback.from(feedbackRequest);
+        Feedback feedback = Feedback.from(feedbackRequest);
 
-        var res = feedbackRepository.save(feedback);
+        Feedback res = feedbackRepository.save(feedback);
 
-        return new Pair<>(res.to(), res.getId());
+        return Pair.of(res.to(), res.getId());
+    }
+
+    private void checkExistingContract(FeedbackRequest feedbackRequest, String contractUrl) {
+        try {
+            ContractResponse contract = restTemplate
+                .getForObject(contractUrl, ContractResponse.class);
+
+            if (Status.valueOf(contract.getStatus()) == Status.ACTIVE) {
+                String msg = "Can't leave feedback while contract is still active.";
+                throw new ContractNotExpiredException(msg);
+            }
+        } catch (HttpClientErrorException e) {
+            String msg = "No contract found between " + feedbackRequest.getFrom()
+                + " and " + feedbackRequest.getTo();
+
+            throw new NoExistingContractException(msg);
+        }
+    }
+
+    private UserRole getRecipientRole(FeedbackRequest feedbackRequest, String userRole) {
+        String baseUserUrl = "http://users-service/";
+        String urlRecipient = baseUserUrl + feedbackRequest.getTo();
+
+        // Get the target role
+        UserRole targetRole =
+            UserRole.valueOf(userRole) == UserRole.STUDENT ?
+                UserRole.COMPANY : UserRole.STUDENT;
+
+        UserRoleResponseWrapper recipientUser =
+            restTemplate.getForObject(urlRecipient, UserRoleResponseWrapper.class);
+
+        if (recipientUser == null) {
+            throw new UserServiceUnavailableException();
+        }
+
+        if (recipientUser.getErrorMessage() != null) {
+            throw new InvalidUserException("Recipient does not exist.");
+        }
+
+        if (UserRole.valueOf(recipientUser.getData().getRole()) != targetRole) {
+            throw new InvalidUserException("The recipient has the same role as the author.");
+        }
+
+        return targetRole;
     }
 }

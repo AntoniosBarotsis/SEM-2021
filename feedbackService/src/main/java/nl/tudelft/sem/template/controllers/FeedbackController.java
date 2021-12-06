@@ -6,6 +6,7 @@ import nl.tudelft.sem.template.domain.dtos.requests.FeedbackRequest;
 import nl.tudelft.sem.template.domain.dtos.responses.FeedbackResponse;
 import nl.tudelft.sem.template.services.FeedbackService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.ServletWebRequest;
 
 @RestController
 public class FeedbackController {
@@ -23,7 +23,7 @@ public class FeedbackController {
     @GetMapping("/{id}")
     public ResponseEntity<Response<FeedbackResponse>> getById(@PathVariable Long id) {
         try {
-            var res = feedbackService.getById(id);
+            FeedbackResponse res = feedbackService.getById(id);
 
             return ResponseEntity
                 .ok(new Response<>(res, null));
@@ -47,14 +47,14 @@ public class FeedbackController {
         }
 
         try {
-            var res =
+            Pair<FeedbackResponse, Long> res =
                 feedbackService.create(feedbackRequest, userName, userRole);
 
-            var uri = "http://feedback-service/" + res.second();
+            String uri = "http://feedback-service/" + res.getSecond();
 
             return ResponseEntity
                 .created(URI.create(uri))
-                .body(new Response<>(res.first(), null));
+                .body(new Response<>(res.getFirst(), null));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new Response<>(null, e.getMessage()));
         }
