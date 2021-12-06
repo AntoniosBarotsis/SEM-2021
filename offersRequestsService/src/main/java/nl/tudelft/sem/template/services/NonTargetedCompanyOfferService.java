@@ -46,11 +46,14 @@ public class NonTargetedCompanyOfferService extends OfferService {
     }
 
     /**
+     /**
      * Service, which accepts an application and declines all others.
      *
      * @param userName - the potential company's id.
      * @param userRole - the potential company's role.
      * @param id - the id of the application.
+     * @throws NoPermissionException - is thrown
+     *      if the user doesn't have permission to accept the application.
      */
     public void accept(String userName, String userRole, Long id) throws NoPermissionException {
         Optional<Application> application = applicationRepository.findById(id);
@@ -58,12 +61,9 @@ public class NonTargetedCompanyOfferService extends OfferService {
             throw new IllegalArgumentException(
                     "The application does not exist");
         }
-        NonTargetedCompanyOffer nonTargetedCompanyOffer = nonTargetedCompanyOfferRepository
-                .getOfferById(application.get().getNonTargetedCompanyOffer().getId());
-        if (nonTargetedCompanyOffer == null) {
-            throw new IllegalArgumentException(
-                    "There is no offer associated with this application!");
-        }
+        NonTargetedCompanyOffer nonTargetedCompanyOffer =
+                application.get().getNonTargetedCompanyOffer();
+
         if (!userName.equals(nonTargetedCompanyOffer.getCompanyId())
                 || !userRole.equals("COMPANY")) {
             throw new NoPermissionException("User can not accept this application!");
@@ -71,9 +71,6 @@ public class NonTargetedCompanyOfferService extends OfferService {
         if (nonTargetedCompanyOffer.getStatus() != Status.PENDING
             || application.get().getStatus() != Status.PENDING) {
             throw new IllegalArgumentException("The offer or application is not active anymore!");
-        }
-        if (!nonTargetedCompanyOffer.getApplications().contains(application.get())) {
-            throw new IllegalArgumentException("Application is not valid!");
         }
 
         for (Application app : nonTargetedCompanyOffer.getApplications()) {

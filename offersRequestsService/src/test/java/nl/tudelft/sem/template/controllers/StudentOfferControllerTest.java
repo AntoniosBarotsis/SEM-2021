@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
@@ -159,14 +160,14 @@ class StudentOfferControllerTest {
     }
 
     @Test
-    void acceptTargetedOfferTest() {
+    void acceptTargetedOfferTest() throws NoPermissionException {
         Mockito.doNothing()
                 .when(studentOfferService)
-                .acceptOffer(targetedCompanyOffer);
+                .acceptOffer(student, studentRole, targetedCompanyOffer.getId());
 
         ResponseEntity<Response<String>> res
                 = studentOfferController
-                .acceptTargetedOffer(student, studentRole, targetedCompanyOffer);
+                .acceptTargetedOffer(student, studentRole, targetedCompanyOffer.getId());
         Response<String> response =
                 new Response<>("The Company Offer was accepted successfully!",
                         null);
@@ -180,7 +181,7 @@ class StudentOfferControllerTest {
         student = "";
         ResponseEntity<Response<String>> res
                 = studentOfferController
-                .acceptTargetedOffer(student, studentRole, targetedCompanyOffer);
+                .acceptTargetedOffer(student, studentRole, targetedCompanyOffer.getId());
         Response<String> response =
                 new Response<>(null, "User has not been authenticated");
 
@@ -189,34 +190,41 @@ class StudentOfferControllerTest {
     }
 
     @Test
-    void acceptTargetedOfferTestFailRole() {
-        studentRole = "COMPANY";
-        ResponseEntity<Response<String>> res
-                = studentOfferController
-                .acceptTargetedOffer(student, studentRole, targetedCompanyOffer);
-        Response<String> response =
-                new Response<>(null,
-                        "User not allowed to accept this TargetedOffer");
-
-        assertEquals(HttpStatus.FORBIDDEN, res.getStatusCode());
-        assertEquals(response, res.getBody());
-    }
-
-    @Test
-    void acceptTargetedOfferTestFailIllegalArgument() {
-        String message = "Student Offer does not contain this Targeted Offer";
+    void acceptTargetedOfferTestFailIllegalArgument() throws NoPermissionException {
+        String message = "The StudentOffer or TargetedRequest is not active anymore!";
         Mockito
                 .doThrow(new IllegalArgumentException(
                         message))
-                .when(studentOfferService).acceptOffer(targetedCompanyOffer);
+                .when(studentOfferService)
+                .acceptOffer(student, studentRole, targetedCompanyOffer.getId());
 
         ResponseEntity<Response<String>> res
                 = studentOfferController
-                .acceptTargetedOffer(student, studentRole, targetedCompanyOffer);
+                .acceptTargetedOffer(student, studentRole, targetedCompanyOffer.getId());
         Response<String> response =
                 new Response<>(null, message);
 
         assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void acceptTargetedOfferTestFailNoPermission() throws NoPermissionException {
+        studentRole = "COMPANY";
+        String message = "User not allowed to accept this TargetedOffer";
+        Mockito
+                .doThrow(new NoPermissionException(
+                        message))
+                .when(studentOfferService)
+                .acceptOffer(student, studentRole, targetedCompanyOffer.getId());
+
+        ResponseEntity<Response<String>> res
+                = studentOfferController
+                .acceptTargetedOffer(student, studentRole, targetedCompanyOffer.getId());
+        Response<String> response =
+                new Response<>(null, message);
+
+        assertEquals(HttpStatus.FORBIDDEN, res.getStatusCode());
         assertEquals(response, res.getBody());
     }
 

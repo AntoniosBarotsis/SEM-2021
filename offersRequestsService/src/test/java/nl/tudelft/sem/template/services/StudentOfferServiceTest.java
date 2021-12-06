@@ -9,6 +9,8 @@ import static org.mockito.Mockito.times;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
@@ -37,11 +39,13 @@ public class StudentOfferServiceTest {
     private transient StudentOffer offerTwo;
     private transient StudentOffer offerThree;
     private transient String student;
+    private transient String role;
     private transient TargetedCompanyOffer accepted;
 
     @BeforeEach
     void setUp() {
         student = "Student";
+        role = "STUDENT";
         offerTwo = new StudentOffer("Rado's services", "Hey I'm Rado",
             10, 100,
             Arrays.asList("Drawing", "Swimming", "Running"),
@@ -93,14 +97,14 @@ public class StudentOfferServiceTest {
     }
 
     @Test
-    void acceptOfferTest() {
+    void acceptOfferTest() throws NoPermissionException {
         TargetedCompanyOffer declined = new TargetedCompanyOffer();
         offerTwo.setTargetedCompanyOffers(List.of(declined, accepted));
 
         Mockito.when(studentOfferRepository.getById(offerTwo.getId()))
                 .thenReturn(offerTwo);
 
-        studentOfferService.acceptOffer(accepted);
+        studentOfferService.acceptOffer(student, role, accepted.getId());
 
         Mockito.verify(studentOfferRepository, times(1)).save(any());
         Mockito.verify(targetedCompanyOfferRepository, times(2)).save(any());
@@ -111,25 +115,25 @@ public class StudentOfferServiceTest {
 
     @Test
     void acceptOfferTestFailInvalid() {
-        Mockito.when(studentOfferRepository.getById(offerTwo.getId()))
+        Mockito.when(targetedCompanyOfferRepository.findById(accepted.getId()))
                 .thenReturn(null);
 
         IllegalArgumentException exception
                 = assertThrows(IllegalArgumentException.class,
-                    () -> studentOfferService.acceptOffer(accepted));
-        String errorMessage = "Offer is not valid!";
+                    () -> studentOfferService.acceptOffer(student, role, accepted.getId()));
+        String errorMessage = "ID is not valid!";
         assertEquals(errorMessage, exception.getMessage());
     }
 
     @Test
     void acceptOfferTestFailStatusStudent() {
         offerTwo.setStatus(Status.DISABLED);
-        Mockito.when(studentOfferRepository.getById(offerTwo.getId()))
-                .thenReturn(offerTwo);
+        Mockito.when(targetedCompanyOfferRepository.findById(accepted.getId()))
+                .thenReturn(Optional.of(accepted));
 
         IllegalArgumentException exception
                 = assertThrows(IllegalArgumentException.class,
-                    () -> studentOfferService.acceptOffer(accepted));
+                    () -> studentOfferService.acceptOffer(student, role, accepted.getId()));
         String errorMessage = "The StudentOffer or TargetedRequest is not active anymore!";
         assertEquals(errorMessage, exception.getMessage());
     }
@@ -137,26 +141,26 @@ public class StudentOfferServiceTest {
     @Test
     void acceptOfferTestFailStatusTargeted() {
         accepted.setStatus(Status.DECLINED);
-        Mockito.when(studentOfferRepository.getById(offerTwo.getId()))
-                .thenReturn(offerTwo);
+        Mockito.when(targetedCompanyOfferRepository.findById(accepted.getId()))
+                .thenReturn(Optional.of(accepted));
 
         IllegalArgumentException exception
                 = assertThrows(IllegalArgumentException.class,
-                    () -> studentOfferService.acceptOffer(accepted));
+                    () -> studentOfferService.acceptOffer(student, role, accepted.getId()));
         String errorMessage = "The StudentOffer or TargetedRequest is not active anymore!";
         assertEquals(errorMessage, exception.getMessage());
     }
 
     @Test
-    void acceptOfferTestFailNotContained() {
-        offerTwo.setTargetedCompanyOffers(new ArrayList<>());
-        Mockito.when(studentOfferRepository.getById(offerTwo.getId()))
-                .thenReturn(offerTwo);
+    void acceptOfferTestFailRole() {
+        accepted.setStatus(Status.DECLINED);
+        Mockito.when(targetedCompanyOfferRepository.findById(accepted.getId()))
+                .thenReturn(Optional.of(accepted));
 
-        IllegalArgumentException exception
-                = assertThrows(IllegalArgumentException.class,
-                    () -> studentOfferService.acceptOffer(accepted));
-        String errorMessage = "Student Offer does not contain this Targeted Offer";
+        NoPermissionException exception
+                = assertThrows(NoPermissionException.class,
+                    () -> studentOfferService.acceptOffer(student, role, accepted.getId()));
+        String errorMessage = "User not allowed to accept this TargetedOffer";
         assertEquals(errorMessage, exception.getMessage());
     }
 

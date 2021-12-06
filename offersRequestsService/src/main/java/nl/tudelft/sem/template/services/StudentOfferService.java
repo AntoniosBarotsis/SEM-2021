@@ -1,12 +1,17 @@
 package nl.tudelft.sem.template.services;
 
 import java.util.List;
+import java.util.Optional;
+import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import nl.tudelft.sem.template.repositories.TargetedCompanyOfferRepository;
+import nl.tudelft.sem.template.responses.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -43,26 +48,34 @@ public class StudentOfferService extends OfferService {
     /**
      * Service, which accepts the given targeted offer and declines all others.
      *
-     * @param targetedCompanyOffer - the offer, which will be accepted.
+     * @param userName - the id of the Student, who wants to accept the offer.
+     * @param userRole - the role of the Student.
+     * @param targetedCompanyOfferId - the id of the accepted offer.
+     * @throws NoPermissionException - is thrown
+     *      if the user doesn't have permission to accept the offer.
      */
-    public void acceptOffer(TargetedCompanyOffer targetedCompanyOffer) {
-        StudentOffer offer = studentOfferRepository
-                .getById(targetedCompanyOffer
-                        .getStudentOffer().getId());
-        if (offer == null) {
-            throw new IllegalArgumentException("Offer is not valid!");
+    public void acceptOffer(
+            String userName, String userRole, Long targetedCompanyOfferId)
+            throws NoPermissionException {
+        Optional<TargetedCompanyOffer> targetedCompanyOffer =
+                targetedCompanyOfferRepository.findById(targetedCompanyOfferId);
+        if (targetedCompanyOffer.isEmpty()) {
+            throw new IllegalArgumentException("ID is not valid!");
+        }
+        StudentOffer offer = targetedCompanyOffer.get().getStudentOffer();
+        if (offer
+                .getStudentId()
+                .equals(userName) || !userRole.equals("STUDENT")) {
+            throw  new NoPermissionException("User not allowed to accept this TargetedOffer");
         }
         if (offer.getStatus() != Status.PENDING
-                || targetedCompanyOffer.getStatus() != Status.PENDING) {
+                || targetedCompanyOffer.get().getStatus() != Status.PENDING) {
             throw new IllegalArgumentException(
                     "The StudentOffer or TargetedRequest is not active anymore!");
         }
-        if (!offer.getTargetedCompanyOffers().contains(targetedCompanyOffer)) {
-            throw new IllegalArgumentException(
-                    "Student Offer does not contain this Targeted Offer");
-        }
+
         for (TargetedCompanyOffer t : offer.getTargetedCompanyOffers()) {
-            if (!t.equals(targetedCompanyOffer)) {
+            if (!t.equals(targetedCompanyOffer.get())) {
                 t.setStatus(Status.DECLINED);
             } else {
                 t.setStatus(Status.ACCEPTED);

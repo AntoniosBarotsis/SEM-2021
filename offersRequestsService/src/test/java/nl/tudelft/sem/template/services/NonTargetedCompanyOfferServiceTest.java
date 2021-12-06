@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.naming.NoPermissionException;
@@ -132,35 +131,6 @@ class NonTargetedCompanyOfferServiceTest {
         assertSame(application.getStatus(), Status.ACCEPTED);
         assertSame(offer.getStatus(), Status.DISABLED);
         assertSame(declined.getStatus(), Status.DECLINED);
-    }
-
-    @Test
-    void acceptTestFailNull() {
-        Mockito.when(offerRepository.getOfferById(offer.getId()))
-                .thenReturn(null);
-        Mockito.when(applicationRepository.findById(application.getId()))
-                .thenReturn(Optional.of(application));
-
-        IllegalArgumentException exception
-                = assertThrows(IllegalArgumentException.class,
-                    () -> service.accept(companyId, role, application.getId()));
-        String errorMessage = "There is no offer associated with this application!";
-        assertEquals(errorMessage, exception.getMessage());
-    }
-
-    @Test
-    void acceptTestFailEmpty() {
-        offer.setApplications(new ArrayList<>());
-        Mockito.when(offerRepository.getOfferById(offer.getId()))
-                .thenReturn(offer);
-        Mockito.when(applicationRepository.findById(application.getId()))
-                .thenReturn(Optional.of(application));
-
-        IllegalArgumentException exception
-                = assertThrows(IllegalArgumentException.class,
-                    () -> service.accept(companyId, role, application.getId()));
-        String errorMessage = "Application is not valid!";
-        assertEquals(errorMessage, exception.getMessage());
     }
 
     @Test

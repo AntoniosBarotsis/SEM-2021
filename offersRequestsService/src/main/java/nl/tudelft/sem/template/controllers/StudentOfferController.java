@@ -1,9 +1,9 @@
 package nl.tudelft.sem.template.controllers;
 
 import java.util.List;
+import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
-import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.responses.Response;
 import nl.tudelft.sem.template.services.StudentOfferService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
@@ -125,34 +124,32 @@ public class StudentOfferController {
      *
      * @param userName - the name of the user.
      * @param userRole - the role of the user.
-     * @param targetedCompanyOffer - the offer, which the user wants to be accepted.
+     * @param id - the id of the offer, which the user wants to be accepted.
      * @return - A Response with a success or an error message!
      */
-    @PutMapping("/student/accept")
+    @PostMapping("/student/accept/{id}")
     public ResponseEntity<Response<String>>
         acceptTargetedOffer(
             @RequestHeader(nameHeader) String userName,
             @RequestHeader(roleHeader) String userRole,
-            @RequestBody TargetedCompanyOffer targetedCompanyOffer) {
+            @PathVariable Long id) {
         if (userName.isBlank()) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .body(new Response<>(null, "User has not been authenticated"));
         }
-        if (!targetedCompanyOffer
-                .getStudentOffer()
-                .getStudentId()
-                .equals(userName) || !userRole.equals("STUDENT")) {
-            return ResponseEntity
-                    .status(HttpStatus.FORBIDDEN)
-                    .body(new Response<>(null,
-                            "User not allowed to accept this TargetedOffer"));
-        }
+
         try {
-            studentOfferService.acceptOffer(targetedCompanyOffer);
+            studentOfferService.acceptOffer(userName, userRole, id);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(new Response<>("The Company Offer was accepted successfully!",
                             null));
+        } catch (NoPermissionException exception) {
+            exception.printStackTrace();
+
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(new Response<>(null, exception.getMessage()));
         } catch (IllegalArgumentException exception) {
             exception.printStackTrace();
 
