@@ -132,6 +132,60 @@ class StudentOfferControllerTest {
     }
 
     @Test
+    void editStudentOfferTest() {
+        Mockito.doNothing()
+                .when(studentOfferService)
+                .updateStudentOffer(studentOffer);
+
+        ResponseEntity<Response<String>> res
+                = studentOfferController.editStudentOffer(studentOffer, student, studentRole);
+        Response<String> response =
+                new Response<>("Student Offer has been updated successfully!", null);
+
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void editStudentOfferTestFailUserName() {
+        student = "";
+        ResponseEntity<Response<String>> res
+                = studentOfferController.editStudentOffer(studentOffer, student, studentRole);
+        Response<String> response =
+                new Response<>(null, "User has not been authenticated");
+
+        assertEquals(HttpStatus.UNAUTHORIZED, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void editStudentOfferTestFailRole() {
+        studentRole = "COMPANY";
+        ResponseEntity<Response<String>> res
+                = studentOfferController.editStudentOffer(studentOffer, student, studentRole);
+        Response<String> response =
+                new Response<>(null, "User is not allowed to edit this offer");
+
+        assertEquals(HttpStatus.FORBIDDEN, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void editStudentOfferTestFailIllegalArgument() {
+        Mockito
+                .doThrow(new IllegalArgumentException("You are not allowed to edit the Status"))
+                .when(studentOfferService).updateStudentOffer(studentOffer);
+
+        ResponseEntity<Response<String>> res
+                = studentOfferController.editStudentOffer(studentOffer, student, studentRole);
+        Response<String> response =
+                new Response<>(null, "You are not allowed to edit the Status");
+
+        assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
     void saveStudentOfferUnauthenticatedTest() {
         ResponseEntity<Response<Offer>> response = studentOfferController
                 .saveStudentOffer("", "", studentOffer);

@@ -8,10 +8,7 @@ import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import nl.tudelft.sem.template.repositories.TargetedCompanyOfferRepository;
-import nl.tudelft.sem.template.responses.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -66,7 +63,7 @@ public class StudentOfferService extends OfferService {
         if (offer
                 .getStudentId()
                 .equals(userName) || !userRole.equals("STUDENT")) {
-            throw  new NoPermissionException("User not allowed to accept this TargetedOffer");
+            throw new NoPermissionException("User not allowed to accept this TargetedOffer");
         }
         if (offer.getStatus() != Status.PENDING
                 || targetedCompanyOffer.get().getStatus() != Status.PENDING) {
@@ -85,5 +82,22 @@ public class StudentOfferService extends OfferService {
 
         offer.setStatus(Status.DISABLED);
         studentOfferRepository.save(offer);
+    }
+
+    /**
+     * Service, which updates a StudentOffer.
+     *
+     * @param studentOffer - The updated offer, which will be now stored.
+     */
+    public void updateStudentOffer(StudentOffer studentOffer) {
+        StudentOffer current =  studentOfferRepository.getById(studentOffer.getId());
+        if (current == null) {
+            throw new IllegalArgumentException("This StudentOffer does not exist!");
+        }
+        if (current.getStatus() != studentOffer.getStatus()) {
+            throw new IllegalArgumentException("You are not allowed to edit the Status");
+        }
+
+        super.saveOffer(studentOffer);
     }
 }

@@ -14,6 +14,7 @@ import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.repositories.OfferRepository;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import nl.tudelft.sem.template.repositories.TargetedCompanyOfferRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +36,9 @@ public class StudentOfferServiceTest {
     private transient StudentOfferRepository studentOfferRepository;
     @MockBean
     private transient TargetedCompanyOfferRepository targetedCompanyOfferRepository;
+    @MockBean
+    private transient OfferRepository offerRepository;
+
 
     private transient StudentOffer offerTwo;
     private transient StudentOffer offerThree;
@@ -60,6 +64,8 @@ public class StudentOfferServiceTest {
                 Arrays.asList("Singing", "Web Dev", "Care-taking"), Status.PENDING,
                 Arrays.asList("Singing", "Web Dev", "Care-taking"),
                 "Our Company", offerTwo);
+        offerTwo.setTargetedCompanyOffers(new ArrayList<>());
+        offerThree.setTargetedCompanyOffers(new ArrayList<>());
     }
 
     @Test
@@ -165,4 +171,40 @@ public class StudentOfferServiceTest {
         assertEquals(errorMessage, exception.getMessage());
     }
 
+    @Test
+    void updateStudentOfferTest() {
+        StudentOffer edited = offerTwo;
+        edited.setDescription("New Description, last one was awful");
+        edited.setPricePerHour(100.0);
+        Mockito.when(studentOfferRepository.getById(offerTwo.getId()))
+                .thenReturn(offerTwo);
+
+        studentOfferService.updateStudentOffer(edited);
+        Mockito.verify(offerRepository).save(edited);
+    }
+
+    @Test
+    void updateStudentOfferTestFailStatus() {
+        StudentOffer edited = offerThree;
+        edited.setId(offerTwo.getId());
+        Mockito.when(studentOfferRepository.getById(offerTwo.getId()))
+                .thenReturn(offerTwo);
+
+        String message = "You are not allowed to edit the Status";
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> studentOfferService.updateStudentOffer(edited));
+        assertEquals(message, exception.getMessage());
+    }
+
+
+    @Test
+    void updateStudentOfferTestFailId() {
+        Mockito.when(studentOfferRepository.getById(offerTwo.getId()))
+                .thenReturn(null);
+
+        String message = "This StudentOffer does not exist!";
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> studentOfferService.updateStudentOffer(offerTwo));
+        assertEquals(message, exception.getMessage());
+    }
 }

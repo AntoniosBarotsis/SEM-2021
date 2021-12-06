@@ -49,6 +49,9 @@ dependencies {
 	// Generate JWT tokens
 	implementation 'com.auth0:java-jwt:3.18.2'
 
+	// Include JWT Config envLoader
+	implementation project(path: ':envLoader', configuration: 'default')
+
 	//Uses postgres. Comment it if you don't use postgres
 	//runtimeOnly 'org.postgresql:postgresql'
 
