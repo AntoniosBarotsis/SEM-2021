@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.controllers;
 
+import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.Offer;
@@ -22,6 +23,9 @@ public class NonTargetedCompanyOfferController {
     @Autowired
     private transient NonTargetedCompanyOfferService nonTargetedCompanyOfferService;
 
+    private final transient String nameHeader = "x-user-name";
+    private final transient String roleHeader = "x-user-role";
+
     /**
      * Endpoint for creating a NonTargetedCompanyOffer.
      *
@@ -37,8 +41,8 @@ public class NonTargetedCompanyOfferController {
     @PostMapping("/")
     public ResponseEntity<Response<Offer>> createNonTargetedCompanyOffer(
             @RequestBody NonTargetedCompanyOffer nonTargetedCompanyOffer,
-            @RequestHeader("x-user-name") String userName,
-            @RequestHeader("x-user-role") String userRole) {
+            @RequestHeader(nameHeader) String userName,
+            @RequestHeader(roleHeader) String userRole) {
         if (userName.isBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new Response<>(null, "User has not been authenticated"));
@@ -74,8 +78,8 @@ public class NonTargetedCompanyOfferController {
      */
     @PostMapping("/apply/{offerId}")
     public ResponseEntity<Response<Application>> apply(
-            @RequestHeader("x-user-name") String userName,
-            @RequestHeader("x-user-role") String userRole,
+            @RequestHeader(nameHeader) String userName,
+            @RequestHeader(roleHeader) String userRole,
             @RequestBody Application application,
             @PathVariable Long offerId) {
         if (userName.isBlank()) {
@@ -92,6 +96,39 @@ public class NonTargetedCompanyOfferController {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new Response<>(nonTargetedCompanyOfferService
                             .apply(application, offerId)));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new Response<>(null, e.getMessage()));
+        }
+    }
+
+    /**
+     * Endpoint for accepting an application by a company.
+     *
+     * @param userName - the name of the user.
+     * @param userRole - the role of the user.
+     *                 Both are contained in the JWT.
+     * @return - a Response, containing a success or an error message!
+     */
+    @PostMapping("/accept/{id}")
+    public ResponseEntity<Response<String>> acceptApplication(
+            @RequestHeader(nameHeader) String userName,
+            @RequestHeader(roleHeader) String userRole,
+            @PathVariable Long id) {
+        if (userName.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new Response<>(null, "User has not been authenticated!"));
+        }
+
+        try {
+            nonTargetedCompanyOfferService.accept(userName, userRole, id);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new Response<>(
+                            "Application has been accepted successfully!",
+                            null));
+        } catch (NoPermissionException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new Response<>(null, e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new Response<>(null, e.getMessage()));

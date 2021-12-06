@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.controllers;
 
 import java.util.List;
+import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.responses.Response;
@@ -22,6 +23,9 @@ public class StudentOfferController {
     @Autowired
     private transient StudentOfferService studentOfferService;
 
+    private final transient String nameHeader = "x-user-name";
+    private final transient String roleHeader = "x-user-role";
+
     /** Endpoint for creating StudentOffers.
      *
      * @param userName Name of person making the request.
@@ -31,12 +35,12 @@ public class StudentOfferController {
      *          401 UNAUTHORIZED if user not authenticated.
      *          403 FORBIDDEN if user not a student or not author of offer.
      *          400 BAD REQUEST if conditions for offer are not met.
-     *          201 CREATED with Offer in body if successfull.
+     *          201 CREATED with Offer in body if successful.
      */
     @PostMapping("/student/create")
     public ResponseEntity<Response<Offer>>
-        saveStudentOffer(@RequestHeader("x-user-name") String userName,
-                         @RequestHeader("x-user-role") String userRole,
+        saveStudentOffer(@RequestHeader(nameHeader) String userName,
+                         @RequestHeader(roleHeader) String userRole,
                          @RequestBody StudentOffer studentOffer) {
         if (userName.isBlank()) {
             return ResponseEntity
@@ -113,6 +117,47 @@ public class StudentOfferController {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(responseOffersById);
+        }
+    }
+
+    /**
+<<<<<<< HEAD
+     * Endpoint, which accepts a Targeted Offer.
+     *
+     * @param userName - the name of the user.
+     * @param userRole - the role of the user.
+     * @param id - the id of the offer, which the user wants to be accepted.
+     * @return - A Response with a success or an error message!
+     */
+    @PostMapping("/student/accept/{id}")
+    public ResponseEntity<Response<String>>
+        acceptTargetedOffer(
+            @RequestHeader(nameHeader) String userName,
+            @RequestHeader(roleHeader) String userRole,
+            @PathVariable Long id) {
+        if (userName.isBlank()) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new Response<>(null, "User has not been authenticated"));
+        }
+
+        try {
+            studentOfferService.acceptOffer(userName, userRole, id);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new Response<>("The Company Offer was accepted successfully!",
+                            null));
+        } catch (NoPermissionException exception) {
+            exception.printStackTrace();
+
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(new Response<>(null, exception.getMessage()));
+        } catch (IllegalArgumentException exception) {
+            exception.printStackTrace();
+
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new Response<>(null, exception.getMessage()));
         }
     }
 
