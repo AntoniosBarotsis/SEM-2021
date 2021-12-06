@@ -3,8 +3,8 @@ package nl.tudelft.sem.template.controllers;
 import java.util.List;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
+import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.exceptions.UserNotAuthorException;
-import nl.tudelft.sem.template.responses.Response;
 import nl.tudelft.sem.template.services.TargetedCompanyOfferService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -58,21 +58,21 @@ public class TargetedCompanyOfferController {
         Response<Offer> responseSave;
         try {
             responseSave =
-                    new Response<>(targetedCompanyOfferService
-                            .saveOffer(targetedCompanyOffer, id),
-                            null);
+                new Response<>(targetedCompanyOfferService
+                    .saveOffer(targetedCompanyOffer, id),
+                    null);
 
             return new ResponseEntity<>(
-                    responseSave,
-                    HttpStatus.CREATED);
+                responseSave,
+                HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
 
             responseSave =
-                    new Response<>(null,
-                            e.getMessage());
+                new Response<>(null,
+                    e.getMessage());
 
             return new ResponseEntity<>(responseSave,
-                    HttpStatus.BAD_REQUEST);
+                HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -112,12 +112,12 @@ public class TargetedCompanyOfferController {
             exception.printStackTrace();
 
             responseOffersById =
-                    new Response<>(
-                            null,
-                            exception.getMessage());
+                new Response<>(
+                    null,
+                    exception.getMessage());
             return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(responseOffersById);
+                .status(HttpStatus.BAD_REQUEST)
+                .body(responseOffersById);
         }
     }
 
@@ -154,10 +154,10 @@ public class TargetedCompanyOfferController {
             exception.printStackTrace();
 
             offers =
-                    new Response<>(
-                            null,
-                            exception.getMessage()
-                    );
+                new Response<>(
+                    null,
+                    exception.getMessage()
+                );
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(offers);
@@ -193,29 +193,14 @@ public class TargetedCompanyOfferController {
                     .status(HttpStatus.FORBIDDEN)
                     .body(new Response<>(null, "User is not a student"));
         }
-        Response<List<TargetedCompanyOffer>> offers;
-        try {
-            offers =
-                    new Response<>(
+        Response<List<TargetedCompanyOffer>> offers = new Response<>(
                             targetedCompanyOfferService
                                     .getAllByStudent(userName),
                             null);
 
-            return new ResponseEntity<>(
-                    offers,
-                    HttpStatus.OK);
-        } catch (IllegalArgumentException exception) {
-            exception.printStackTrace();
+        return new ResponseEntity<>(
+            offers,
+            HttpStatus.OK);
 
-            offers =
-                    new Response<>(
-                            null,
-                            exception.getMessage()
-                    );
-
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(offers);
-        }
     }
 }

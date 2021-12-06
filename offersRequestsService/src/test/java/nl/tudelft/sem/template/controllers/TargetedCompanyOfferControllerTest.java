@@ -10,9 +10,9 @@ import java.util.Objects;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
+import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.UserNotAuthorException;
-import nl.tudelft.sem.template.responses.Response;
 import nl.tudelft.sem.template.services.TargetedCompanyOfferService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -185,23 +185,6 @@ class TargetedCompanyOfferControllerTest {
             .getAllByStudent(student, studentRole);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(res, response.getBody());
-    }
-
-    @Test
-    void getTargetedByStudentTestError() {
-        String errorMessage = "Such student has not been"
-                + " targeted by company offers!";
-        Mockito.when(targetedCompanyOfferService.getAllByStudent(student))
-                .thenThrow(new IllegalArgumentException(errorMessage));
-
-        Response<List<TargetedCompanyOffer>> res
-                = new Response<>(null, errorMessage);
-        ResponseEntity<Response<List<TargetedCompanyOffer>>> response
-                = targetedCompanyOfferController
-                .getAllByStudent(student, studentRole);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals(res, response.getBody());
     }
 

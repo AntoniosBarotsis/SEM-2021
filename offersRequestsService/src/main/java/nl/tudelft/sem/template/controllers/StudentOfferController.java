@@ -4,7 +4,9 @@ import java.util.List;
 import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
-import nl.tudelft.sem.template.responses.Response;
+import nl.tudelft.sem.template.entities.dtos.Response;
+import nl.tudelft.sem.template.exceptions.UserDoesNotExistException;
+import nl.tudelft.sem.template.exceptions.UserServiceUnvanvailableException;
 import nl.tudelft.sem.template.services.StudentOfferService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -117,6 +119,14 @@ public class StudentOfferController {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(responseOffersById);
+        } catch (UserServiceUnvanvailableException e) {
+            return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(new Response<>(null, e.getMessage()));
+        } catch (UserDoesNotExistException e) {
+            return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new Response<>(null, e.getMessage()));
         }
     }
 

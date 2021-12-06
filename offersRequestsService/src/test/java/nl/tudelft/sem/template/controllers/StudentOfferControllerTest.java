@@ -9,8 +9,10 @@ import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
+import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
-import nl.tudelft.sem.template.responses.Response;
+import nl.tudelft.sem.template.exceptions.UserDoesNotExistException;
+import nl.tudelft.sem.template.exceptions.UserServiceUnvanvailableException;
 import nl.tudelft.sem.template.services.StudentOfferService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -280,6 +282,28 @@ class StudentOfferControllerTest {
 
         assertEquals(HttpStatus.FORBIDDEN, res.getStatusCode());
         assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void getStudentOffersByIdUnavailableTest() {
+        Mockito.when(studentOfferService.getOffersById(student))
+                .thenThrow(new UserServiceUnvanvailableException("test"));
+
+        ResponseEntity<Response<List<StudentOffer>>> response =
+                studentOfferController.getStudentOffersById(student);
+        assertEquals(HttpStatus.SERVICE_UNAVAILABLE, response.getStatusCode());
+        assertEquals("test", response.getBody().getErrorMessage());
+    }
+
+    @Test
+    void getStudentOffersByIdUserNotExistTest() {
+        Mockito.when(studentOfferService.getOffersById(student))
+                .thenThrow(new UserDoesNotExistException("error"));
+
+        ResponseEntity<Response<List<StudentOffer>>> response =
+                studentOfferController.getStudentOffersById(student);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("error", response.getBody().getErrorMessage());
     }
 
 }

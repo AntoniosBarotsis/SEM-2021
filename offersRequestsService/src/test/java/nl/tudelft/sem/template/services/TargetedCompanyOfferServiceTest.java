@@ -10,6 +10,7 @@ import java.util.List;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.exceptions.UserNotAuthorException;
 import nl.tudelft.sem.template.repositories.OfferRepository;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import nl.tudelft.sem.template.repositories.TargetedCompanyOfferRepository;
@@ -150,20 +151,6 @@ class TargetedCompanyOfferServiceTest {
     }
 
     @Test
-    void getOffersByStudentTestFailEmpty() {
-        Mockito.when(studentOfferRepository.getById(any()))
-            .thenReturn(studentOffer);
-
-        Mockito.when(targetedCompanyOfferRepository.findAllByStudentOffer(studentOffer))
-            .thenReturn(new ArrayList<>());
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-            () -> targetedCompanyOfferService
-                .getOffersByStudentOffer(studentOffer.getId(), student));
-        String message = "No such company has made offers!";
-        assertEquals(message, exception.getMessage());
-    }
-
-    @Test
     void getTargetedByStudentTest() {
         Mockito.when(targetedCompanyOfferRepository.getAllByStudent("Student"))
             .thenReturn(List.of(targetedCompanyOffer));
@@ -171,6 +158,17 @@ class TargetedCompanyOfferServiceTest {
             .getAllByStudent("Student");
         assertEquals(List.of(targetedCompanyOffer), result);
 
+    }
+
+    @Test
+    void getOffersByStudentOfferNotAuthorTest() {
+        Mockito.when(studentOfferRepository.getById(3L))
+                .thenReturn(studentOffer);
+        UserNotAuthorException exception = assertThrows(UserNotAuthorException.class,
+                () -> targetedCompanyOfferService
+                        .getOffersByStudentOffer(3L, "fake"));
+        String message = "User with id fake is not the author of this offer";
+        assertEquals(message, exception.getMessage());
     }
 
 }

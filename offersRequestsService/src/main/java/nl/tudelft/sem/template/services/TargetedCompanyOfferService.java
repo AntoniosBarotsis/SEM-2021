@@ -9,6 +9,7 @@ import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import nl.tudelft.sem.template.repositories.TargetedCompanyOfferRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class TargetedCompanyOfferService extends OfferService {
@@ -19,15 +20,19 @@ public class TargetedCompanyOfferService extends OfferService {
     @Autowired
     private transient StudentOfferRepository studentOfferRepository;
 
-    /** Method for saving a TargetedCompanyOffer.
+    @Autowired
+    private transient RestTemplate restTemplate;
+
+    /**
+     * Method for saving a TargetedCompanyOffer.
      *
      * @param targetedCompanyOffer Offer we want to save.
-     * @param id Long with the StudentOffer this CompanyOffer targets.
+     * @param id                   Long with the StudentOffer this CompanyOffer targets.
      * @return The saved Offer.
      * @throws IllegalArgumentException Thrown if any of the conditions are not met.
      */
     public Offer saveOffer(TargetedCompanyOffer targetedCompanyOffer, Long id)
-            throws IllegalArgumentException {
+        throws IllegalArgumentException {
         StudentOffer studentOffer = studentOfferRepository.getById(id);
         if (studentOffer == null) {
             throw new IllegalArgumentException("Student offer does not exist");
@@ -44,7 +49,7 @@ public class TargetedCompanyOfferService extends OfferService {
      */
     public List<TargetedCompanyOffer> getOffersById(String companyId) {
         List<TargetedCompanyOffer> offers =
-                targetedCompanyOfferRepository.findAllByCompanyId(companyId);
+            targetedCompanyOfferRepository.findAllByCompanyId(companyId);
         if (offers.size() == 0) {
             throw new IllegalArgumentException("No such company has made offers!");
         }
@@ -67,12 +72,7 @@ public class TargetedCompanyOfferService extends OfferService {
         if (!username.equals(studentOffer.getStudentId())) {
             throw new UserNotAuthorException(username);
         }
-        List<TargetedCompanyOffer> offers =
-                targetedCompanyOfferRepository.findAllByStudentOffer(studentOffer);
-        if (offers.isEmpty()) {
-            throw new IllegalArgumentException("No such company has made offers!");
-        }
-        return offers;
+        return targetedCompanyOfferRepository.findAllByStudentOffer(studentOffer);
     }
 
     /**
@@ -82,12 +82,6 @@ public class TargetedCompanyOfferService extends OfferService {
      * @return - a list of TargetedCompanyOffers.
      */
     public List<TargetedCompanyOffer> getAllByStudent(String student) {
-        List<TargetedCompanyOffer> offers =
-                targetedCompanyOfferRepository.getAllByStudent(student);
-        if (offers.isEmpty()) {
-            throw new IllegalArgumentException("Such student has not been"
-                    + " targeted by company offers!");
-        }
-        return offers;
+        return targetedCompanyOfferRepository.getAllByStudent(student);
     }
 }

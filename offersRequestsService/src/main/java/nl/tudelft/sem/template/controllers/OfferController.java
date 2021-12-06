@@ -3,7 +3,7 @@ package nl.tudelft.sem.template.controllers;
 import java.util.List;
 import java.util.Map;
 import nl.tudelft.sem.template.entities.Offer;
-import nl.tudelft.sem.template.responses.Response;
+import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.services.OfferService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

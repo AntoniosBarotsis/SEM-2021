@@ -178,4 +178,15 @@ class NonTargetedCompanyOfferServiceTest {
         assertEquals(errorMessage, exception.getMessage());
     }
 
+    @Test
+    void acceptTestEmpty() {
+        String errorMessage = "The application does not exist";
+        Mockito.when(applicationRepository.findById(3L))
+                .thenReturn(Optional.empty());
+        IllegalArgumentException exception
+                = assertThrows(IllegalArgumentException.class,
+                    () -> service.accept(companyId, "STUDENT", 3L));
+        assertEquals(errorMessage, exception.getMessage());
+    }
+
 }
