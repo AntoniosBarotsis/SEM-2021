@@ -23,6 +23,7 @@ public class FeedbackControllerTest {
     private transient final long id = 1;
     private transient final String userName = "username";
     private transient final String userRole = "STUDENT";
+    private transient final Long contractId = -1L;
     @Autowired
     private transient FeedbackController feedbackController;
     @MockBean
@@ -32,8 +33,8 @@ public class FeedbackControllerTest {
 
     @BeforeEach
     void setUp() {
-        feedbackResponse = new FeedbackResponse("review", 0, "from", "to");
-        feedbackRequest = new FeedbackRequest("review", 0, "from", "to");
+        feedbackResponse = new FeedbackResponse("review", 0, "from", "to", contractId);
+        feedbackRequest = new FeedbackRequest("review", 0, "from", "to", contractId);
     }
 
     @Test

@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 import nl.tudelft.sem.template.domain.Feedback;
 import nl.tudelft.sem.template.domain.Rating;
@@ -16,6 +17,7 @@ import nl.tudelft.sem.template.domain.dtos.responses.FeedbackResponse;
 import nl.tudelft.sem.template.domain.dtos.responses.UserRoleResponse;
 import nl.tudelft.sem.template.domain.dtos.responses.UserRoleResponseWrapper;
 import nl.tudelft.sem.template.exceptions.ContractNotExpiredException;
+import nl.tudelft.sem.template.exceptions.FeedbackAlreadyExistsException;
 import nl.tudelft.sem.template.exceptions.FeedbackNotFoundException;
 import nl.tudelft.sem.template.exceptions.InvalidFeedbackDetailsException;
 import nl.tudelft.sem.template.exceptions.InvalidRoleException;
@@ -57,13 +59,17 @@ public class FeedbackServiceTest {
     private transient final long id = 1;
     private transient final String userName = "username";
     private transient final String userRole = "STUDENT";
+    private transient final Long contractId = -1L;
 
     @BeforeEach
     void setUp() {
-        feedbackResponse = new FeedbackResponse("review", 0, userName, "to");
-        feedbackRequest = new FeedbackRequest("review", 0, userName, "to");
+        feedbackResponse =
+            new FeedbackResponse("review", 0, userName, "to", contractId);
+        feedbackRequest =
+            new FeedbackRequest("review", 0, userName, "to", contractId);
         rating = new Rating(0);
-        feedback = new Feedback(id, "review", rating, userName, "to");
+        feedback =
+            new Feedback(id, "review", rating, userName, "to", contractId);
         userRoleResponse = new UserRoleResponse();
         userRoleResponse.setRole("COMPANY");
         userRoleResponseWrapper = new UserRoleResponseWrapper();
@@ -73,6 +79,13 @@ public class FeedbackServiceTest {
     @Test
     void getByIdTestFound() {
         when(feedbackRepository.findById(id)).thenReturn(Optional.of(feedback));
+
+        when(feedbackRepository
+            .hasReviewedBefore(
+                feedbackRequest.getFrom(),
+                feedbackRequest.getTo(),
+                feedbackRequest.getContractId()
+            )).thenReturn(List.of());
 
         FeedbackResponse expected = feedbackResponse;
         FeedbackResponse actual = feedbackService.getById(id);
@@ -219,5 +232,29 @@ public class FeedbackServiceTest {
 
         assertThrows(InvalidRoleException.class,
             () -> feedbackService.create(feedbackRequest, userName, newUserRole));
+    }
+
+    @Test
+    void createWithExistingFeedback() {
+        when(feedbackRepository.findById(id)).thenReturn(Optional.of(feedback));
+
+        when(feedbackRepository
+            .hasReviewedBefore(
+                feedbackRequest.getFrom(),
+                feedbackRequest.getTo(),
+                feedbackRequest.getContractId()
+            )).thenReturn(List.of(feedback));
+
+        when(restTemplate.getForObject(anyString(), eq(UserRoleResponseWrapper.class)))
+            .thenReturn(userRoleResponseWrapper);
+
+        when(restTemplate.getForObject(anyString(), eq(ContractResponse.class)))
+            .thenReturn(contractResponse);
+
+        when(feedbackRepository.save(any(Feedback.class)))
+            .thenReturn(feedback);
+
+        assertThrows(FeedbackAlreadyExistsException.class,
+            () -> feedbackService.create(feedbackRequest, userName, userRole));
     }
 }

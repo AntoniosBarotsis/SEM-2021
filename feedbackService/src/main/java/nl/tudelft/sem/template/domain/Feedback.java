@@ -27,17 +27,19 @@ public class Feedback {
     private Rating rating;
     private String author;
     private String recipient;
+    private Long contractId;
 
     public static Feedback from(FeedbackRequest feedbackRequest) {
         return new Feedback(null,
             feedbackRequest.getReview(),
             new Rating(feedbackRequest.getRating()),
             feedbackRequest.getFrom(),
-            feedbackRequest.getTo()
+            feedbackRequest.getTo(),
+            feedbackRequest.getContractId()
         );
     }
 
     public FeedbackResponse to() {
-        return new FeedbackResponse(this.review, this.rating.getStars(), this.author, this.recipient);
+        return new FeedbackResponse(this.review, this.rating.getStars(), this.author, this.recipient, this.contractId);
     }
 }

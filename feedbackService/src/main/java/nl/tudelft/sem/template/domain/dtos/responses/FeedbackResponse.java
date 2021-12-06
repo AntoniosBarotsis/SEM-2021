@@ -12,4 +12,5 @@ public class FeedbackResponse {
     private int rating;
     private String from;
     private String to;
+    private Long contractId;
 }

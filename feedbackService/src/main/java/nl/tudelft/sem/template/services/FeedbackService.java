@@ -1,15 +1,16 @@
 package nl.tudelft.sem.template.services;
 
-import org.springframework.data.util.Pair;
+import java.util.List;
 import java.util.Optional;
+import nl.tudelft.sem.template.domain.Feedback;
 import nl.tudelft.sem.template.domain.dtos.enums.Status;
 import nl.tudelft.sem.template.domain.dtos.enums.UserRole;
-import nl.tudelft.sem.template.domain.Feedback;
 import nl.tudelft.sem.template.domain.dtos.requests.FeedbackRequest;
 import nl.tudelft.sem.template.domain.dtos.responses.ContractResponse;
-import nl.tudelft.sem.template.domain.dtos.responses.UserRoleResponseWrapper;
 import nl.tudelft.sem.template.domain.dtos.responses.FeedbackResponse;
+import nl.tudelft.sem.template.domain.dtos.responses.UserRoleResponseWrapper;
 import nl.tudelft.sem.template.exceptions.ContractNotExpiredException;
+import nl.tudelft.sem.template.exceptions.FeedbackAlreadyExistsException;
 import nl.tudelft.sem.template.exceptions.FeedbackNotFoundException;
 import nl.tudelft.sem.template.exceptions.InvalidFeedbackDetailsException;
 import nl.tudelft.sem.template.exceptions.InvalidRoleException;
@@ -18,6 +19,7 @@ import nl.tudelft.sem.template.exceptions.NoExistingContractException;
 import nl.tudelft.sem.template.exceptions.UserServiceUnavailableException;
 import nl.tudelft.sem.template.repositories.FeedbackRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
@@ -96,6 +98,19 @@ public class FeedbackService {
             if (Status.valueOf(contract.getStatus()) == Status.ACTIVE) {
                 String msg = "Can't leave feedback while contract is still active.";
                 throw new ContractNotExpiredException(msg);
+            }
+
+            // Should not be able to give feedback more than once
+            List<Feedback> existingFeedbacks = feedbackRepository
+                .hasReviewedBefore(
+                    feedbackRequest.getFrom(),
+                    feedbackRequest.getTo(),
+                    feedbackRequest.getContractId()
+                );
+
+            if (!existingFeedbacks.isEmpty()) {
+                String msg = "You have already given feedback for this contract";
+                throw new FeedbackAlreadyExistsException(msg);
             }
         } catch (HttpClientErrorException e) {
             String msg = "No contract found between " + feedbackRequest.getFrom()
