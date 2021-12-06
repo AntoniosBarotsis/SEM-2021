@@ -8,6 +8,8 @@ import static org.mockito.Mockito.times;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
@@ -37,15 +39,19 @@ class NonTargetedCompanyOfferServiceTest {
     private transient NonTargetedCompanyOffer offer;
     private transient Application application;
     private transient String student;
+    private transient String role;
+    private transient String companyId;
 
     @BeforeEach
     void setup() {
+        role = "COMPANY";
+        student = "student";
+        companyId = "facebook";
         List<String> expertise = List.of("e1", "e2", "e3");
         List<String> requirements = List.of("r1", "r2", "r3");
-        student = "student";
         offer = new NonTargetedCompanyOffer("title", "description",
                 20, 520, expertise,
-                Status.PENDING, requirements, "facebook");
+                Status.PENDING, requirements, companyId);
         application = new Application(student, 5, Status.PENDING, offer);
     }
 
@@ -112,13 +118,15 @@ class NonTargetedCompanyOfferServiceTest {
     }
 
     @Test
-    void acceptTest() {
+    void acceptTest() throws NoPermissionException {
         Application declined = new Application(student, 10, Status.PENDING, offer);
         offer.setApplications(List.of(application, declined));
         Mockito.when(offerRepository.getOfferById(offer.getId()))
                 .thenReturn(offer);
+        Mockito.when(applicationRepository.findById(application.getId()))
+                .thenReturn(Optional.of(application));
 
-        service.accept(application);
+        service.accept(companyId, role, application.getId());
         Mockito.verify(offerRepository, times(1)).save(any());
         Mockito.verify(applicationRepository, times(2)).save(any());
         assertSame(application.getStatus(), Status.ACCEPTED);
@@ -130,10 +138,12 @@ class NonTargetedCompanyOfferServiceTest {
     void acceptTestFailNull() {
         Mockito.when(offerRepository.getOfferById(offer.getId()))
                 .thenReturn(null);
+        Mockito.when(applicationRepository.findById(application.getId()))
+                .thenReturn(Optional.of(application));
 
         IllegalArgumentException exception
                 = assertThrows(IllegalArgumentException.class,
-                    () -> service.accept(application));
+                    () -> service.accept(companyId, role, application.getId()));
         String errorMessage = "There is no offer associated with this application!";
         assertEquals(errorMessage, exception.getMessage());
     }
@@ -143,10 +153,12 @@ class NonTargetedCompanyOfferServiceTest {
         offer.setApplications(new ArrayList<>());
         Mockito.when(offerRepository.getOfferById(offer.getId()))
                 .thenReturn(offer);
+        Mockito.when(applicationRepository.findById(application.getId()))
+                .thenReturn(Optional.of(application));
 
         IllegalArgumentException exception
                 = assertThrows(IllegalArgumentException.class,
-                    () -> service.accept(application));
+                    () -> service.accept(companyId, role, application.getId()));
         String errorMessage = "Application is not valid!";
         assertEquals(errorMessage, exception.getMessage());
     }
@@ -156,10 +168,12 @@ class NonTargetedCompanyOfferServiceTest {
         application.setStatus(Status.DECLINED);
         Mockito.when(offerRepository.getOfferById(offer.getId()))
                 .thenReturn(offer);
+        Mockito.when(applicationRepository.findById(application.getId()))
+                .thenReturn(Optional.of(application));
 
         IllegalArgumentException exception
                 = assertThrows(IllegalArgumentException.class,
-                    () -> service.accept(application));
+                    () -> service.accept(companyId, role, application.getId()));
         String errorMessage = "The offer or application is not active anymore!";
         assertEquals(errorMessage, exception.getMessage());
     }
@@ -169,11 +183,28 @@ class NonTargetedCompanyOfferServiceTest {
         application.setStatus(Status.DISABLED);
         Mockito.when(offerRepository.getOfferById(offer.getId()))
                 .thenReturn(offer);
+        Mockito.when(applicationRepository.findById(application.getId()))
+                .thenReturn(Optional.of(application));
 
         IllegalArgumentException exception
                 = assertThrows(IllegalArgumentException.class,
-                    () -> service.accept(application));
+                    () -> service.accept(companyId, role, application.getId()));
         String errorMessage = "The offer or application is not active anymore!";
+        assertEquals(errorMessage, exception.getMessage());
+    }
+
+    @Test
+    void acceptTestFailRole() {
+        application.setStatus(Status.DISABLED);
+        Mockito.when(offerRepository.getOfferById(offer.getId()))
+                .thenReturn(offer);
+        Mockito.when(applicationRepository.findById(application.getId()))
+                .thenReturn(Optional.of(application));
+
+        NoPermissionException exception
+                = assertThrows(NoPermissionException.class,
+                    () -> service.accept(companyId, "STUDENT", application.getId()));
+        String errorMessage = "User can not accept this application!";
         assertEquals(errorMessage, exception.getMessage());
     }
 

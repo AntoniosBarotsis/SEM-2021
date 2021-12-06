@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import java.util.Objects;
+import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.Offer;
@@ -160,14 +161,14 @@ class NonTargetedCompanyOfferControllerTest {
     }
 
     @Test
-    void acceptApplicationTest() {
+    void acceptApplicationTest() throws NoPermissionException {
         Mockito.doNothing()
                 .when(offerService)
-                .accept(application);
+                .accept(company, companyRole, application.getId());
 
         ResponseEntity<Response<String>> res
                 = offerController
-                .acceptApplication(company, companyRole, application);
+                .acceptApplication(company, companyRole, application.getId());
         Response<String> response =
                 new Response<>("Application has been accepted successfully!",
                         null);
@@ -180,7 +181,7 @@ class NonTargetedCompanyOfferControllerTest {
     void acceptApplicationFailUserName() {
         ResponseEntity<Response<String>> res
                 = offerController
-                .acceptApplication("", companyRole, application);
+                .acceptApplication("", companyRole, application.getId());
         Response<String> response =
                 new Response<>(null, "User has not been authenticated!");
 
@@ -189,29 +190,16 @@ class NonTargetedCompanyOfferControllerTest {
     }
 
     @Test
-    void acceptApplicationTestFailRole() {
-        ResponseEntity<Response<String>> res
-                = offerController
-                .acceptApplication(company, studentRole, application);
-        Response<String> response =
-                new Response<>(null,
-                        "User can not accept this application!");
-
-        assertEquals(HttpStatus.FORBIDDEN, res.getStatusCode());
-        assertEquals(response, res.getBody());
-    }
-
-    @Test
-    void acceptApplicationTestFailIllegalArgument() {
+    void acceptApplicationTestFailIllegalArgument() throws NoPermissionException {
         String message = "There is no offer associated with this application!";
         Mockito
                 .doThrow(new IllegalArgumentException(
                         message))
-                .when(offerService).accept(application);
+                .when(offerService).accept(company, companyRole, application.getId());
 
         ResponseEntity<Response<String>> res
                 = offerController
-                .acceptApplication(company, companyRole, application);
+                .acceptApplication(company, companyRole, application.getId());
         Response<String> response =
                 new Response<>(null, message);
 
@@ -219,5 +207,22 @@ class NonTargetedCompanyOfferControllerTest {
         assertEquals(response, res.getBody());
     }
 
+    @Test
+    void acceptApplicationTestFailNoPermission() throws NoPermissionException {
+        String message = "User can not accept this application!";
+        Mockito
+                .doThrow(new NoPermissionException(
+                        message))
+                .when(offerService).accept(company, companyRole, application.getId());
+
+        ResponseEntity<Response<String>> res
+                = offerController
+                .acceptApplication(company, companyRole, application.getId());
+        Response<String> response =
+                new Response<>(null, message);
+
+        assertEquals(HttpStatus.FORBIDDEN, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
 
 }

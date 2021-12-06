@@ -1,5 +1,7 @@
 package nl.tudelft.sem.template.services;
 
+import java.util.Optional;
+import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
@@ -46,25 +48,36 @@ public class NonTargetedCompanyOfferService extends OfferService {
     /**
      * Service, which accepts an application and declines all others.
      *
-     * @param application - the application, which we want to accept.
+     * @param userName - the potential company's id.
+     * @param userRole - the potential company's role.
+     * @param id - the id of the application.
      */
-    public void accept(Application application) {
+    public void accept(String userName, String userRole, Long id) throws NoPermissionException {
+        Optional<Application> application = applicationRepository.findById(id);
+        if (application.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "The application does not exist");
+        }
         NonTargetedCompanyOffer nonTargetedCompanyOffer = nonTargetedCompanyOfferRepository
-                .getOfferById(application.getNonTargetedCompanyOffer().getId());
+                .getOfferById(application.get().getNonTargetedCompanyOffer().getId());
         if (nonTargetedCompanyOffer == null) {
             throw new IllegalArgumentException(
                     "There is no offer associated with this application!");
         }
+        if (!userName.equals(nonTargetedCompanyOffer.getCompanyId())
+                || !userRole.equals("COMPANY")) {
+            throw new NoPermissionException("User can not accept this application!");
+        }
         if (nonTargetedCompanyOffer.getStatus() != Status.PENDING
-            || application.getStatus() != Status.PENDING) {
+            || application.get().getStatus() != Status.PENDING) {
             throw new IllegalArgumentException("The offer or application is not active anymore!");
         }
-        if (!nonTargetedCompanyOffer.getApplications().contains(application)) {
+        if (!nonTargetedCompanyOffer.getApplications().contains(application.get())) {
             throw new IllegalArgumentException("Application is not valid!");
         }
 
         for (Application app : nonTargetedCompanyOffer.getApplications()) {
-            if (app.equals(application)) {
+            if (app.equals(application.get())) {
                 app.setStatus(Status.ACCEPTED);
             } else {
                 app.setStatus(Status.DECLINED);

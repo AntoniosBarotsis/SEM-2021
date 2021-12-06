@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.controllers;
 
+import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.Offer;
@@ -10,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -108,32 +108,27 @@ public class NonTargetedCompanyOfferController {
      * @param userName - the name of the user.
      * @param userRole - the role of the user.
      *                 Both are contained in the JWT.
-     * @param application - the application, which we want to accept!
      * @return - a Response, containing a success or an error message!
      */
-    @PutMapping("/accept")
+    @PostMapping("/accept/{id}")
     public ResponseEntity<Response<String>> acceptApplication(
             @RequestHeader(nameHeader) String userName,
             @RequestHeader(roleHeader) String userRole,
-            @RequestBody Application application) {
+            @PathVariable Long id) {
         if (userName.isBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new Response<>(null, "User has not been authenticated!"));
         }
-        if (!userName.equals(application
-                .getNonTargetedCompanyOffer()
-                .getCompanyId())
-                || !userRole.equals("COMPANY")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new Response<>(null, "User can not accept this application!"));
-        }
 
         try {
-            nonTargetedCompanyOfferService.accept(application);
+            nonTargetedCompanyOfferService.accept(userName, userRole, id);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(new Response<>(
                             "Application has been accepted successfully!",
                             null));
+        } catch (NoPermissionException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new Response<>(null, e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new Response<>(null, e.getMessage()));
