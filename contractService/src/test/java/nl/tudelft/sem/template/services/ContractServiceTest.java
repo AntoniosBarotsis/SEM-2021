@@ -112,7 +112,7 @@ class ContractServiceTest {
                 .findActiveContract(companyId, studentId))
                 .thenReturn(contract);
 
-        assertEquals(contractService.getContract(companyId, studentId), contract);
+        assertEquals(contractService.getContract(companyId, studentId, true), contract);
     }
 
     @Test
@@ -122,7 +122,7 @@ class ContractServiceTest {
                 .thenReturn(null);
 
         assertThrows(ContractNotFoundException.class,
-                () -> contractService.getContract(companyId, studentId));
+                () -> contractService.getContract(companyId, studentId, true));
     }
 
     @Test

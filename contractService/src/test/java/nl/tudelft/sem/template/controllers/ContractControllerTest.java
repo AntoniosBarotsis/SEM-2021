@@ -84,7 +84,7 @@ class ContractControllerTest {
 
     @Test
     void getContractSuccess() throws ContractNotFoundException {
-        when(contractService.getContract(companyId, studentId)).thenReturn(contract);
+        when(contractService.getContract(companyId, studentId, true)).thenReturn(contract);
 
         assertEquals(ResponseEntity.ok().body(contract),
                 contractController.getContract(companyId, studentId));
@@ -94,7 +94,7 @@ class ContractControllerTest {
     void getContractFailed() throws ContractNotFoundException {
         Exception e = new ContractNotFoundException(companyId, studentId);
 
-        when(contractService.getContract(companyId, studentId)).thenThrow(e);
+        when(contractService.getContract(companyId, studentId, true)).thenThrow(e);
 
         assertEquals(ResponseEntity.notFound().build(),
                 contractController.getContract(companyId, studentId));

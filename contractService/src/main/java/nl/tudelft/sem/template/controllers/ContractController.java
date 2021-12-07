@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +32,8 @@ public class ContractController {
      * Validates a ContractRequest when creating a contract.
      * Automatically called when a MethodArgumentNotValidException
      * (from the @NotNull annotation) is thrown.
+     * <p>
+     * Method from: baeldung.com/spring-boot-bean-validation
      *
      * @param e The thrown exception containing the error message.
      * @return 400 BAD_REQUEST with all the fields that have been omitted.
@@ -39,7 +42,10 @@ public class ContractController {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Map<String, String> handleValidationExceptions(
             MethodArgumentNotValidException e) {
+
+        // map <Field, Error> explaining which fields were null/empty
         Map<String, String> errors = new HashMap<>();
+
         e.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
@@ -84,19 +90,39 @@ public class ContractController {
     }
 
     /**
-     * Get an existing ACTIVE contract between 2 parties.
+     * Get the current existing ACTIVE contract between 2 parties.
      *
      * @param companyId The id of the company.
      * @param studentId The id of the student.
      * @return 200 OK along with the contract between the company and student,
      * else 404 NOT FOUND if there is no active contract
      */
-    @GetMapping("/{companyId}/{studentId}")
+    @GetMapping("/{companyId}/{studentId}/current")
     public ResponseEntity<Contract> getContract(
             @PathVariable(name = "companyId") String companyId,
             @PathVariable(name = "studentId") String studentId) {
         try {
-            Contract contract = contractService.getContract(companyId, studentId);
+            Contract contract = contractService.getContract(companyId, studentId, true);
+            return ResponseEntity.ok().body(contract);
+        } catch (ContractNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * Get the most recent contract (active or not) between 2 parties.
+     *
+     * @param companyId The id of the company.
+     * @param studentId The id of the student.
+     * @return 200 OK along with the contract between the company and student,
+     * else 404 NOT FOUND if there is no contract between the parties
+     */
+    @GetMapping("/{companyId}/{studentId}/mostRecent")
+    public ResponseEntity<Contract> getMostRecentContract(
+            @PathVariable(name = "companyId") String companyId,
+            @PathVariable(name = "studentId") String studentId) {
+        try {
+            Contract contract = contractService.getContract(companyId, studentId, false);
             return ResponseEntity.ok().body(contract);
         } catch (ContractNotFoundException e) {
             return ResponseEntity.notFound().build();

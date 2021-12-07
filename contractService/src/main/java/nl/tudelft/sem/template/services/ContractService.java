@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.services;
 
 import java.time.LocalDate;
+
 import nl.tudelft.sem.template.entities.Contract;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
@@ -71,16 +72,25 @@ public class ContractService {
     }
 
     /**
-     * Gets the active contract between 2 parties from the repository.
+     * Gets the contract (active or not) between 2 parties from the repository.
      *
      * @param companyId The id of the company.
      * @param studentId The id of the student.
+     * @param active    If the query needs an active contract or not.
      * @return the found contract or null if not found.
      * @throws ContractNotFoundException Thrown if a contract doesn't exist.
      */
-    public Contract getContract(String companyId, String studentId)
+    public Contract getContract(String companyId, String studentId, boolean active)
             throws ContractNotFoundException {
-        Contract contract = contractRepository.findActiveContract(companyId, studentId);
+        Contract contract;
+        if (active) {
+            contract = contractRepository.findActiveContract(companyId, studentId);
+        } else {
+            contract = contractRepository
+                    .findFirstByCompanyIdEqualsAndStudentIdEqualsOrderByEndDateDesc(
+                            companyId, studentId
+                    );
+        }
 
         if (contract == null) {
             throw new ContractNotFoundException(companyId, studentId);
@@ -101,4 +111,5 @@ public class ContractService {
         }
         contractRepository.terminateContract(contractId);
     }
+
 }
