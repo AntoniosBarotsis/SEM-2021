@@ -19,11 +19,11 @@ public class ContractRequest {
     @NotBlank(message = "Student is mandatory.")
     String studentId;
     @NotNull(message = "Please specify the hours per week.")
-    double hoursPerWeek;
+    Double hoursPerWeek;
     @NotNull(message = "Please specify the total hours.")
-    double totalHours;
+    Double totalHours;
     @NotNull(message = "Please specify the price per hour.")
-    double pricePerHour;
+    Double pricePerHour;
 
     public Contract toContract(){
         return new Contract(null, companyId, studentId, null,
