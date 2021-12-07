@@ -56,7 +56,7 @@ public class OfferService {
         double rating = getAverageRating(offer.getCreatorUsername());
         if (rating < MIN_RATING && rating != 0) {
             throw new LowRatingException("create offer", MIN_RATING);
-        };
+        }
 
         offer.setStatus(Status.PENDING);
         return offerRepository.save(offer);
