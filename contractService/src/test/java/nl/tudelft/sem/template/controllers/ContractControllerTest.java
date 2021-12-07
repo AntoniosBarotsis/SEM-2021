@@ -45,7 +45,7 @@ class ContractControllerTest {
         contract = new Contract(1L, companyId, studentId, startDate, endDate, 14,
                 42, 15, Status.ACTIVE);
 
-        contractRequest = new ContractRequest(companyId, studentId, 14, 42, 15);
+        contractRequest = new ContractRequest(companyId, studentId, 14d, 42d, 15d);
         contractFromRequest = contractRequest.toContract();
     }
 
