@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.controllers;
 
+import nl.tudelft.sem.template.DTOs.requests.ContractRequest;
 import nl.tudelft.sem.template.entities.Contract;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
 import nl.tudelft.sem.template.services.ContractService;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 @RestController
 public class ContractController {
 
@@ -23,14 +26,14 @@ public class ContractController {
     /**
      * Create a contract.
      *
-     * @param contract The contract to create.
+     * @param contractRequest The contract to create.
      * @return 201 CREATED along with the created contract entity,
      *         else 400 BAD REQUEST if there already exists a contract between the 2 parties.
      */
     @PostMapping("/")
-    public ResponseEntity<Object> createContract(@RequestBody Contract contract) {
+    public ResponseEntity<Object> createContract(@Valid @RequestBody ContractRequest contractRequest) {
         try {
-            Contract c = contractService.saveContract(contract);
+            Contract c = contractService.saveContract(contractRequest.toContract());
             return new ResponseEntity<>(c, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);

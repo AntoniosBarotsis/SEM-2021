@@ -6,6 +6,8 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
+
+import nl.tudelft.sem.template.DTOs.requests.ContractRequest;
 import nl.tudelft.sem.template.entities.Contract;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
@@ -33,29 +35,35 @@ class ContractControllerTest {
     private final transient String companyId = "TUDelft";
     private final transient String studentId = "JohnDoe";
 
+    private transient ContractRequest contractRequest;
+    private transient Contract contractFromRequest;
+
     @BeforeEach
     void setUp() {
         LocalDate startDate = LocalDate.of(2021, 12, 25);
         LocalDate endDate = startDate.plusWeeks(3);
         contract = new Contract(1L, companyId, studentId, startDate, endDate, 14,
                 42, 15, Status.ACTIVE);
+
+        contractRequest = new ContractRequest(companyId, studentId, 14, 42, 15);
+        contractFromRequest = contractRequest.toContract();
     }
 
     @Test
     void createContractSuccess() {
-        when(contractService.saveContract(contract)).thenReturn(contract);
+        when(contractService.saveContract(contractFromRequest)).thenReturn(contract);
 
         assertEquals(new ResponseEntity<>(contract, HttpStatus.CREATED),
-                contractController.createContract(contract));
+                contractController.createContract(contractRequest));
     }
 
     @Test
     void createContractFailed() {
-        when(contractService.saveContract(contract))
+        when(contractService.saveContract(contractFromRequest))
                 .thenThrow(new IllegalArgumentException("error"));
 
         assertEquals(ResponseEntity.badRequest().body("error"),
-                contractController.createContract(contract));
+                contractController.createContract(contractRequest));
     }
 
     @Test

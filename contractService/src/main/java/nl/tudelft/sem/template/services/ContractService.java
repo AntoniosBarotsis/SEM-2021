@@ -57,16 +57,12 @@ public class ContractService {
         validateContract(contract);
 
         // Set startDate:
-        if (contract.getStartDate() == null) {
-            contract.setStartDate(LocalDate.now());
-        }
+        contract.setStartDate(LocalDate.now());
 
         // Set endDate:
-        if (contract.getEndDate() == null) {
-            int weeks = (int) Math.ceil(contract.getTotalHours() / contract.getHoursPerWeek());
-            LocalDate date = contract.getStartDate().plusWeeks(weeks);
-            contract.setEndDate(date);    //LocalDate is immutable, so different memory address here
-        }
+        int weeks = (int) Math.ceil(contract.getTotalHours() / contract.getHoursPerWeek());
+        LocalDate date = contract.getStartDate().plusWeeks(weeks);
+        contract.setEndDate(date);    //LocalDate is immutable, so different memory address here
 
         // Set as active
         contract.setStatus(Status.ACTIVE);
