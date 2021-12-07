@@ -4,10 +4,12 @@ import java.util.List;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
+import nl.tudelft.sem.template.exceptions.UserNotAuthorException;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import nl.tudelft.sem.template.repositories.TargetedCompanyOfferRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class TargetedCompanyOfferService extends OfferService {
@@ -18,15 +20,19 @@ public class TargetedCompanyOfferService extends OfferService {
     @Autowired
     private transient StudentOfferRepository studentOfferRepository;
 
-    /** Method for saving a TargetedCompanyOffer.
+    @Autowired
+    private transient RestTemplate restTemplate;
+
+    /**
+     * Method for saving a TargetedCompanyOffer.
      *
      * @param targetedCompanyOffer Offer we want to save.
-     * @param id Long with the StudentOffer this CompanyOffer targets.
+     * @param id                   Long with the StudentOffer this CompanyOffer targets.
      * @return The saved Offer.
      * @throws IllegalArgumentException Thrown if any of the conditions are not met.
      */
     public Offer saveOffer(TargetedCompanyOffer targetedCompanyOffer, Long id)
-            throws IllegalArgumentException {
+        throws IllegalArgumentException {
         StudentOffer studentOffer = studentOfferRepository.getById(id);
         if (studentOffer == null) {
             throw new IllegalArgumentException("Student offer does not exist");
@@ -43,7 +49,7 @@ public class TargetedCompanyOfferService extends OfferService {
      */
     public List<TargetedCompanyOffer> getOffersById(String companyId) {
         List<TargetedCompanyOffer> offers =
-                targetedCompanyOfferRepository.findAllByCompanyId(companyId);
+            targetedCompanyOfferRepository.findAllByCompanyId(companyId);
         if (offers.size() == 0) {
             throw new IllegalArgumentException("No such company has made offers!");
         }
@@ -51,23 +57,22 @@ public class TargetedCompanyOfferService extends OfferService {
         return offers;
     }
 
-    /**
-     * Service, which provides Targeted offers, related to a specific Student offer.
+    /** Service, which provides Targeted offers, related to a specific Student offer.
      *
      * @param studentOfferId - the id of the Student offer that we want to specify.
-     * @return - A list of Targeted requests, which satisfy our condition.
+     * @param username Name of the person making the request.
+     * @return List of TargetedCompanyOffers belonging to the StudentOffer.
      */
-    public List<TargetedCompanyOffer> getOffersByStudentOffer(Long studentOfferId) {
+    public List<TargetedCompanyOffer> getOffersByStudentOffer(Long studentOfferId,
+                                                              String username) {
         StudentOffer studentOffer = studentOfferRepository.getById(studentOfferId);
         if (studentOffer == null) {
             throw new IllegalArgumentException("Student offer does not exist");
         }
-        List<TargetedCompanyOffer> offers =
-                targetedCompanyOfferRepository.findAllByStudentOffer(studentOffer);
-        if (offers.isEmpty()) {
-            throw new IllegalArgumentException("No such company has made offers!");
+        if (!username.equals(studentOffer.getStudentId())) {
+            throw new UserNotAuthorException(username);
         }
-        return offers;
+        return targetedCompanyOfferRepository.findAllByStudentOffer(studentOffer);
     }
 
     /**
@@ -77,12 +82,6 @@ public class TargetedCompanyOfferService extends OfferService {
      * @return - a list of TargetedCompanyOffers.
      */
     public List<TargetedCompanyOffer> getAllByStudent(String student) {
-        List<TargetedCompanyOffer> offers =
-                targetedCompanyOfferRepository.getAllByStudent(student);
-        if (offers.isEmpty()) {
-            throw new IllegalArgumentException("Such student has not been"
-                    + " targeted by company offers!");
-        }
-        return offers;
+        return targetedCompanyOfferRepository.getAllByStudent(student);
     }
 }

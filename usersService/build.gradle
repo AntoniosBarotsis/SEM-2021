@@ -49,13 +49,16 @@ dependencies {
 	// Generate JWT tokens
 	implementation 'com.auth0:java-jwt:3.18.2'
 
+	// Include JWT Config envLoader
+	implementation project(path: ':envLoader', configuration: 'default')
+
 	//Uses postgres. Comment it if you don't use postgres
 	//runtimeOnly 'org.postgresql:postgresql'
 
 	// Local test database (in-memory)
 	implementation 'com.h2database:h2'
 	developmentOnly 'org.hibernate:hibernate-entitymanager'
-
+	runtimeOnly 'org.postgresql:postgresql'
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
@@ -75,7 +78,31 @@ test {
 	jacoco {
 		enabled = true
 		includes = ['nl.tudelft.sem.template.*']
-		excludes = []
+		excludes = [
+				'envloader.*',
+				'envloader.exceptions.*',
+				'nl.tudelft.sem.template.UsersServiceApplication',
+				'nl.tudelft.sem.template.domain.dtos.*',
+				'nl.tudelft.sem.template.entities.*',
+		]
+	}
+
+	jacocoTestReport {
+		dependsOn test
+
+		afterEvaluate {
+			getClassDirectories().setFrom(classDirectories.files.collect {
+				fileTree(dir: it,
+						exclude: [
+								'**/envloader/*.class',
+								'**/envloader/exceptions/*.class',
+								'**/nl/tudelft/sem/template/UsersServiceApplication.class',
+								'**/nl/tudelft/sem/template/domain/dtos/*.class',
+								'**/nl/tudelft/sem/template/entities/*.class',
+						]
+				)
+			})
+		}
 	}
 }
 
@@ -132,5 +159,5 @@ sourceSets {
 sourceCompatibility = 1.11
 
 tasks.withType(Test) {
-    systemProperty'eureka.client.enabled', 'false'
+	systemProperty'eureka.client.enabled', 'false'
 }

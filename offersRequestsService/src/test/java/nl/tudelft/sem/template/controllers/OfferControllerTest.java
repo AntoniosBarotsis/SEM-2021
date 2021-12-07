@@ -9,8 +9,8 @@ import java.util.Map;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
+import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
-import nl.tudelft.sem.template.responses.Response;
 import nl.tudelft.sem.template.services.OfferService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,6 +67,15 @@ class OfferControllerTest {
 
         assertEquals(res, response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @
+    Test
+    void getAllByUsernameNotAuthenticatedTest() {
+        ResponseEntity<Response<Map<String, List<Offer>>>> response = offerController
+                .getAllByUsername("");
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("User is not authenticated", response.getBody().getErrorMessage());
     }
 
 }

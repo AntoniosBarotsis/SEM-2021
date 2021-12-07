@@ -70,7 +70,33 @@ test {
 	jacoco {
 		enabled = true
 		includes = ['nl.tudelft.sem.template.*']
-		excludes = []
+		excludes = [
+				'envloader.*',
+				'envloader.exceptions*',
+				'nl.tudelft.sem.template.OffersRequestsServiceApplication',
+				'nl.tudelft.sem.template.entities.dtos.*',
+				'nl.tudelft.sem.template.entities.*',
+				'nl.tudelft.sem.template.converters.*',
+		]
+	}
+
+	jacocoTestReport {
+		dependsOn test
+
+		afterEvaluate {
+			getClassDirectories().setFrom(classDirectories.files.collect {
+				fileTree(dir: it,
+						exclude: [
+								'**/envloader/*.class',
+								'**/envloader/exceptions/*.class',
+								'**/nl/tudelft/sem/template/OffersRequestsServiceApplication.class',
+								'**/nl/tudelft/sem/template/entities/dtos/*.class',
+								'**/nl/tudelft/sem/template/entities/*.class',
+								'**/nl/tudelft/sem/template/converters/*.class',
+						]
+				)
+			})
+		}
 	}
 }
 

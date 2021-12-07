@@ -1,9 +1,12 @@
 package nl.tudelft.sem.template.controllers;
 
 import java.util.List;
+import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
-import nl.tudelft.sem.template.responses.Response;
+import nl.tudelft.sem.template.entities.dtos.Response;
+import nl.tudelft.sem.template.exceptions.UserDoesNotExistException;
+import nl.tudelft.sem.template.exceptions.UserServiceUnvanvailableException;
 import nl.tudelft.sem.template.services.StudentOfferService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,7 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -20,19 +25,35 @@ public class StudentOfferController {
     @Autowired
     private transient StudentOfferService studentOfferService;
 
-    /**
-     * Endpoint for creating StudentOffers.
+    private final transient String nameHeader = "x-user-name";
+    private final transient String roleHeader = "x-user-role";
+
+    /** Endpoint for creating StudentOffers.
      *
+     * @param userName Name of person making the request.
+     * @param userRole Role of the person making the request.
      * @param studentOffer StudentOffer than needs to bed created.
-     * @return 201 CREATED ResponseEntity with
-     *     a Response with saved StudentOffer in body if valid
-     *     otherwise 400 BAD REQUEST with a Response with error message.
+     * @return ResponseEntity that can take various codes.
+     *          401 UNAUTHORIZED if user not authenticated.
+     *          403 FORBIDDEN if user not a student or not author of offer.
+     *          400 BAD REQUEST if conditions for offer are not met.
+     *          201 CREATED with Offer in body if successful.
      */
     @PostMapping("/student/create")
     public ResponseEntity<Response<Offer>>
-        saveStudentOffer(@RequestBody StudentOffer studentOffer) {
-        //Here we will also get authorization checks,
-        // who is the user posting and is their ID in the studentOffer
+        saveStudentOffer(@RequestHeader(nameHeader) String userName,
+                         @RequestHeader(roleHeader) String userRole,
+                         @RequestBody StudentOffer studentOffer) {
+        if (userName.isBlank()) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new Response<>(null, "User is not authenticated"));
+        }
+        if (!studentOffer.getStudentId().equals(userName) || !userRole.equals("STUDENT")) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(new Response<>(null, "User not allowed to post this StudentOffer"));
+        }
         Response<Offer> response;
         try {
             response =
@@ -98,6 +119,94 @@ public class StudentOfferController {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(responseOffersById);
+        } catch (UserServiceUnvanvailableException e) {
+            return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(new Response<>(null, e.getMessage()));
+        } catch (UserDoesNotExistException e) {
+            return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new Response<>(null, e.getMessage()));
+        }
+    }
+
+    /**
+<<<<<<< HEAD
+     * Endpoint, which accepts a Targeted Offer.
+     *
+     * @param userName - the name of the user.
+     * @param userRole - the role of the user.
+     * @param id - the id of the offer, which the user wants to be accepted.
+     * @return - A Response with a success or an error message!
+     */
+    @PostMapping("/student/accept/{id}")
+    public ResponseEntity<Response<String>>
+        acceptTargetedOffer(
+            @RequestHeader(nameHeader) String userName,
+            @RequestHeader(roleHeader) String userRole,
+            @PathVariable Long id) {
+        if (userName.isBlank()) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new Response<>(null, "User has not been authenticated"));
+        }
+
+        try {
+            studentOfferService.acceptOffer(userName, userRole, id);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new Response<>("The Company Offer was accepted successfully!",
+                            null));
+        } catch (NoPermissionException exception) {
+            exception.printStackTrace();
+
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(new Response<>(null, exception.getMessage()));
+        } catch (IllegalArgumentException exception) {
+            exception.printStackTrace();
+
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new Response<>(null, exception.getMessage()));
+        }
+    }
+
+    /**
+     * Endpoint for editing a StudentOffer.
+     *
+     * @param studentOffer - the updated offer.
+     * @param userName - the username of the requester.
+     * @param userRole - the role of the requester.
+     * @return - A response, which either contains an error message,
+     *      or a success message.
+     */
+    @PutMapping("student/offer")
+    public ResponseEntity<Response<String>>
+        editStudentOffer(
+                @RequestBody StudentOffer studentOffer,
+                @RequestHeader("x-user-name") String userName,
+                @RequestHeader("x-user-role") String userRole) {
+
+        if (userName.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new Response<>(null, "User has not been authenticated"));
+        }
+
+        if (!userName.equals(studentOffer.getStudentId())
+                || !userRole.equals("STUDENT")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new Response<>(null, "User is not allowed to edit this offer"));
+        }
+
+        try {
+            studentOfferService.updateStudentOffer(studentOffer);
+            return new ResponseEntity<>(
+                    new Response<>("Student Offer has been updated successfully!", null),
+                    HttpStatus.OK);
+        } catch (IllegalArgumentException exception) {
+            return new ResponseEntity<>(
+                    new Response<>(null, exception.getMessage()),
+                    HttpStatus.BAD_REQUEST);
         }
     }
 }

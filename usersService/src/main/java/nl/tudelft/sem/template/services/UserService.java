@@ -2,10 +2,9 @@ package nl.tudelft.sem.template.services;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.sun.istack.NotNull;
 import java.util.Date;
 import java.util.Optional;
-
-import com.sun.istack.NotNull;
 import nl.tudelft.sem.template.entities.JwtConfig;
 import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;

@@ -10,6 +10,7 @@ import java.util.List;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.exceptions.UserNotAuthorException;
 import nl.tudelft.sem.template.repositories.OfferRepository;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import nl.tudelft.sem.template.repositories.TargetedCompanyOfferRepository;
@@ -40,14 +41,21 @@ class TargetedCompanyOfferServiceTest {
     private transient StudentOffer studentOffer;
     private transient TargetedCompanyOffer targetedCompanyOffer;
     private transient List<String> expertise;
+    private transient String student;
+    private transient String company;
+    private transient String companyRole;
+    private transient String studentRole;
 
     @BeforeEach
     void setup() {
         expertise = Arrays.asList("Expertise 1", "Expertise 2", "Expertise 3");
-        String studentId = "Student";
+        student = "Student";
+        company = "Company";
+        studentRole = "STUDENT";
+        companyRole = "COMPANY";
         studentOffer = new StudentOffer("This is a title", "This is a description", 20, 520,
             expertise, Status.DISABLED,
-            32, studentId);
+            32, student);
 
         targetedCompanyOffer = new TargetedCompanyOffer("This is a company title",
             "This is a company description",
@@ -127,7 +135,7 @@ class TargetedCompanyOfferServiceTest {
             .thenReturn(returned);
 
         assertEquals(returned,
-            targetedCompanyOfferService.getOffersByStudentOffer(studentOffer.getId()));
+            targetedCompanyOfferService.getOffersByStudentOffer(studentOffer.getId(), student));
     }
 
     @Test
@@ -137,22 +145,8 @@ class TargetedCompanyOfferServiceTest {
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> targetedCompanyOfferService
-                .getOffersByStudentOffer(studentOffer.getId()));
+                .getOffersByStudentOffer(studentOffer.getId(), student));
         String message = "Student offer does not exist";
-        assertEquals(message, exception.getMessage());
-    }
-
-    @Test
-    void getOffersByStudentTestFailEmpty() {
-        Mockito.when(studentOfferRepository.getById(any()))
-            .thenReturn(studentOffer);
-
-        Mockito.when(targetedCompanyOfferRepository.findAllByStudentOffer(studentOffer))
-            .thenReturn(new ArrayList<>());
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-            () -> targetedCompanyOfferService
-                .getOffersByStudentOffer(studentOffer.getId()));
-        String message = "No such company has made offers!";
         assertEquals(message, exception.getMessage());
     }
 
@@ -164,6 +158,17 @@ class TargetedCompanyOfferServiceTest {
             .getAllByStudent("Student");
         assertEquals(List.of(targetedCompanyOffer), result);
 
+    }
+
+    @Test
+    void getOffersByStudentOfferNotAuthorTest() {
+        Mockito.when(studentOfferRepository.getById(3L))
+                .thenReturn(studentOffer);
+        UserNotAuthorException exception = assertThrows(UserNotAuthorException.class,
+                () -> targetedCompanyOfferService
+                        .getOffersByStudentOffer(3L, "fake"));
+        String message = "User with id fake is not the author of this offer";
+        assertEquals(message, exception.getMessage());
     }
 
 }
