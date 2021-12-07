@@ -37,4 +37,9 @@ public abstract class CompanyOffer extends Offer {
         this.requirements = requirements;
         this.companyId = companyId;
     }
+
+    @Override
+    public String getCreatorUsername() {
+        return companyId;
+    }
 }

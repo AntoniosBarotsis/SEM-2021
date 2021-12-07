@@ -9,7 +9,10 @@ import java.util.Arrays;
 import java.util.List;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
+import nl.tudelft.sem.template.entities.dtos.AverageRatingResponse;
 import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.exceptions.LowRatingException;
+import nl.tudelft.sem.template.exceptions.UpstreamServiceException;
 import nl.tudelft.sem.template.exceptions.UserNotAuthorException;
 import nl.tudelft.sem.template.repositories.OfferRepository;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
@@ -21,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.web.client.RestTemplate;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -37,6 +41,9 @@ class TargetedCompanyOfferServiceTest {
 
     @MockBean
     private transient TargetedCompanyOfferRepository targetedCompanyOfferRepository;
+
+    @MockBean
+    private transient RestTemplate restTemplate;
 
     private transient StudentOffer studentOffer;
     private transient TargetedCompanyOffer targetedCompanyOffer;
@@ -65,7 +72,10 @@ class TargetedCompanyOfferServiceTest {
     }
 
     @Test
-    void saveTargetedCompanyOfferValidTest() {
+    void saveTargetedCompanyOfferValidTest() throws LowRatingException, UpstreamServiceException {
+        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
+                .thenReturn(new AverageRatingResponse(5.0));
+
         TargetedCompanyOffer targetedCompanyOffer2 = new TargetedCompanyOffer(
             "This is a company title", "This is a company description",
             20, 520, expertise, Status.DISABLED,
@@ -82,7 +92,9 @@ class TargetedCompanyOfferServiceTest {
     }
 
     @Test
-    void saveTargetedCompanyOfferStudentTest() {
+    void saveTargetedCompanyOfferStudentTest() throws LowRatingException, UpstreamServiceException {
+        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
+                .thenReturn(new AverageRatingResponse(5.0));
         targetedCompanyOffer = Mockito.mock(TargetedCompanyOffer.class);
         Mockito.when(studentOfferRepository.getById(33L))
             .thenReturn(studentOffer);

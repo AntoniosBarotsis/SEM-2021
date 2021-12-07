@@ -12,7 +12,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
         + "AND f.recipient = ?2 AND f.contractId = ?3")
     List<Feedback> hasReviewedBefore(String authorId, String recipientId, Long contractId);
 
-    @Query("SELECT AVG(f.rating) FROM Feedback f WHERE f.recipient = ?1")
+    @Query("SELECT COALESCE(AVG(f.rating), 0) FROM Feedback f WHERE f.recipient = ?1")
     public double getAverageRatingByUser(String username);
 
 }

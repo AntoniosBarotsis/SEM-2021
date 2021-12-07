@@ -10,9 +10,12 @@ import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.exceptions.LowRatingException;
+import nl.tudelft.sem.template.exceptions.UpstreamServiceException;
 import nl.tudelft.sem.template.services.NonTargetedCompanyOfferService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -85,9 +88,10 @@ class NonTargetedCompanyOfferControllerTest {
     }
 
     @Test
-    void saveOfferValidTest() {
-        Mockito.when(offerService.saveOffer(offer))
-                .thenReturn(offer);
+    void saveOfferValidTest() throws LowRatingException, UpstreamServiceException {
+        Mockito.when(offerService.saveOfferWithResponse(offer)).thenReturn(
+                new ResponseEntity<>(new Response<>(offer), HttpStatus.CREATED)
+        );
         ResponseEntity<Response<Offer>> response = offerController
                 .createNonTargetedCompanyOffer(offer, company, companyRole);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -95,10 +99,11 @@ class NonTargetedCompanyOfferControllerTest {
     }
 
     @Test
-    void saveOfferIllegalTest() {
+    void saveOfferIllegalTest() throws LowRatingException, UpstreamServiceException {
         String error = "error";
-        Mockito.when(offerService.saveOffer(offer))
-                .thenThrow(new IllegalArgumentException(error));
+        Mockito.when(offerService.saveOfferWithResponse(offer)).thenReturn(
+                new ResponseEntity<>(new Response<>(null, "error"), HttpStatus.BAD_REQUEST)
+        );
 
         ResponseEntity<Response<Offer>> response = offerController
                 .createNonTargetedCompanyOffer(offer, company, companyRole);

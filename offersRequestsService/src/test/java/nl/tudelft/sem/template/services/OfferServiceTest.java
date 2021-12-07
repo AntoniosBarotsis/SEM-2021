@@ -10,15 +10,20 @@ import java.util.Map;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
+import nl.tudelft.sem.template.entities.dtos.AverageRatingResponse;
 import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.exceptions.LowRatingException;
+import nl.tudelft.sem.template.exceptions.UpstreamServiceException;
 import nl.tudelft.sem.template.repositories.OfferRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.web.client.RestTemplate;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -29,6 +34,9 @@ class OfferServiceTest {
 
     @MockBean
     private transient OfferRepository offerRepository;
+
+    @MockBean
+    private transient RestTemplate restTemplate;
 
     private transient StudentOffer studentOffer;
     private transient TargetedCompanyOffer targetedCompanyOffer;
@@ -50,17 +58,23 @@ class OfferServiceTest {
     }
 
     @Test
-    void saveOfferValidTest() {
+    void saveOfferValidTest() throws LowRatingException, UpstreamServiceException {
         Mockito.when(offerRepository.save(studentOffer))
             .thenReturn(studentOffer);
+        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
+                .thenReturn(new AverageRatingResponse(5.0));
 
         assertEquals(studentOffer, offerService.saveOffer(studentOffer));
     }
 
     @Test
-    void saveOfferPendingTest() {
+    void saveOfferPendingTest() throws LowRatingException, UpstreamServiceException {
+        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
+                .thenReturn(new AverageRatingResponse(5.0));
+
         studentOffer = Mockito.mock(StudentOffer.class);
         offerService.saveOffer(studentOffer);
+
         Mockito.verify(studentOffer).setStatus(Status.PENDING);
     }
 

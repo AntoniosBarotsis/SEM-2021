@@ -56,10 +56,10 @@ public class FeedbackServiceTest {
     private final transient ContractResponse contractResponse =
         new ContractResponse("EXPIRED");
 
-    private transient final long id = 1;
-    private transient final String userName = "username";
-    private transient final String userRole = "STUDENT";
-    private transient final Long contractId = -1L;
+    private final transient long id = 1;
+    private final transient String userName = "username";
+    private final transient String userRole = "STUDENT";
+    private final transient Long contractId = -1L;
 
     @BeforeEach
     void setUp() {
