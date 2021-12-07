@@ -67,7 +67,6 @@ public class ContractController {
             Contract c = contractService.saveContract(contractRequest.toContract());
             return new ResponseEntity<>(c, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
-            //either a MethodArgumentNotValidException, or IllegalArgumentException
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
@@ -128,6 +127,5 @@ public class ContractController {
             return ResponseEntity.notFound().build();
         }
     }
-
 
 }

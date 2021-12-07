@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.util.Optional;
 import nl.tudelft.sem.template.entities.Contract;
-import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.enums.ContractStatus;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
 import nl.tudelft.sem.template.repositories.ContractRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +42,7 @@ class ContractServiceTest {
         LocalDate startDate = LocalDate.of(2021, 12, 25);
         LocalDate endDate = startDate.plusWeeks(3);
         contract = new Contract(1L, companyId, studentId, startDate, endDate, 14,
-                42, 15, Status.ACTIVE);
+                42, 15, ContractStatus.ACTIVE);
     }
 
     @Test
@@ -50,13 +50,13 @@ class ContractServiceTest {
         when(contractRepository
                 .findActiveContract(companyId, studentId))
                 .thenReturn(null);
-        contract.setStatus(null);     //not active
+        contract.setContractStatus(null);     //not active
         contract.setEndDate(null);     //no end date!
 
         contractService.saveContract(contract);
 
         contract.setEndDate(LocalDate.of(2021, 12, 25).plusWeeks(3));
-        contract.setStatus(Status.ACTIVE);
+        contract.setContractStatus(ContractStatus.ACTIVE);
 
         ArgumentCaptor<Contract> contractArgumentCaptor = ArgumentCaptor.forClass(Contract.class);
         verify(contractRepository).save(contractArgumentCaptor.capture());

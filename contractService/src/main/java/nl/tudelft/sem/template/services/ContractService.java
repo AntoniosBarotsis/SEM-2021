@@ -3,7 +3,7 @@ package nl.tudelft.sem.template.services;
 import java.time.LocalDate;
 
 import nl.tudelft.sem.template.entities.Contract;
-import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.enums.ContractStatus;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
 import nl.tudelft.sem.template.repositories.ContractRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +66,7 @@ public class ContractService {
         contract.setEndDate(date);    //LocalDate is immutable, so different memory address here
 
         // Set as active
-        contract.setStatus(Status.ACTIVE);
+        contract.setContractStatus(ContractStatus.ACTIVE);
 
         return contractRepository.save(contract);
     }

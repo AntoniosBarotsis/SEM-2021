@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import nl.tudelft.sem.template.entities.Contract;
-
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 

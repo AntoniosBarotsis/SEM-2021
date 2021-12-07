@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 import nl.tudelft.sem.template.DTOs.requests.ContractRequest;
 import nl.tudelft.sem.template.entities.Contract;
-import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.enums.ContractStatus;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
 import nl.tudelft.sem.template.services.ContractService;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +43,7 @@ class ContractControllerTest {
         LocalDate startDate = LocalDate.of(2021, 12, 25);
         LocalDate endDate = startDate.plusWeeks(3);
         contract = new Contract(1L, companyId, studentId, startDate, endDate, 14,
-                42, 15, Status.ACTIVE);
+                42, 15, ContractStatus.ACTIVE);
 
         contractRequest = new ContractRequest(companyId, studentId, 14d, 42d, 15d);
         contractFromRequest = contractRequest.toContract();

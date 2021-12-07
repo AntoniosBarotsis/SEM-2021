@@ -1,6 +1,6 @@
 package nl.tudelft.sem.template.enums;
 
-public enum Status {
+public enum ContractStatus {
     ACTIVE,
     EXPIRED,
     TERMINATED

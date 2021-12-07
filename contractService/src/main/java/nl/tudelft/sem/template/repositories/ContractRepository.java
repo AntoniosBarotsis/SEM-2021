@@ -13,17 +13,17 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
     Contract findFirstByCompanyIdEqualsAndStudentIdEqualsOrderByEndDateDesc(String companyId, String studentId);
 
     @Query("SELECT c FROM Contract c WHERE c.companyId = ?1 "
-            + "AND c.studentId = ?2 AND c.status = 'ACTIVE'")
+            + "AND c.studentId = ?2 AND c.contractStatus = 'ACTIVE'")
     Contract findActiveContract(String companyId, String studentId);
 
     @Transactional
     @Modifying
-    @Query("UPDATE Contract c SET c.status = 'TERMINATED' WHERE c.id = ?1")
+    @Query("UPDATE Contract c SET c.contractStatus = 'TERMINATED' WHERE c.id = ?1")
     void terminateContract(Long contractId);
 
     @Transactional
     @Modifying
-    @Query("UPDATE Contract c SET c.status = 'EXPIRED' WHERE c.id = ?1")
+    @Query("UPDATE Contract c SET c.contractStatus = 'EXPIRED' WHERE c.id = ?1")
     void setExpiredContract(Long contractId);
 
 }
