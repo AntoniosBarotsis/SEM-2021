@@ -50,13 +50,13 @@ class ContractServiceTest {
         when(contractRepository
                 .findActiveContract(companyId, studentId))
                 .thenReturn(null);
-        contract.setContractStatus(null);     //not active
+        contract.setStatus(null);     //not active
         contract.setEndDate(null);     //no end date!
 
         contractService.saveContract(contract);
 
         contract.setEndDate(LocalDate.of(2021, 12, 25).plusWeeks(3));
-        contract.setContractStatus(ContractStatus.ACTIVE);
+        contract.setStatus(ContractStatus.ACTIVE);
 
         ArgumentCaptor<Contract> contractArgumentCaptor = ArgumentCaptor.forClass(Contract.class);
         verify(contractRepository).save(contractArgumentCaptor.capture());

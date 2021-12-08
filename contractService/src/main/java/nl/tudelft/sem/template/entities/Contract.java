@@ -33,7 +33,7 @@ public class Contract {
     private double totalHours;
     private double pricePerHour;
     @Enumerated(EnumType.STRING)
-    private ContractStatus contractStatus;
+    private ContractStatus status;
 
     @JsonIgnore
     @OneToMany(mappedBy = "contract")
@@ -50,11 +50,11 @@ public class Contract {
      * @param hoursPerWeek   Double indicating how many hours per week.
      * @param totalHours     Double indicating the total amount of hours.
      * @param pricePerHour   Double indicating the price per hour.
-     * @param contractStatus Enum indicating whether the contract is active, expired or terminated.
+     * @param status Enum indicating whether the contract is active, expired or terminated.
      */
     public Contract(Long id, String companyId, String studentId, LocalDate startDate,
                     LocalDate endDate, double hoursPerWeek, double totalHours,
-                    double pricePerHour, ContractStatus contractStatus) {
+                    double pricePerHour, ContractStatus status) {
         this.id = id;
         this.companyId = companyId;
         this.studentId = studentId;
@@ -63,6 +63,6 @@ public class Contract {
         this.hoursPerWeek = hoursPerWeek;
         this.totalHours = totalHours;
         this.pricePerHour = pricePerHour;
-        this.contractStatus = contractStatus;
+        this.status = status;
     }
 }

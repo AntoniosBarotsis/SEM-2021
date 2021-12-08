@@ -15,7 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import nl.tudelft.sem.template.enums.changeStatus;
+import nl.tudelft.sem.template.enums.ChangeStatus;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -27,7 +27,7 @@ import org.hibernate.annotations.OnDeleteAction;
 public class ContractChangeProposal {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    private Long id;
 
     @JsonProperty("contractId")
     @JsonIdentityReference(alwaysAsId = true)
@@ -46,7 +46,7 @@ public class ContractChangeProposal {
     //----------------------------------
 
     @Enumerated(EnumType.STRING)
-    private changeStatus status;   //the status of the change proposal(pending/rejected/accepted)
+    private ChangeStatus status;   //the status of the change proposal(pending/rejected/accepted)
 
     /**
      * Constructor for a contract change proposal, without the id.
@@ -61,7 +61,7 @@ public class ContractChangeProposal {
      */
     public ContractChangeProposal(Contract contract, String proposer, String participant,
                                   Double hoursPerWeek, Double totalHours,
-                                  Double pricePerHour, changeStatus status) {
+                                  Double pricePerHour, ChangeStatus status) {
         this.contract = contract;
         this.proposer = proposer;
         this.participant = participant;
