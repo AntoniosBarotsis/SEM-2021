@@ -64,6 +64,7 @@ public class OfferService {
 
     /**
      * Calls saveOffer, but instead of throwing exceptions, it returns a ResponseEntity.
+     *
      * @param offer Offer that needs to be saved.
      * @return ResponseEntity with the saved Offer, or thrown exception.
      */
@@ -112,7 +113,14 @@ public class OfferService {
             + "s";
     }
 
-    public double getAverageRating(String username) throws UpstreamServiceException{
+    /**
+     * Returns the average rating of a user by contacting the user feedback service.
+     *
+     * @param username username of the user.
+     * @return average rating of the user.
+     * @throws UpstreamServiceException Thrown when the user feedback service is not available.
+     */
+    public double getAverageRating(String username) throws UpstreamServiceException {
         String feedbackServiceUrl = "http://feedback-service/user/" + username;
         try {
             AverageRatingResponse response = restTemplate.getForObject(

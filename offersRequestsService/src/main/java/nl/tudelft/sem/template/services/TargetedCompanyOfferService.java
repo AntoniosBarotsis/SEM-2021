@@ -46,6 +46,14 @@ public class TargetedCompanyOfferService extends OfferService {
         return super.saveOffer(targetedCompanyOffer);
     }
 
+    /**
+     * Calls saveOffer, catches any exceptions and returns a ResponseEntity based
+     * on the result or thrown exceptions.
+     *
+     * @param offer Offer to be saved.
+     * @param id Id of the StudentOffer this offer targets.
+     * @return ResponseEntity with the result of the saveOffer method.
+     */
     public ResponseEntity<Response<Offer>> saveOfferWithResponse(Offer offer, Long id) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)

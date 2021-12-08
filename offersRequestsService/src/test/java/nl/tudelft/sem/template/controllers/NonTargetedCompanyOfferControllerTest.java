@@ -102,13 +102,13 @@ class NonTargetedCompanyOfferControllerTest {
     void saveOfferIllegalTest() throws LowRatingException, UpstreamServiceException {
         String error = "error";
         Mockito.when(offerService.saveOfferWithResponse(offer)).thenReturn(
-                new ResponseEntity<>(new Response<>(null, "error"), HttpStatus.BAD_REQUEST)
+                new ResponseEntity<>(new Response<>(null, error), HttpStatus.BAD_REQUEST)
         );
 
         ResponseEntity<Response<Offer>> response = offerController
                 .createNonTargetedCompanyOffer(offer, company, companyRole);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("error",
+        assertEquals(error,
                 Objects.requireNonNull(response.getBody()).getErrorMessage());
     }
 
