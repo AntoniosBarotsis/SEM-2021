@@ -257,4 +257,10 @@ public class FeedbackServiceTest {
         assertThrows(FeedbackAlreadyExistsException.class,
             () -> feedbackService.create(feedbackRequest, userName, userRole));
     }
+
+    @Test
+    void getAverageRatingByUserTest() {
+        when(feedbackRepository.getAverageRatingByUser(userName)).thenReturn(5.0);
+        assertEquals(5.0, feedbackService.getAverageRatingByUser(userName));
+    }
 }
