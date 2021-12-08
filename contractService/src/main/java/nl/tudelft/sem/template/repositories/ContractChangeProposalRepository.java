@@ -9,9 +9,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Repository
 public interface ContractChangeProposalRepository extends
         JpaRepository<ContractChangeProposal, Long> {
+
+    List<ContractChangeProposal> findAllByContract(Contract c);
 
     @Query("SELECT p FROM ContractChangeProposal p WHERE p.contract = ?1 "
             + "AND p.proposer= ?2 AND p.status = 'PENDING'")

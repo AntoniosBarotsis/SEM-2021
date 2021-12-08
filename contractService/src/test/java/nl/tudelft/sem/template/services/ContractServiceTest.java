@@ -10,6 +10,7 @@ import java.util.Optional;
 import nl.tudelft.sem.template.entities.Contract;
 import nl.tudelft.sem.template.enums.ContractStatus;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
+import nl.tudelft.sem.template.exceptions.InactiveContractException;
 import nl.tudelft.sem.template.repositories.ContractRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -126,7 +127,7 @@ class ContractServiceTest {
     }
 
     @Test
-    void terminateContractSuccess() throws ContractNotFoundException {
+    void terminateContractSuccess() throws ContractNotFoundException, InactiveContractException {
         when(contractRepository.findById(contract.getId()))
                 .thenReturn(Optional.of(contract));
 

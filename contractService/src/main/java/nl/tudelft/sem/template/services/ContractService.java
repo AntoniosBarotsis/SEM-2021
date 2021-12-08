@@ -7,6 +7,7 @@ import nl.tudelft.sem.template.entities.Contract;
 import nl.tudelft.sem.template.entities.ContractChangeProposal;
 import nl.tudelft.sem.template.enums.ContractStatus;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
+import nl.tudelft.sem.template.exceptions.InactiveContractException;
 import nl.tudelft.sem.template.repositories.ContractRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,13 +50,13 @@ public class ContractService {
     }
 
     /**
-     * PRIVATE method to get a contract by the passed id.
+     * Get a contract by the passed id.
      * Also used to check if a contract exists.
      *
      * @param contractId The id of the contract.
      * @throws ContractNotFoundException If the contract doesn't exist.
      */
-    private Contract getContract(Long contractId) throws ContractNotFoundException {
+    public Contract getContract(Long contractId) throws ContractNotFoundException {
         Optional<Contract> contract = contractRepository.findById(contractId);
         if (contract.isEmpty()) {
             throw new ContractNotFoundException(contractId);
@@ -124,20 +125,24 @@ public class ContractService {
      * @param contractId The contract that is to be terminated.
      * @throws ContractNotFoundException Thrown if a contract doesn't exist.
      */
-    public void terminateContract(Long contractId) throws ContractNotFoundException {
+    public void terminateContract(Long contractId)
+            throws ContractNotFoundException, InactiveContractException {
         //check if contract exists:
-        getContract(contractId);
+        Contract contract = getContract(contractId);
+        //terminate contract only if it is active
+        if (!contract.getStatus().equals(ContractStatus.ACTIVE))
+            throw new InactiveContractException();
 
         contractRepository.terminateContract(contractId);
     }
 
     /**
      * Updates a contract when a proposed change is accepted.
-     * This method is called only if the contract is active.
+     * This method is called only if the contract is active, so no checks for that are needed.
      *
      * @param contract The contract that should be changed.
      * @param proposal The proposed changes.
-     * @return The updated contract information.
+     * @return The updated contract entity.
      */
     public Contract updateContract(Contract contract, ContractChangeProposal proposal) {
         //Update contract with proposal
@@ -148,6 +153,11 @@ public class ContractService {
 
         if (proposal.getPricePerHour() != null)
             contract.setPricePerHour(proposal.getPricePerHour());
+
+        // Set new endDate:
+        int weeks = (int) Math.ceil(contract.getTotalHours() / contract.getHoursPerWeek());
+        LocalDate date = contract.getStartDate().plusWeeks(weeks);
+        contract.setEndDate(date);
 
         return contractRepository.save(contract);
     }

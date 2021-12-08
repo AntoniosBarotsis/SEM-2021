@@ -11,6 +11,7 @@ import nl.tudelft.sem.template.DTOs.requests.ContractRequest;
 import nl.tudelft.sem.template.entities.Contract;
 import nl.tudelft.sem.template.enums.ContractStatus;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
+import nl.tudelft.sem.template.exceptions.InactiveContractException;
 import nl.tudelft.sem.template.services.ContractService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -73,7 +74,7 @@ class ContractControllerTest {
     }
 
     @Test
-    void terminateContractFailed() throws ContractNotFoundException {
+    void terminateContractFailed() throws ContractNotFoundException, InactiveContractException {
         Exception e = new ContractNotFoundException(contract.getId());
 
         doThrow(e).when(contractService).terminateContract(any());

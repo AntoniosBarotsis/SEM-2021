@@ -4,11 +4,14 @@ import nl.tudelft.sem.template.entities.Contract;
 import nl.tudelft.sem.template.entities.ContractChangeProposal;
 import nl.tudelft.sem.template.enums.ContractStatus;
 import nl.tudelft.sem.template.exceptions.ChangeProposalNotFoundException;
+import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
+import nl.tudelft.sem.template.exceptions.InactiveContractException;
 import nl.tudelft.sem.template.exceptions.InvalidChangeProposalException;
 import nl.tudelft.sem.template.repositories.ContractChangeProposalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -33,7 +36,7 @@ public class ContractChangeProposalService {
      *                                        or if the contract is expired or cancelled
      */
     private void validateContractProposal(ContractChangeProposal proposal)
-            throws InvalidChangeProposalException {
+            throws InvalidChangeProposalException, InactiveContractException {
         // when creating the proposal from a request there are
         // already checks to see if the 'proposer' is in the contract
 
@@ -41,7 +44,7 @@ public class ContractChangeProposalService {
 
         //contract expired or terminated:
         if (contractStatus != ContractStatus.ACTIVE) {
-            throw new InvalidChangeProposalException("This contract isn't active anymore.");
+            throw new InactiveContractException();
         }
 
         //max no of hours exceeded:
@@ -70,10 +73,17 @@ public class ContractChangeProposalService {
      *                                  or if the contract is expired or cancelled
      */
     private void validateProposalAction(ContractChangeProposal proposal, String participant)
-            throws ChangeProposalNotFoundException {
-        if (!proposal.getContract().getStatus().equals(ContractStatus.ACTIVE)
-                || !proposal.getParticipant().equals(participant))
+            throws ChangeProposalNotFoundException, InactiveContractException {
+
+        //participant is not in the contract:
+        if (!proposal.getParticipant().equals(participant)) {
             throw new ChangeProposalNotFoundException(proposal.getId());
+        }
+
+        //inactive contract:
+        if (!proposal.getContract().getStatus().equals(ContractStatus.ACTIVE)) {
+            throw new InactiveContractException();
+        }
     }
 
     /**
@@ -104,8 +114,10 @@ public class ContractChangeProposalService {
      *                                        or the contract is not active.
      */
     public ContractChangeProposal submitProposal(ContractChangeProposal proposal)
-            throws InvalidChangeProposalException {
+            throws InvalidChangeProposalException, InactiveContractException {
+        //check if proposal is valid:
         validateContractProposal(proposal);
+
         return changeProposalRepository.save(proposal);
     }
 
@@ -119,7 +131,7 @@ public class ContractChangeProposalService {
      *                                         or if the proposal doesn't exist.
      */
     public Contract acceptProposal(Long proposalId, String participant)
-            throws ChangeProposalNotFoundException {
+            throws ChangeProposalNotFoundException, InactiveContractException {
 
         //check if proposal exists:
         ContractChangeProposal proposal = getProposal(proposalId);
@@ -133,7 +145,7 @@ public class ContractChangeProposalService {
     }
 
     /**
-     * Reject a proposal by it's id.
+     * Reject a proposal by its id.
      *
      * @param proposalId  The proposal's id.
      * @param participant The user that rejects the proposal.
@@ -141,7 +153,7 @@ public class ContractChangeProposalService {
      *                                         or if the proposal doesn't exist.
      */
     public void rejectProposal(Long proposalId, String participant)
-            throws ChangeProposalNotFoundException {
+            throws ChangeProposalNotFoundException, InactiveContractException {
 
         //check if proposal exists:
         ContractChangeProposal proposal = getProposal(proposalId);
@@ -152,7 +164,7 @@ public class ContractChangeProposalService {
     }
 
     /**
-     * Delete a proposal by it's id.
+     * Delete a proposal by its id.
      *
      * @param proposalId The id of the proposal.
      * @param proposer   The user that proposed the change and wants to delete it.
@@ -169,5 +181,14 @@ public class ContractChangeProposalService {
             throw new ChangeProposalNotFoundException(proposalId);
 
         changeProposalRepository.deleteById(proposalId);
+    }
+
+    public List<ContractChangeProposal> getProposals(Contract contract, String userId)
+            throws ContractNotFoundException {
+        if (!contract.getCompanyId().equals(userId) && !contract.getStudentId().equals(userId)){
+            throw new ContractNotFoundException(contract.getId());
+        }
+
+        return changeProposalRepository.findAllByContract(contract);
     }
 }

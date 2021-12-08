@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.controllers;
 import nl.tudelft.sem.template.DTOs.requests.ContractRequest;
 import nl.tudelft.sem.template.entities.Contract;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
+import nl.tudelft.sem.template.exceptions.InactiveContractException;
 import nl.tudelft.sem.template.services.ContractService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,9 +30,10 @@ public class ContractController {
 
     /**
      * Validates a ContractRequest when creating a contract.
-     * Automatically called when a MethodArgumentNotValidException
-     * (from the @NotNull annotation) is thrown.
-     * <p>
+     * If a parameter in contractRequest is null,
+     * a MethodArgumentNotValidException is thrown (from the @NotNull annotation),
+     * which automatically triggers this method.
+     *
      * Method from: baeldung.com/spring-boot-bean-validation
      *
      * @param e The thrown exception containing the error message.
@@ -83,7 +84,7 @@ public class ContractController {
         try {
             contractService.terminateContract(id);
             return ResponseEntity.ok().body(null);
-        } catch (ContractNotFoundException e) {
+        } catch (ContractNotFoundException | InactiveContractException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
