@@ -1,8 +1,10 @@
 package nl.tudelft.sem.template.services;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import nl.tudelft.sem.template.entities.Contract;
+import nl.tudelft.sem.template.entities.ContractChangeProposal;
 import nl.tudelft.sem.template.enums.ContractStatus;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
 import nl.tudelft.sem.template.repositories.ContractRepository;
@@ -47,6 +49,21 @@ public class ContractService {
     }
 
     /**
+     * PRIVATE method to get a contract by the passed id.
+     * Also used to check if a contract exists.
+     *
+     * @param contractId The id of the contract.
+     * @throws ContractNotFoundException If the contract doesn't exist.
+     */
+    private Contract getContract(Long contractId) throws ContractNotFoundException {
+        Optional<Contract> contract = contractRepository.findById(contractId);
+        if (contract.isEmpty()) {
+            throw new ContractNotFoundException(contractId);
+        }
+        return contract.get();
+    }
+
+    /**
      * Saves a contract in the repository.
      *
      * @param contract The contract to be saved.
@@ -66,7 +83,7 @@ public class ContractService {
         contract.setEndDate(date);    //LocalDate is immutable, so different memory address here
 
         // Set as active
-        contract.setContractStatus(ContractStatus.ACTIVE);
+        contract.setStatus(ContractStatus.ACTIVE);
 
         return contractRepository.save(contract);
     }
@@ -84,8 +101,10 @@ public class ContractService {
             throws ContractNotFoundException {
         Contract contract;
         if (active) {
+            //return current active contract
             contract = contractRepository.findActiveContract(companyId, studentId);
         } else {
+            //return most recent (active or not) contract:
             contract = contractRepository
                     .findFirstByCompanyIdEqualsAndStudentIdEqualsOrderByEndDateDesc(
                             companyId, studentId
@@ -106,10 +125,31 @@ public class ContractService {
      * @throws ContractNotFoundException Thrown if a contract doesn't exist.
      */
     public void terminateContract(Long contractId) throws ContractNotFoundException {
-        if (contractRepository.findById(contractId).isEmpty()) {
-            throw new ContractNotFoundException(contractId);
-        }
+        //check if contract exists:
+        getContract(contractId);
+
         contractRepository.terminateContract(contractId);
+    }
+
+    /**
+     * Updates a contract when a proposed change is accepted.
+     * This method is called only if the contract is active.
+     *
+     * @param contract The contract that should be changed.
+     * @param proposal The proposed changes.
+     * @return The updated contract information.
+     */
+    public Contract updateContract(Contract contract, ContractChangeProposal proposal) {
+        //Update contract with proposal
+        if (proposal.getHoursPerWeek() != null)
+            contract.setHoursPerWeek(proposal.getHoursPerWeek());
+
+        if (proposal.getTotalHours() != null) contract.setTotalHours(proposal.getTotalHours());
+
+        if (proposal.getPricePerHour() != null)
+            contract.setPricePerHour(proposal.getPricePerHour());
+
+        return contractRepository.save(contract);
     }
 
 }
