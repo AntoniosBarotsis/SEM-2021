@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import nl.tudelft.sem.template.entities.Offer;
@@ -126,7 +127,7 @@ public class OfferService {
             AverageRatingResponse response = restTemplate.getForObject(
                     feedbackServiceUrl, AverageRatingResponse.class
             );
-            assert response != null;
+            Objects.requireNonNull(response);
             return response.getAverageRating();
         } catch (Exception exception) {
             throw new UpstreamServiceException(

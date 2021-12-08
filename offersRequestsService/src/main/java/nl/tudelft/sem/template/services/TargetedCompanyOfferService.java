@@ -54,10 +54,11 @@ public class TargetedCompanyOfferService extends OfferService {
      * @param id Id of the StudentOffer this offer targets.
      * @return ResponseEntity with the result of the saveOffer method.
      */
-    public ResponseEntity<Response<Offer>> saveOfferWithResponse(Offer offer, Long id) {
+    public ResponseEntity<Response<Offer>> saveOfferWithResponse(
+            TargetedCompanyOffer offer, Long id) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new Response<>(saveOffer(offer)));
+                    .body(new Response<>(saveOffer(offer, id)));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new Response<>(null, e.getMessage()));
