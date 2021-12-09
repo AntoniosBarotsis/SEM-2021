@@ -1,6 +1,7 @@
 package envloader;
 
 import java.util.Map;
+import java.util.Objects;
 
 class EnvLoaderImpl implements EnvLoader {
     private final transient Map<String, String> envVars;
@@ -32,5 +33,10 @@ class EnvLoaderImpl implements EnvLoader {
 
         EnvLoaderImpl envLoader = (EnvLoaderImpl) o;
         return envVars.equals(envLoader.envVars);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(envVars);
     }
 }
