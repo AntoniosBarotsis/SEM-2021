@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.dtos.requests;
 
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,7 @@ public class ContractChangeRequest {
     Double hoursPerWeek;
     Double totalHours;
     Double pricePerHour;
+    LocalDate endDate;
 
     /**
      * Checks if a contractChangeRequest is valid.
@@ -24,7 +26,8 @@ public class ContractChangeRequest {
      * @return true if it's valid, false if not.
      */
     public boolean isValid() {
-        return hoursPerWeek != null || totalHours != null || pricePerHour != null;
+        return hoursPerWeek != null || totalHours != null || pricePerHour != null
+                || endDate != null;
     }
 
     /**
@@ -52,6 +55,6 @@ public class ContractChangeRequest {
         }
 
         return new ContractChangeProposal(contract, proposer, participant, hoursPerWeek,
-                totalHours, pricePerHour, ChangeStatus.PENDING);
+                totalHours, pricePerHour, endDate, ChangeStatus.PENDING);
     }
 }

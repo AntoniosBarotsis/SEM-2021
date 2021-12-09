@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.services;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import nl.tudelft.sem.template.entities.Contract;
 import nl.tudelft.sem.template.entities.ContractChangeProposal;
@@ -156,23 +157,37 @@ public class ContractService {
             contract.setPricePerHour(proposal.getPricePerHour());
         }
 
+        // Set computed end date:
+        long weeks = (long) (contract.getTotalHours() / contract.getHoursPerWeek());
+        LocalDate endDate = contract.getStartDate().plusWeeks((int) Math.ceil(weeks));
+        contract.setEndDate(endDate);
+
+        // If proposed end date isn't null set as new end date:
+        if (proposal.getEndDate() != null) {
+            LocalDate proposedEndDate = proposal.getEndDate();
+
+            // Check if proposal end date is after the minimum required end date:
+            if (proposedEndDate.isBefore(endDate)) {
+                throw new InvalidChangeProposalException(
+                        "The new end date of contract is too soon.");
+            }
+
+            weeks = ChronoUnit.WEEKS.between(contract.getStartDate(), proposedEndDate);
+            contract.setEndDate(proposedEndDate);
+        }
+
+
         // Check if too many hours per week or too many weeks:
-        if (contract.getHoursPerWeek() > MAX_HOURS
-                || contract.getTotalHours() / contract.getHoursPerWeek() > MAX_WEEKS) {
+        if (contract.getHoursPerWeek() > MAX_HOURS || weeks > MAX_WEEKS) {
             throw new InvalidChangeProposalException("This change proposal is not valid anymore, "
                     + "due to past modifications to the contract.");
         }
-
-        // Set new endDate:
-        int weeks = (int) Math.ceil(contract.getTotalHours() / contract.getHoursPerWeek());
-        LocalDate date = contract.getStartDate().plusWeeks(weeks);
-        contract.setEndDate(date);
 
         return contractRepository.save(contract);
     }
 
     //----------------------------------------
-    //      PRIVATE METHODS:
+    //      HELPER METHODS:
     //----------------------------------------
 
     /**
@@ -184,7 +199,7 @@ public class ContractService {
      *                                  or the company's id and student's id are the same
      *                                  or if there is an existing active contract already.
      */
-    private void validateContract(Contract contract)
+    public void validateContract(Contract contract)
             throws InvalidContractException {
         // Contract between the same user:
         if (contract.getCompanyId().equals(contract.getStudentId())

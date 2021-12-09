@@ -1,5 +1,7 @@
 package nl.tudelft.sem.template.services;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import nl.tudelft.sem.template.entities.Contract;
@@ -67,12 +69,16 @@ public class ContractChangeProposalService {
         // Check if the participant can reject the proposal and if contract is active:
         validateProposalAction(proposal, participant);
 
+        // Try to update contract:
+        Contract updatedContract =
+                contractService.updateContract(proposal.getContract(), proposal);
+
+        // If successful accept proposal:
         changeProposalRepository.acceptProposal(proposalId);
         // Delete all past rejected proposals:
         changeProposalRepository.deleteAllRejectedProposalsOfContract(proposal.getContract());
 
-        // Update contract and return the contract with applied changes:
-        return contractService.updateContract(proposal.getContract(), proposal);
+        return updatedContract;
     }
 
     /**
@@ -149,11 +155,11 @@ public class ContractChangeProposalService {
     }
 
     //----------------------------------------
-    //      PRIVATE METHODS:
+    //      HELPER METHODS:
     //----------------------------------------
 
     /**
-     * PRIVATE HELPER METHOD which validates a contract change proposal's parameters.
+     * HELPER METHOD which validates a contract change proposal's parameters.
      *
      * @param proposal The proposal to be validated.
      * @throws InvalidChangeProposalException Thrown when the proposal is not valid
@@ -162,7 +168,7 @@ public class ContractChangeProposalService {
      *                                        or if the contract is expired or cancelled
      *                                        or if the previous proposal wasn't reviewed.
      */
-    private void validateContractProposal(ContractChangeProposal proposal)
+    public void validateContractProposal(ContractChangeProposal proposal)
             throws InvalidChangeProposalException, InactiveContractException {
         // When creating the proposal from a request there are
         // already checks to see if the 'proposer' is in the contract
@@ -190,8 +196,25 @@ public class ContractChangeProposalService {
             totalHours = contract.getTotalHours();
         }
 
+        // Computed end date:
+        long weeks = (long) (totalHours / hoursPerWeek);
+
+        // Specified end date:
+        if (proposal.getEndDate() != null) {
+            LocalDate computedEndDate = contract.getStartDate().plusWeeks((int) Math.ceil(weeks));
+            LocalDate proposedEndDate = proposal.getEndDate();
+
+            // Check if proposal end date is after the minimum required end date:
+            if (proposedEndDate.isBefore(computedEndDate)) {
+                throw new InvalidChangeProposalException(
+                        "The new end date of contract is too soon.");
+            }
+
+            weeks = ChronoUnit.WEEKS.between(contract.getStartDate(), proposedEndDate);
+        }
+
         // Max no of hours exceeded OR no of weeks exceeded:
-        if (hoursPerWeek > MAX_HOURS || totalHours / hoursPerWeek > MAX_WEEKS) {
+        if (hoursPerWeek > MAX_HOURS || weeks > MAX_WEEKS) {
             throw new InvalidChangeProposalException();
         }
 
@@ -204,7 +227,7 @@ public class ContractChangeProposalService {
     }
 
     /**
-     * PRIVATE HELPER METHOD which checks if a change proposal can be accepted / rejected.
+     * HELPER METHOD which checks if a change proposal can be accepted / rejected.
      *
      * @param proposal    The proposal to be validated.
      * @param participant The id of the user that wants to accept / reject the proposal.
@@ -212,7 +235,7 @@ public class ContractChangeProposalService {
      *                                  (only the contract participant can accept/reject a proposal)
      *                                  or if the contract is expired or cancelled
      */
-    private void validateProposalAction(ContractChangeProposal proposal, String participant)
+    public void validateProposalAction(ContractChangeProposal proposal, String participant)
             throws InactiveContractException, AccessDeniedException {
 
         // Participant is not in the contract:
