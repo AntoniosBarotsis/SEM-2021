@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.services;
 
 import nl.tudelft.sem.template.entities.Contract;
 import nl.tudelft.sem.template.entities.ContractChangeProposal;
+import nl.tudelft.sem.template.enums.ChangeStatus;
 import nl.tudelft.sem.template.enums.ContractStatus;
 import nl.tudelft.sem.template.exceptions.ChangeProposalNotFoundException;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
@@ -40,6 +41,7 @@ public class ContractChangeProposalService {
         // when creating the proposal from a request there are
         // already checks to see if the 'proposer' is in the contract
 
+        Contract contract = proposal.getContract();
         ContractStatus contractStatus = proposal.getContract().getStatus();
 
         //contract expired or terminated:
@@ -47,11 +49,18 @@ public class ContractChangeProposalService {
             throw new InactiveContractException();
         }
 
+        //if proposal didn't include hoursPerWeek or totalHours,
+        //use values from contract:
+        double hoursPerWeek = contract.getHoursPerWeek();
+        double totalHours = contract.getTotalHours();
+        if (proposal.getHoursPerWeek() != null) hoursPerWeek = proposal.getHoursPerWeek();
+        if (proposal.getTotalHours() != null) totalHours = proposal.getTotalHours();
+
         //max no of hours exceeded:
-        if (proposal.getHoursPerWeek() > MAX_HOURS
+        if (hoursPerWeek > MAX_HOURS
 
                 //no of weeks exceeded:
-                || proposal.getTotalHours() / proposal.getHoursPerWeek() > MAX_WEEKS) {
+                || totalHours / hoursPerWeek > MAX_WEEKS) {
 
             throw new InvalidChangeProposalException();
         }
@@ -176,6 +185,10 @@ public class ContractChangeProposalService {
         //check if proposal exists:
         ContractChangeProposal proposal = getProposal(proposalId);
 
+        if (proposal.getStatus() != ChangeStatus.PENDING)
+            throw new ChangeProposalNotFoundException(
+                    "This proposal was already reviewed and cannot be deleted");
+
         //check if proposer is owner of the proposal:
         if (!proposal.getProposer().equals(proposer))
             throw new ChangeProposalNotFoundException(proposalId);
@@ -185,7 +198,7 @@ public class ContractChangeProposalService {
 
     public List<ContractChangeProposal> getProposals(Contract contract, String userId)
             throws ContractNotFoundException {
-        if (!contract.getCompanyId().equals(userId) && !contract.getStudentId().equals(userId)){
+        if (!contract.getCompanyId().equals(userId) && !contract.getStudentId().equals(userId)) {
             throw new ContractNotFoundException(contract.getId());
         }
 

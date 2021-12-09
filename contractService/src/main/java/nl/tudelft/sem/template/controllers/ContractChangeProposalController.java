@@ -32,18 +32,20 @@ public class ContractChangeProposalController {
      * Submit a contract change proposal.
      *
      * @param contractId    The id of the contract the user wants to change.
-     * @param proposer      The user that wants the change.
      * @param changeRequest The request containing the new contract parameters.
      * @return The saved proposal.
      */
-    @PostMapping("/{contractId}/changeProposals/{proposer}")
-    public ResponseEntity<Object> proposeChange(@PathVariable(name = "contractId") Long contractId,
-                                                @PathVariable(name = "proposer") String proposer,
-                                                @RequestBody ContractChangeRequest changeRequest) {
+    @PostMapping("/{contractId}/changeProposals")
+    public ResponseEntity<Object> proposeChange(
+            @RequestHeader("x-user-name") String userName,
+            @RequestHeader("x-user-role") String userRole,
+            @PathVariable Long contractId,
+            @RequestBody ContractChangeRequest changeRequest) {
+
         try {
             Contract contract = contractService.getContract(contractId);
             ContractChangeProposal proposal =
-                    changeRequest.toContractChangeProposal(contract, proposer);
+                    changeRequest.toContractChangeProposal(contract, userName);
             ContractChangeProposal p = changeProposalService.submitProposal(proposal);
 
             return new ResponseEntity<>(p, HttpStatus.CREATED);
@@ -54,51 +56,58 @@ public class ContractChangeProposalController {
         }
     }
 
-    @PutMapping("/changeProposals/{proposalId}/accept/{participant}")
-    public ResponseEntity<Object> acceptProposal(@PathVariable(name = "proposalId") Long proposalId,
-                                                 @PathVariable(name = "participant") String participant) {
+    @PutMapping("/changeProposals/{proposalId}/accept")
+    public ResponseEntity<Object> acceptProposal(
+            @RequestHeader("x-user-name") String userName,
+            @RequestHeader("x-user-role") String userRole,
+            @PathVariable(name = "proposalId") Long proposalId) {
 
         try {
-            Contract contract = changeProposalService.acceptProposal(proposalId, participant);
+            Contract contract = changeProposalService.acceptProposal(proposalId, userName);
             return new ResponseEntity<>(contract, HttpStatus.OK);
         } catch (ChangeProposalNotFoundException | InactiveContractException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    @PutMapping("/changeProposals/{proposalId}/reject/{participant}")
-    public ResponseEntity<String> rejectProposal(@PathVariable(name = "proposalId") Long proposalId,
-                                                 @PathVariable(name = "participant") String participant) {
+    @PutMapping("/changeProposals/{proposalId}/reject")
+    public ResponseEntity<String> rejectProposal(
+            @RequestHeader("x-user-name") String userName,
+            @RequestHeader("x-user-role") String userRole,
+            @PathVariable(name = "proposalId") Long proposalId) {
 
         try {
-            changeProposalService.rejectProposal(proposalId, participant);
+            changeProposalService.rejectProposal(proposalId, userName);
             return ResponseEntity.ok(null);
         } catch (ChangeProposalNotFoundException | InactiveContractException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    @PutMapping("/changeProposals/{proposalId}/delete/{proposer}")
-    public ResponseEntity<String> deleteProposal(@PathVariable(name = "proposalId") Long proposalId,
-                                                 @PathVariable(name = "proposer") String proposer) {
+    @DeleteMapping("/changeProposals/{proposalId}")
+    public ResponseEntity<String> deleteProposal(
+            @RequestHeader("x-user-name") String userName,
+            @RequestHeader("x-user-role") String userRole,
+            @PathVariable(name = "proposalId") Long proposalId) {
 
         try {
-            changeProposalService.deleteProposal(proposalId, proposer);
+            changeProposalService.deleteProposal(proposalId, userName);
             return ResponseEntity.ok(null);
         } catch (ChangeProposalNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
-    @GetMapping("/{contractId}/changeProposals/{userId}")
+    @GetMapping("/{contractId}/changeProposals")
     public ResponseEntity<Object> getProposalsOfContract(
-            @PathVariable(name = "contractId") Long contractId,
-            @PathVariable(name = "userId") String userId) {
+            @RequestHeader("x-user-name") String userName,
+            @RequestHeader("x-user-role") String userRole,
+            @PathVariable(name = "contractId") Long contractId) {
 
         try {
             Contract contract = contractService.getContract(contractId);
             List<ContractChangeProposal> proposals =
-                    changeProposalService.getProposals(contract, userId);
+                    changeProposalService.getProposals(contract, userName);
             return ResponseEntity.ok().body(proposals);
         } catch (ContractNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);

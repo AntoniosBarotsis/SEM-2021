@@ -107,7 +107,7 @@ public class ContractService {
         } else {
             //return most recent (active or not) contract:
             contract = contractRepository
-                    .findFirstByCompanyIdEqualsAndStudentIdEqualsOrderByEndDateDesc(
+                    .findFirstByCompanyIdEqualsAndStudentIdEqualsOrderByStartDateDesc(
                             companyId, studentId
                     );
         }
