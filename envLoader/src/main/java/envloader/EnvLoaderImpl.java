@@ -9,7 +9,6 @@ class EnvLoaderImpl implements EnvLoader {
         this.envVars = envVars;
     }
 
-
     @Override
     public String get(String key) {
         return this.envVars.get(key);
@@ -20,5 +19,18 @@ class EnvLoaderImpl implements EnvLoader {
         var value = this.envVars.get(key);
 
         return value != null ? value : defaultValue;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof EnvLoaderImpl)) {
+            return false;
+        }
+
+        EnvLoaderImpl envLoader = (EnvLoaderImpl) o;
+        return envVars.equals(envLoader.envVars);
     }
 }
