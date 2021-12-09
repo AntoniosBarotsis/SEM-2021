@@ -1,16 +1,19 @@
 package nl.tudelft.sem.template.services;
 
+import java.util.List;
+import java.util.Optional;
 import nl.tudelft.sem.template.entities.Contract;
 import nl.tudelft.sem.template.entities.ContractChangeProposal;
 import nl.tudelft.sem.template.enums.ChangeStatus;
 import nl.tudelft.sem.template.enums.ContractStatus;
-import nl.tudelft.sem.template.exceptions.*;
+import nl.tudelft.sem.template.exceptions.AccessDeniedException;
+import nl.tudelft.sem.template.exceptions.ChangeProposalNotFoundException;
+import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
+import nl.tudelft.sem.template.exceptions.InactiveContractException;
+import nl.tudelft.sem.template.exceptions.InvalidChangeProposalException;
 import nl.tudelft.sem.template.repositories.ContractChangeProposalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ContractChangeProposalService {
@@ -26,11 +29,12 @@ public class ContractChangeProposalService {
 
     /**
      * Saves a change proposal to the repository.
+     * Authorization is checked before this method is called.
      *
      * @param proposal The proposal that should be saved.
      * @return The saved proposal entity.
      * @throws InvalidChangeProposalException If the proposal is invalid
-     *                                        or the contract is not active.
+     * @throws InactiveContractException      If the contract is not active.
      */
     public ContractChangeProposal submitProposal(ContractChangeProposal proposal)
             throws InvalidChangeProposalException, InactiveContractException {
@@ -46,8 +50,12 @@ public class ContractChangeProposalService {
      * @param proposalId  The id of the proposal.
      * @param participant The user that accepts the proposal.
      * @return The updated contract.
-     * @throws ChangeProposalNotFoundException If the participant is not in the contract
-     *                                         or if the proposal doesn't exist.
+     * @throws ChangeProposalNotFoundException If the proposal doesn't exist.
+     * @throws InactiveContractException       If the contract is no longer active.
+     * @throws InvalidChangeProposalException  If the proposal's parameters are no longer valid,
+     *                                         meaning the contract was changed once before.
+     *                                         (not likely to happen but just for caution)
+     * @throws AccessDeniedException           If the participant is not in the contract.
      */
     public Contract acceptProposal(Long proposalId, String participant)
             throws ChangeProposalNotFoundException, InactiveContractException,
@@ -72,8 +80,9 @@ public class ContractChangeProposalService {
      *
      * @param proposalId  The proposal's id.
      * @param participant The user that rejects the proposal.
-     * @throws ChangeProposalNotFoundException If the participant is not in the contract
-     *                                         or if the proposal doesn't exist.
+     * @throws ChangeProposalNotFoundException If the proposal doesn't exist.
+     * @throws InactiveContractException       If the contract is no longer active.
+     * @throws AccessDeniedException           If the participant is not in the contract.
      */
     public void rejectProposal(Long proposalId, String participant)
             throws ChangeProposalNotFoundException, InactiveContractException,
@@ -94,6 +103,7 @@ public class ContractChangeProposalService {
      * @param proposer   The user that proposed the change and wants to delete it.
      * @throws ChangeProposalNotFoundException If the proposer is not in the contract
      *                                         or if the proposal doesn't exist.
+     * @throws AccessDeniedException           If the proposer is not in the contract.
      */
     public void deleteProposal(Long proposalId, String proposer)
             throws ChangeProposalNotFoundException, AccessDeniedException {
@@ -101,23 +111,38 @@ public class ContractChangeProposalService {
         ContractChangeProposal proposal = getProposal(proposalId);
 
         // Can't delete proposal if it was reviewed (accepted/rejected):
-        if (proposal.getStatus() != ChangeStatus.PENDING)
+        if (proposal.getStatus() != ChangeStatus.PENDING) {
             throw new ChangeProposalNotFoundException(
                     "This proposal was already reviewed and cannot be deleted");
+        }
 
         // Check if proposer is owner of the proposal:
-        if (!proposal.getProposer().equals(proposer))
+        if (!proposal.getProposer().equals(proposer)) {
             throw new AccessDeniedException();
-
+        }
         changeProposalRepository.deleteById(proposalId);
     }
 
+    /**
+     * Get all changes proposed for a contract.
+     *
+     * @param contract The contract the user checks for proposals.
+     * @param userId   The id of the user.
+     * @return List of all change proposals for that contract.
+     * @throws ContractNotFoundException If the contract is not found.
+     * @throws AccessDeniedException     If the user is not in the contract.
+     * @throws InactiveContractException If the contract is no longer active.
+     */
     public List<ContractChangeProposal> getProposals(Contract contract, String userId)
-            throws ContractNotFoundException, AccessDeniedException {
-
+            throws ContractNotFoundException, AccessDeniedException, InactiveContractException {
         // Check if user is a participant in the contract:
         if (!contract.getCompanyId().equals(userId) && !contract.getStudentId().equals(userId)) {
             throw new AccessDeniedException();
+        }
+
+        // Check if contract is still active:
+        if (!contract.getStatus().equals(ContractStatus.ACTIVE)) {
+            throw new InactiveContractException();
         }
 
         return changeProposalRepository.findAllByContract(contract);
@@ -135,6 +160,7 @@ public class ContractChangeProposalService {
      *                                        e.g. exceeds 20 hours per week, 6 month duration
      *                                        or the company's id and student's id are the same
      *                                        or if the contract is expired or cancelled
+     *                                        or if the previous proposal wasn't reviewed.
      */
     private void validateContractProposal(ContractChangeProposal proposal)
             throws InvalidChangeProposalException, InactiveContractException {
@@ -142,19 +168,27 @@ public class ContractChangeProposalService {
         // already checks to see if the 'proposer' is in the contract
 
         Contract contract = proposal.getContract();
-        ContractStatus contractStatus = proposal.getContract().getStatus();
+        ContractStatus contractStatus = contract.getStatus();
 
         // Contract expired or terminated:
         if (contractStatus != ContractStatus.ACTIVE) {
             throw new InactiveContractException();
         }
 
-        // If proposal didn't include hoursPerWeek or totalHours,
-        // use values from contract:
-        double hoursPerWeek = contract.getHoursPerWeek();
-        double totalHours = contract.getTotalHours();
-        if (proposal.getHoursPerWeek() != null) hoursPerWeek = proposal.getHoursPerWeek();
-        if (proposal.getTotalHours() != null) totalHours = proposal.getTotalHours();
+        // If proposal didn't include hoursPerWeek or totalHours, use values from contract:
+        double hoursPerWeek;
+        double totalHours;
+        if (proposal.getHoursPerWeek() != null) {
+            hoursPerWeek = proposal.getHoursPerWeek();
+        } else {
+            hoursPerWeek = contract.getHoursPerWeek();
+        }
+
+        if (proposal.getTotalHours() != null) {
+            totalHours = proposal.getTotalHours();
+        } else {
+            totalHours = contract.getTotalHours();
+        }
 
         // Max no of hours exceeded OR no of weeks exceeded:
         if (hoursPerWeek > MAX_HOURS || totalHours / hoursPerWeek > MAX_WEEKS) {
@@ -172,7 +206,8 @@ public class ContractChangeProposalService {
     /**
      * PRIVATE HELPER METHOD which checks if a change proposal can be accepted / rejected.
      *
-     * @param proposal The proposal to be validated.
+     * @param proposal    The proposal to be validated.
+     * @param participant The id of the user that wants to accept / reject the proposal.
      * @throws IllegalArgumentException Thrown when the participant isn't in the proposal
      *                                  (only the contract participant can accept/reject a proposal)
      *                                  or if the contract is expired or cancelled

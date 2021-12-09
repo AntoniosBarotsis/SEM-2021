@@ -1,6 +1,6 @@
 package nl.tudelft.sem.template.exceptions;
 
-public class AccessDeniedException extends Exception{
+public class AccessDeniedException extends Exception {
     public static final long serialVersionUID = 1234571;
 
     public AccessDeniedException() {

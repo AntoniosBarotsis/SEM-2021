@@ -2,15 +2,15 @@ package nl.tudelft.sem.template.entities;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.CascadeType;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -53,7 +53,7 @@ public class ContractChangeProposal {
      *
      * @param contract     The contract the change is proposed to.
      * @param proposer     The proposer of the change.
-     * @param participant  The user (company or student) that is required to accept/decline the change.
+     * @param participant  The user (company or student) that can accept/decline the change.
      * @param hoursPerWeek Change in hours per week (may be null).
      * @param totalHours   Change in total hours (may be null).
      * @param pricePerHour Change in price per hour (may be null).

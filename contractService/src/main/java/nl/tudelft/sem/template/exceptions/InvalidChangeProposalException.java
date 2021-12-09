@@ -1,6 +1,6 @@
 package nl.tudelft.sem.template.exceptions;
 
-public class InvalidChangeProposalException extends Exception{
+public class InvalidChangeProposalException extends Exception {
     public static final long serialVersionUID = 1234568;
 
     public InvalidChangeProposalException() {

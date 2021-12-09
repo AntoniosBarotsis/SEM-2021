@@ -3,24 +3,9 @@ package nl.tudelft.sem.template.controllers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
 
-import java.time.LocalDate;
-
-import nl.tudelft.sem.template.DTOs.requests.ContractRequest;
-import nl.tudelft.sem.template.entities.Contract;
-import nl.tudelft.sem.template.enums.ContractStatus;
-import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
-import nl.tudelft.sem.template.exceptions.InactiveContractException;
-import nl.tudelft.sem.template.services.ContractService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 @SpringBootTest
 @AutoConfigureMockMvc

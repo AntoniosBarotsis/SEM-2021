@@ -2,7 +2,6 @@ package nl.tudelft.sem.template.services;
 
 import java.time.LocalDate;
 import java.util.Optional;
-
 import nl.tudelft.sem.template.entities.Contract;
 import nl.tudelft.sem.template.entities.ContractChangeProposal;
 import nl.tudelft.sem.template.enums.ContractStatus;
@@ -10,6 +9,7 @@ import nl.tudelft.sem.template.exceptions.AccessDeniedException;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
 import nl.tudelft.sem.template.exceptions.InactiveContractException;
 import nl.tudelft.sem.template.exceptions.InvalidChangeProposalException;
+import nl.tudelft.sem.template.exceptions.InvalidContractException;
 import nl.tudelft.sem.template.repositories.ContractRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,10 +28,10 @@ public class ContractService {
      *
      * @param contract The contract to be saved.
      * @return The saved contract.
-     * @throws IllegalArgumentException If the contract has invalid parameters
+     * @throws InvalidContractException If the contract has invalid parameters
      *                                  or if one already exists.
      */
-    public Contract saveContract(Contract contract) throws IllegalArgumentException {
+    public Contract saveContract(Contract contract) throws InvalidContractException {
         // Check contract parameters:
         validateContract(contract);
 
@@ -56,14 +56,16 @@ public class ContractService {
      * @param studentId The id of the student.
      * @param active    If the query needs an active contract or not.
      * @param userId    The id of the user that wants to get the contract.
-     * @return the found contract or null if not found.
+     * @return The found contract or null if not found.
      * @throws ContractNotFoundException Thrown if a contract doesn't exist.
+     * @throws AccessDeniedException     If the user doesn't have rights to access the contract.
      */
     public Contract getContract(String companyId, String studentId, boolean active, String userId)
             throws ContractNotFoundException, AccessDeniedException {
         // Check authorization:
-        if (!companyId.equals(userId) && !studentId.equals(userId))
+        if (!companyId.equals(userId) && !studentId.equals(userId)) {
             throw new AccessDeniedException();
+        }
 
         Contract contract;
         // If we need the current active contract:
@@ -108,7 +110,9 @@ public class ContractService {
      *
      * @param contractId The contract that is to be terminated.
      * @param userId     The id of the user that wants the contract terminated.
-     * @throws ContractNotFoundException Thrown if a contract doesn't exist.
+     * @throws ContractNotFoundException If the contract doesn't exist.
+     * @throws InactiveContractException If the contract was already cancelled or expired.
+     * @throws AccessDeniedException     If the user doesn't have rights to terminate the contract.
      */
     public void terminateContract(Long contractId, String userId)
             throws ContractNotFoundException, InactiveContractException, AccessDeniedException {
@@ -119,9 +123,9 @@ public class ContractService {
         checkAuthorization(contract, userId);
 
         // Terminate contract only if it is active:
-        if (!contract.getStatus().equals(ContractStatus.ACTIVE))
+        if (!contract.getStatus().equals(ContractStatus.ACTIVE)) {
             throw new InactiveContractException();
-
+        }
         contractRepository.terminateContract(contractId);
     }
 
@@ -135,24 +139,29 @@ public class ContractService {
      * @param contract The contract that should be changed.
      * @param proposal The proposed changes.
      * @return The updated contract entity.
+     * @throws InvalidChangeProposalException If the proposal exceeds the max no. of hours allowed.
      */
     public Contract updateContract(Contract contract, ContractChangeProposal proposal)
             throws InvalidChangeProposalException {
         // Update contract with values from proposal:
-        if (proposal.getHoursPerWeek() != null)
+        if (proposal.getHoursPerWeek() != null) {
             contract.setHoursPerWeek(proposal.getHoursPerWeek());
+        }
 
-        if (proposal.getTotalHours() != null) contract.setTotalHours(proposal.getTotalHours());
+        if (proposal.getTotalHours() != null) {
+            contract.setTotalHours(proposal.getTotalHours());
+        }
 
-        if (proposal.getPricePerHour() != null)
+        if (proposal.getPricePerHour() != null) {
             contract.setPricePerHour(proposal.getPricePerHour());
-
+        }
 
         // Check if too many hours per week or too many weeks:
         if (contract.getHoursPerWeek() > MAX_HOURS
-                || contract.getTotalHours() / contract.getHoursPerWeek() > MAX_WEEKS)
+                || contract.getTotalHours() / contract.getHoursPerWeek() > MAX_WEEKS) {
             throw new InvalidChangeProposalException("This change proposal is not valid anymore, "
                     + "due to past modifications to the contract.");
+        }
 
         // Set new endDate:
         int weeks = (int) Math.ceil(contract.getTotalHours() / contract.getHoursPerWeek());
@@ -170,12 +179,13 @@ public class ContractService {
      * PRIVATE HELPER METHOD which validates a contract's parameters.
      *
      * @param contract The contract to be validated.
-     * @throws IllegalArgumentException Thrown when the contract is not valid
+     * @throws InvalidContractException Thrown when the contract is not valid
      *                                  e.g. exceeds 20 hours per week, 6 month duration
      *                                  or the company's id and student's id are the same
-     *                                  or if there is an existing active contract already
+     *                                  or if there is an existing active contract already.
      */
-    private void validateContract(Contract contract) throws IllegalArgumentException {
+    private void validateContract(Contract contract)
+            throws InvalidContractException {
         // Contract between the same user:
         if (contract.getCompanyId().equals(contract.getStudentId())
 
@@ -185,19 +195,28 @@ public class ContractService {
                 // No of weeks exceeded:
                 || contract.getTotalHours() / contract.getHoursPerWeek() > MAX_WEEKS) {
 
-            throw new IllegalArgumentException("One or more contract parameters are invalid.");
+            throw new InvalidContractException();
         }
         if (contractRepository.findActiveContract(contract.getCompanyId(),
                 contract.getStudentId()) != null) {
-            throw new IllegalArgumentException(
+            throw new InvalidContractException(
                     "Please cancel the existing contract with this party.");
         }
     }
 
+    /**
+     * PRIVATE method that checks if the user can access the contract entity,
+     * which is if the userId is in the contract (as companyId or studentId).
+     *
+     * @param contract The contract the user wants to access.
+     * @param userId   The userId of the user we check.
+     * @throws AccessDeniedException If the user isn't in the contract.
+     */
     private void checkAuthorization(Contract contract, String userId)
             throws AccessDeniedException {
-        if (!contract.getStudentId().equals(userId) && !contract.getCompanyId().equals(userId))
+        if (!contract.getStudentId().equals(userId) && !contract.getCompanyId().equals(userId)) {
             throw new AccessDeniedException();
+        }
     }
 
 }

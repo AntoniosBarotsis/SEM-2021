@@ -1,12 +1,12 @@
-package nl.tudelft.sem.template.DTOs.requests;
+package nl.tudelft.sem.template.dtos.requests;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import nl.tudelft.sem.template.entities.Contract;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 @Data
 @NoArgsConstructor
@@ -24,7 +24,7 @@ public class ContractRequest {
     @NotNull(message = "Please specify the price per hour.")
     Double pricePerHour;
 
-    public Contract toContract(){
+    public Contract toContract() {
         return new Contract(null, companyId, studentId, null,
                 null, hoursPerWeek, totalHours, pricePerHour, null);
     }
