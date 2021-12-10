@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 
-public class EnvLoaderReader {
+class EnvLoaderReader {
     /**
      * Reads the contents of the given file and returns it as a list of lines.
      *
