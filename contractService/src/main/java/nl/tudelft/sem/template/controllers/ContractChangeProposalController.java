@@ -153,8 +153,9 @@ public class ContractChangeProposalController {
      *
      * @param userName   The id of the user making the request.
      * @param contractId The id of the contract.
-     * @return 200 OK if successful
-     *         404 NOT FOUND if the contract was not found or is inactive.
+     * @return 200 OK if successful,
+     *         400 BAD REQUEST if the contract is inactive,
+     *         404 NOT FOUND if the contract was not found,
      *         401 UNAUTHORIZED if the user is not in the contract.
      */
     @GetMapping("/{contractId}/changeProposals")
