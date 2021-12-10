@@ -86,7 +86,8 @@ public class ContractController {
      * @param userName The id of the user making the request.
      * @param id       The id of the contract that should be terminated.
      * @return 200 OK if successful,
-     *         400 BAD REQUEST if contract is not found or is not active,
+     *         400 BAD REQUEST if the contract is not active,
+     *         404 NOT FOUND if the contract is not found,
      *         401 UNAUTHORIZED if the contract doesn't belong to the user.
      */
     @PutMapping("/{id}/terminate")
@@ -97,7 +98,9 @@ public class ContractController {
         try {
             contractService.terminateContract(id, userName);
             return ResponseEntity.ok().body(null);
-        } catch (ContractNotFoundException | InactiveContractException e) {
+        } catch (ContractNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (InactiveContractException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (AccessDeniedException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);

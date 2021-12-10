@@ -41,9 +41,10 @@ public class ContractChangeProposalController {
      * @param contractId    The id of the contract the user wants to change.
      * @param changeRequest The request containing the new contract parameters.
      * @return 201 CREATED with the saved proposal if the proposal is valid;
-     *         400 BAD REQUEST if the contract is not found or inactive,
+     *         400 BAD REQUEST if the contract is inactive,
      *         or if the change proposal parameters are invalid;
-     *         401 UNAUTHORIZED if the user is not in the contract.
+     *         404 NOT FOUND if the contract is not found,
+     *         401 UNAUTHORIZED if the user is not in the contract;
      */
     @PostMapping("/{contractId}/changeProposals")
     public ResponseEntity<Object> proposeChange(
@@ -59,8 +60,9 @@ public class ContractChangeProposalController {
 
             return new ResponseEntity<>(p, HttpStatus.CREATED);
 
-        } catch (ContractNotFoundException | InvalidChangeProposalException
-                | InactiveContractException e) {
+        } catch (ContractNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch( InvalidChangeProposalException | InactiveContractException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (AccessDeniedException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
@@ -73,8 +75,9 @@ public class ContractChangeProposalController {
      * @param userName   The id of the user making the request.
      * @param proposalId The id of the proposal that will be accepted.
      * @return 200 OK with the updated contract if everything is valid;
-     *         400 BAD REQUEST if the proposal is not found or is invalid,
+     *         400 BAD REQUEST if the proposal is invalid
      *         or if the contract is inactive;
+     *         404 NOT FOUND if the proposal is not found,
      *         401 UNAUTHORIZED if the user is not the one that should review the proposal.
      */
     @PutMapping("/changeProposals/{proposalId}/accept")
@@ -85,8 +88,9 @@ public class ContractChangeProposalController {
         try {
             Contract contract = changeProposalService.acceptProposal(proposalId, userName);
             return new ResponseEntity<>(contract, HttpStatus.OK);
-        } catch (ChangeProposalNotFoundException | InactiveContractException
-                | InvalidChangeProposalException e) {
+        } catch (ChangeProposalNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (InactiveContractException | InvalidChangeProposalException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (AccessDeniedException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
@@ -99,7 +103,8 @@ public class ContractChangeProposalController {
      * @param userName   The id of the user making the request.
      * @param proposalId The id of the proposal that will be rejected.
      * @return 200 OK if successful,
-     *         400 BAD REQUEST if the proposal is not found or if the contract is inactive,
+     *         400 BAD REQUEST if the contract is inactive,
+     *         404 NOT FOUND if the proposal is not found,
      *         401 UNAUTHORIZED if the user is not the one that should review the proposal.
      */
     @PutMapping("/changeProposals/{proposalId}/reject")
@@ -110,7 +115,9 @@ public class ContractChangeProposalController {
         try {
             changeProposalService.rejectProposal(proposalId, userName);
             return ResponseEntity.ok(null);
-        } catch (ChangeProposalNotFoundException | InactiveContractException e) {
+        } catch (ChangeProposalNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (InactiveContractException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (AccessDeniedException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
@@ -160,8 +167,10 @@ public class ContractChangeProposalController {
             List<ContractChangeProposal> proposals =
                     changeProposalService.getProposals(contract, userName);
             return ResponseEntity.ok().body(proposals);
-        } catch (ContractNotFoundException | InactiveContractException e) {
+        } catch (ContractNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (InactiveContractException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (AccessDeniedException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
         }
