@@ -2,6 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.6.0'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
+  id 'jacoco'
 }
 
 group = 'nl.tudelft.cse.sem.template'
@@ -48,3 +49,59 @@ sourceSets {
 }
 
 sourceCompatibility = 1.11
+
+test {
+	useJUnitPlatform()
+	jacoco {
+		enabled = true
+		includes = ['nl.tudelft.*']
+		excludes = [
+				'envloader.*',
+				'envloader.exceptions.*',
+				'nl.tudelft.sem.EurekaServerApplication',
+				'nl.tudelft.sem.JwtConfig',
+				'nl.tudelft.sem.ZuulConfiguration',
+				'nl.tudelft.sem.ZuulConfiguration$LookupHandlerMethodInterceptor',
+				'nl.tudelft.sem.ZuulConfiguration$ZuulPostProcessor',
+				'nl.tudelft.sem.ZuulConfiguration$LookupHandlerCallbackFilter',
+		]
+	}
+
+	jacocoTestReport {
+		dependsOn test
+
+		afterEvaluate {
+			getClassDirectories().setFrom(classDirectories.files.collect {
+				fileTree(dir: it,
+						exclude: [
+								'**/envloader/*.class',
+								'**/envloader/exceptions/*.class',
+								'**/nl/tudelft/sem/EurekaServerApplication.class',
+								'**/nl/tudelft/sem/JwtConfig.class',
+								'**/nl/tudelft/sem/ZuulConfiguration.class',
+								'**/nl/tudelft/sem/ZuulConfiguration$LookupHandlerMethodInterceptor.class',
+								'**/nl/tudelft/sem/ZuulConfiguration$ZuulPostProcessor.class',
+								'**/nl/tudelft/sem/ZuulConfiguration$LookupHandlerCallbackFilter.class',
+						]
+				)
+			})
+		}
+	}
+}
+
+jacocoTestCoverageVerification() {
+	dependsOn test
+	violationRules {
+		rule {
+			enabled = true
+			element = 'CLASS'
+			includes = ['nl.tudelft.sem.*']
+
+			limit {
+				counter = 'BRANCH'
+				value = 'COVEREDRATIO'
+				minimum = 0.1
+			}
+		}
+	}
+}
