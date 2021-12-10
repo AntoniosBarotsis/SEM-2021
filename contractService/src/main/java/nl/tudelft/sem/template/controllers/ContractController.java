@@ -60,6 +60,7 @@ public class ContractController {
         return errors;
     }
 
+    // NEED TO MAKE THIS AS A PRIVATE ENDPOINT (NOT PUBLICLY AVAILABLE)
     /**
      * Create a contract.
      *

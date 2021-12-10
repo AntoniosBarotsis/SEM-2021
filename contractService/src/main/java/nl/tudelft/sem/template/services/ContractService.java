@@ -140,7 +140,8 @@ public class ContractService {
      * @param contract The contract that should be changed.
      * @param proposal The proposed changes.
      * @return The updated contract entity.
-     * @throws InvalidChangeProposalException If the proposal exceeds the max no. of hours allowed.
+     * @throws InvalidChangeProposalException If the proposal exceeds the max no. of hours/weeks
+     *                                        allowed or the end date is invalid.
      */
     public Contract updateContract(Contract contract, ContractChangeProposal proposal)
             throws InvalidChangeProposalException {
