@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import nl.tudelft.sem.template.dtos.requests.ContractChangeRequest;
 import nl.tudelft.sem.template.entities.Contract;
 import nl.tudelft.sem.template.entities.ContractChangeProposal;
 import nl.tudelft.sem.template.enums.ChangeStatus;
@@ -31,15 +32,27 @@ public class ContractChangeProposalService {
 
     /**
      * Saves a change proposal to the repository.
-     * Authorization is checked before this method is called.
      *
-     * @param proposal The proposal that should be saved.
+     * @param changeRequest The request entity with the proposed change parameters.
+     * @param contractId    The id of the contract the change is suggested on.
+     * @param userId        The id of the user that wants the change.
      * @return The saved proposal entity.
      * @throws InvalidChangeProposalException If the proposal is invalid
      * @throws InactiveContractException      If the contract is not active.
+     * @throws ContractNotFoundException      If the contract doesn't exist.
+     * @throws AccessDeniedException          If user is not in the contract.
      */
-    public ContractChangeProposal submitProposal(ContractChangeProposal proposal)
-            throws InvalidChangeProposalException, InactiveContractException {
+    public ContractChangeProposal submitProposal(ContractChangeRequest changeRequest,
+                                                 Long contractId, String userId)
+            throws InvalidChangeProposalException, InactiveContractException,
+            ContractNotFoundException, AccessDeniedException {
+        // Get contract:
+        Contract contract = contractService.getContract(contractId);
+
+        // Convert to the contractChangeProposalEntity:
+        // Checks for authorization as well:
+        ContractChangeProposal proposal = changeRequest.toContractChangeProposal(contract, userId);
+
         // Check if proposal is valid:
         validateContractProposal(proposal);
 

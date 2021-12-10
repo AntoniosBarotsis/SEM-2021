@@ -53,16 +53,14 @@ public class ContractChangeProposalController {
             @RequestBody ContractChangeRequest changeRequest) {
 
         try {
-            Contract contract = contractService.getContract(contractId);
-            ContractChangeProposal proposal =
-                    changeRequest.toContractChangeProposal(contract, userName);
-            ContractChangeProposal p = changeProposalService.submitProposal(proposal);
+            ContractChangeProposal p
+                    = changeProposalService.submitProposal(changeRequest, contractId, userName);
 
             return new ResponseEntity<>(p, HttpStatus.CREATED);
 
         } catch (ContractNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch( InvalidChangeProposalException | InactiveContractException e) {
+        } catch (InvalidChangeProposalException | InactiveContractException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (AccessDeniedException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
