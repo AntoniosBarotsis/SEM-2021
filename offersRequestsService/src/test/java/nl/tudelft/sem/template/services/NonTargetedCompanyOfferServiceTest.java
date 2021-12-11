@@ -12,14 +12,13 @@ import java.util.Optional;
 import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
-import nl.tudelft.sem.template.entities.dtos.ContractDTO;
+import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.ContractCreationException;
 import nl.tudelft.sem.template.repositories.ApplicationRepository;
 import nl.tudelft.sem.template.repositories.NonTargetedCompanyOfferRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -47,7 +46,7 @@ class NonTargetedCompanyOfferServiceTest {
     private transient String student;
     private transient String role;
     private transient String companyId;
-    private transient ContractDTO contract;
+    private transient ContractDto contract;
 
     @BeforeEach
     void setup() {
@@ -65,7 +64,7 @@ class NonTargetedCompanyOfferServiceTest {
         LocalDate endDate = startDate.plusWeeks(
                 (long) Math.ceil(offer.getTotalHours() / offer.getHoursPerWeek()));
 
-        contract = new ContractDTO(1L, companyId, student, startDate, endDate,
+        contract = new ContractDto(1L, companyId, student, startDate, endDate,
                 offer.getHoursPerWeek(), offer.getTotalHours(),
                 application.getPricePerHour(), "ACTIVE");
     }
@@ -144,7 +143,7 @@ class NonTargetedCompanyOfferServiceTest {
         Mockito.when(utility.createContract(any(), any(), any(), any(), any(), any()))
                 .thenReturn(contract);
 
-        ContractDTO actual = service.accept(companyId, role, application.getId());
+        ContractDto actual = service.accept(companyId, role, application.getId());
 
         Mockito.verify(offerRepository, times(1)).save(any());
         Mockito.verify(applicationRepository, times(2)).save(any());

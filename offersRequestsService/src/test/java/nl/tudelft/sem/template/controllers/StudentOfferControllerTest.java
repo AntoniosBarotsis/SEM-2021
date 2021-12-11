@@ -10,7 +10,7 @@ import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
-import nl.tudelft.sem.template.entities.dtos.ContractDTO;
+import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.ContractCreationException;
@@ -41,7 +41,7 @@ class StudentOfferControllerTest {
     private transient String student;
     private transient String studentRole;
     private transient TargetedCompanyOffer targetedCompanyOffer;
-    private transient ContractDTO contract;
+    private transient ContractDto contract;
 
     @BeforeEach
     void setup() {
@@ -62,7 +62,7 @@ class StudentOfferControllerTest {
         LocalDate endDate = startDate.plusWeeks(
                 (long) Math.ceil(studentOffer.getTotalHours() / studentOffer.getHoursPerWeek()));
 
-        contract = new ContractDTO(1L, targetedCompanyOffer.getCompanyId(), student,
+        contract = new ContractDto(1L, targetedCompanyOffer.getCompanyId(), student,
                 startDate, endDate, targetedCompanyOffer.getHoursPerWeek(),
                 targetedCompanyOffer.getTotalHours(),
                 studentOffer.getPricePerHour(), "ACTIVE");
@@ -234,10 +234,10 @@ class StudentOfferControllerTest {
                 .acceptOffer(student, studentRole, targetedCompanyOffer.getId()))
                 .thenReturn(contract);
 
-        ResponseEntity<Response<ContractDTO>> res
+        ResponseEntity<Response<ContractDto>> res
                 = studentOfferController
                 .acceptTargetedOffer(student, studentRole, targetedCompanyOffer.getId());
-        Response<ContractDTO> response =
+        Response<ContractDto> response =
                 new Response<>(contract, "The Company Offer was accepted successfully!");
 
         assertEquals(HttpStatus.OK, res.getStatusCode());
@@ -247,10 +247,10 @@ class StudentOfferControllerTest {
     @Test
     void acceptTargetedOfferTestFailUserName() {
         student = "";
-        ResponseEntity<Response<ContractDTO>> res
+        ResponseEntity<Response<ContractDto>> res
                 = studentOfferController
                 .acceptTargetedOffer(student, studentRole, targetedCompanyOffer.getId());
-        Response<ContractDTO> response =
+        Response<ContractDto> response =
                 new Response<>(null, "User has not been authenticated");
 
         assertEquals(HttpStatus.UNAUTHORIZED, res.getStatusCode());
@@ -266,10 +266,10 @@ class StudentOfferControllerTest {
                 .when(studentOfferService)
                 .acceptOffer(student, studentRole, targetedCompanyOffer.getId());
 
-        ResponseEntity<Response<ContractDTO>> res
+        ResponseEntity<Response<ContractDto>> res
                 = studentOfferController
                 .acceptTargetedOffer(student, studentRole, targetedCompanyOffer.getId());
-        Response<ContractDTO> response =
+        Response<ContractDto> response =
                 new Response<>(null, message);
 
         assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
@@ -286,10 +286,10 @@ class StudentOfferControllerTest {
                 .when(studentOfferService)
                 .acceptOffer(student, studentRole, targetedCompanyOffer.getId());
 
-        ResponseEntity<Response<ContractDTO>> res
+        ResponseEntity<Response<ContractDto>> res
                 = studentOfferController
                 .acceptTargetedOffer(student, studentRole, targetedCompanyOffer.getId());
-        Response<ContractDTO> response =
+        Response<ContractDto> response =
                 new Response<>(null, message);
 
         assertEquals(HttpStatus.FORBIDDEN, res.getStatusCode());

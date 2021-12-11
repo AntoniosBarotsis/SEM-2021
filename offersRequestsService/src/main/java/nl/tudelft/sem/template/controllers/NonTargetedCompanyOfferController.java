@@ -4,7 +4,7 @@ import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.Offer;
-import nl.tudelft.sem.template.entities.dtos.ContractDTO;
+import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.exceptions.ContractCreationException;
 import nl.tudelft.sem.template.services.NonTargetedCompanyOfferService;
@@ -113,7 +113,7 @@ public class NonTargetedCompanyOfferController {
      * @return - a Response, containing a success or an error message!
      */
     @PostMapping("/accept/{id}")
-    public ResponseEntity<Response<ContractDTO>> acceptApplication(
+    public ResponseEntity<Response<ContractDto>> acceptApplication(
             @RequestHeader(nameHeader) String userName,
             @RequestHeader(roleHeader) String userRole,
             @PathVariable Long id) {
@@ -123,7 +123,7 @@ public class NonTargetedCompanyOfferController {
         }
 
         try {
-            ContractDTO contract = nonTargetedCompanyOfferService.accept(userName, userRole, id);
+            ContractDto contract = nonTargetedCompanyOfferService.accept(userName, userRole, id);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(new Response<>(contract,
                             "Application has been accepted successfully!"));

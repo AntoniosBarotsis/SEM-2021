@@ -1,16 +1,17 @@
 package nl.tudelft.sem.template.entities.dtos;
 
 import java.time.LocalDate;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
 //DTO for sending info in order to create a contract, and for retrieving it
-public class ContractDTO {
+public class ContractDto {
     private Long id;
     private String companyId;
     private String studentId;
@@ -31,7 +32,7 @@ public class ContractDTO {
      * @param totalHours   The amount of total hours.
      * @param pricePerHour The price per hour.
      */
-    public ContractDTO(String companyId, String studentId, Double hoursPerWeek,
+    public ContractDto(String companyId, String studentId, Double hoursPerWeek,
                        Double totalHours, Double pricePerHour) {
         this.companyId = companyId;
         this.studentId = studentId;

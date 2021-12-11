@@ -1,13 +1,12 @@
 package nl.tudelft.sem.template.services;
 
 import lombok.NoArgsConstructor;
-import nl.tudelft.sem.template.entities.dtos.ContractDTO;
+import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.entities.dtos.UserResponseWrapper;
 import nl.tudelft.sem.template.exceptions.ContractCreationException;
 import nl.tudelft.sem.template.exceptions.UserDoesNotExistException;
 import nl.tudelft.sem.template.exceptions.UserServiceUnvanvailableException;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -49,31 +48,23 @@ public class Utility {
      * @throws ContractCreationException If the contract parameters were invalid
      *                                or if the request or if the contract service was unavailable.
      */
-    public ContractDTO createContract(String companyId, String studentId, Double hoursPerWeek,
-                                      Double totalHours, Double pricePerHour, RestTemplate restTemplate)
+    public ContractDto createContract(String companyId, String studentId, Double hoursPerWeek,
+                                      Double totalHours, Double pricePerHour,
+                                      RestTemplate restTemplate)
             throws ContractCreationException {
 
-        ContractDTO sentDTO
-                = new ContractDTO(companyId, studentId, hoursPerWeek, totalHours, pricePerHour);
+        ContractDto sentDto
+                = new ContractDto(companyId, studentId, hoursPerWeek, totalHours, pricePerHour);
 
         try {
             String url = "http://contract-service/";
-            HttpEntity<ContractDTO> requestEntity = new HttpEntity<>(sentDTO);
+            HttpEntity<ContractDto> requestEntity = new HttpEntity<>(sentDto);
 
-            Object response = restTemplate.
-                    exchange(url, HttpMethod.POST, requestEntity, Object.class)
-                    .getBody();
+            return restTemplate
+                    .postForObject(url, requestEntity, ContractDto.class);
 
-            // Try to cast to a contract:
-            try {
-                return (ContractDTO) response;
-            } catch (ClassCastException e) {
-                // Response is not a contract, but an error message:
-                String errorMsg = (String) response;
-                // Throw exception with the error message:
-                throw new ContractCreationException(errorMsg);
-            }
         } catch (RestClientException e) {
+            // Error message from the contract microservice:
             throw new ContractCreationException(e.getMessage());
         }
     }

@@ -5,7 +5,7 @@ import java.util.Optional;
 import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
-import nl.tudelft.sem.template.entities.dtos.ContractDTO;
+import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.ContractCreationException;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
@@ -62,7 +62,7 @@ public class StudentOfferService extends OfferService {
      *      if the user doesn't have permission to accept the offer.
      * @throws ContractCreationException - if the request wasn't successful.
      */
-    public ContractDTO acceptOffer(
+    public ContractDto acceptOffer(
             String userName, String userRole, Long targetedCompanyOfferId)
             throws NoPermissionException, ContractCreationException {
         Optional<TargetedCompanyOffer> targetedCompanyOffer =
@@ -86,7 +86,8 @@ public class StudentOfferService extends OfferService {
         // If the contract creation doesn't succeed then the offer isn't accepted.
         // Throws exception if error:
         TargetedCompanyOffer tco = targetedCompanyOffer.get();
-        ContractDTO contract = utility.createContract(tco.getCompanyId(), userName,
+        ContractDto contract;
+        contract = utility.createContract(tco.getCompanyId(), userName,
                 tco.getHoursPerWeek(), tco.getTotalHours(), offer.getPricePerHour(), restTemplate);
 
 

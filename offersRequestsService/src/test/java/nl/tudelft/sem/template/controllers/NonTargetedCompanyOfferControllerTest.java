@@ -9,7 +9,7 @@ import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.Offer;
-import nl.tudelft.sem.template.entities.dtos.ContractDTO;
+import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.ContractCreationException;
@@ -41,7 +41,7 @@ class NonTargetedCompanyOfferControllerTest {
     private transient String company;
     private transient String studentRole;
     private transient String companyRole;
-    private transient ContractDTO contract;
+    private transient ContractDto contract;
 
 
     @BeforeEach
@@ -61,7 +61,7 @@ class NonTargetedCompanyOfferControllerTest {
         LocalDate endDate = startDate.plusWeeks(
                 (long) Math.ceil(offer.getTotalHours() / offer.getHoursPerWeek()));
 
-        contract = new ContractDTO(1L, company, student, startDate, endDate,
+        contract = new ContractDto(1L, company, student, startDate, endDate,
                 offer.getHoursPerWeek(), offer.getTotalHours(),
                 application.getPricePerHour(), "ACTIVE");
     }
@@ -178,10 +178,10 @@ class NonTargetedCompanyOfferControllerTest {
         Mockito.when(offerService.accept(company, companyRole, application.getId()))
                 .thenReturn(contract);
 
-        ResponseEntity<Response<ContractDTO>> res
+        ResponseEntity<Response<ContractDto>> res
                 = offerController
                 .acceptApplication(company, companyRole, application.getId());
-        Response<ContractDTO> response =
+        Response<ContractDto> response =
                 new Response<>(contract, "Application has been accepted successfully!");
 
         assertEquals(HttpStatus.OK, res.getStatusCode());
@@ -190,10 +190,10 @@ class NonTargetedCompanyOfferControllerTest {
 
     @Test
     void acceptApplicationFailUserName() {
-        ResponseEntity<Response<ContractDTO>> res
+        ResponseEntity<Response<ContractDto>> res
                 = offerController
                 .acceptApplication("", companyRole, application.getId());
-        Response<ContractDTO> response =
+        Response<ContractDto> response =
                 new Response<>(null, "User has not been authenticated!");
 
         assertEquals(HttpStatus.UNAUTHORIZED, res.getStatusCode());
@@ -208,10 +208,10 @@ class NonTargetedCompanyOfferControllerTest {
                         message))
                 .when(offerService).accept(company, companyRole, application.getId());
 
-        ResponseEntity<Response<ContractDTO>> res
+        ResponseEntity<Response<ContractDto>> res
                 = offerController
                 .acceptApplication(company, companyRole, application.getId());
-        Response<ContractDTO> response =
+        Response<ContractDto> response =
                 new Response<>(null, message);
 
         assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
@@ -226,10 +226,10 @@ class NonTargetedCompanyOfferControllerTest {
                         message))
                 .when(offerService).accept(company, companyRole, application.getId());
 
-        ResponseEntity<Response<ContractDTO>> res
+        ResponseEntity<Response<ContractDto>> res
                 = offerController
                 .acceptApplication(company, companyRole, application.getId());
-        Response<ContractDTO> response =
+        Response<ContractDto> response =
                 new Response<>(null, message);
 
         assertEquals(HttpStatus.FORBIDDEN, res.getStatusCode());

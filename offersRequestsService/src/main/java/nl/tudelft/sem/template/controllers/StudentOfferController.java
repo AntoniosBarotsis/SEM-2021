@@ -4,7 +4,7 @@ import java.util.List;
 import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
-import nl.tudelft.sem.template.entities.dtos.ContractDTO;
+import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.exceptions.ContractCreationException;
 import nl.tudelft.sem.template.exceptions.UserDoesNotExistException;
@@ -142,7 +142,7 @@ public class StudentOfferController {
      * @return - A Response with a success or an error message!
      */
     @PostMapping("/student/accept/{id}")
-    public ResponseEntity<Response<ContractDTO>>
+    public ResponseEntity<Response<ContractDto>>
         acceptTargetedOffer(
             @RequestHeader(nameHeader) String userName,
             @RequestHeader(roleHeader) String userRole,
@@ -154,7 +154,7 @@ public class StudentOfferController {
         }
 
         try {
-            ContractDTO contract = studentOfferService.acceptOffer(userName, userRole, id);
+            ContractDto contract = studentOfferService.acceptOffer(userName, userRole, id);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(new Response<>(contract, "The Company Offer was accepted successfully!"));
         } catch (NoPermissionException exception) {

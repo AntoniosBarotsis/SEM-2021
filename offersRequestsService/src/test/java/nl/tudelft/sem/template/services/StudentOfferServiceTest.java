@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.Mockito.times;
 
 import java.time.LocalDate;
@@ -15,23 +14,19 @@ import java.util.Optional;
 import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
-import nl.tudelft.sem.template.entities.dtos.ContractDTO;
+import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.ContractCreationException;
 import nl.tudelft.sem.template.repositories.OfferRepository;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import nl.tudelft.sem.template.repositories.TargetedCompanyOfferRepository;
-import org.hibernate.mapping.Any;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -55,7 +50,7 @@ public class StudentOfferServiceTest {
     private transient String student;
     private transient String role;
     private transient TargetedCompanyOffer accepted;
-    private transient ContractDTO contract;
+    private transient ContractDto contract;
 
     @BeforeEach
     void setUp() {
@@ -82,7 +77,7 @@ public class StudentOfferServiceTest {
         LocalDate endDate = startDate.plusWeeks(
                 (long) Math.ceil(accepted.getTotalHours() / accepted.getHoursPerWeek()));
 
-        contract = new ContractDTO(1L, accepted.getCompanyId(), student, startDate, endDate,
+        contract = new ContractDto(1L, accepted.getCompanyId(), student, startDate, endDate,
                 accepted.getHoursPerWeek(), accepted.getTotalHours(),
                 accepted.getStudentOffer().getPricePerHour(), "ACTIVE");
     }
@@ -134,7 +129,7 @@ public class StudentOfferServiceTest {
         Mockito.when(utility.createContract(any(), any(), any(), any(), any(), any()))
                 .thenReturn(contract);
 
-        ContractDTO actual = studentOfferService.acceptOffer(student, role, accepted.getId());
+        ContractDto actual = studentOfferService.acceptOffer(student, role, accepted.getId());
 
         Mockito.verify(studentOfferRepository, times(1)).save(any());
         Mockito.verify(targetedCompanyOfferRepository, times(2)).save(any());
