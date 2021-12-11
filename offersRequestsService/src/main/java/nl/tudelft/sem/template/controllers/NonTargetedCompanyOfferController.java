@@ -4,7 +4,9 @@ import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.Offer;
+import nl.tudelft.sem.template.entities.dtos.ContractDTO;
 import nl.tudelft.sem.template.entities.dtos.Response;
+import nl.tudelft.sem.template.exceptions.ContractCreationException;
 import nl.tudelft.sem.template.services.NonTargetedCompanyOfferService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -111,7 +113,7 @@ public class NonTargetedCompanyOfferController {
      * @return - a Response, containing a success or an error message!
      */
     @PostMapping("/accept/{id}")
-    public ResponseEntity<Response<String>> acceptApplication(
+    public ResponseEntity<Response<ContractDTO>> acceptApplication(
             @RequestHeader(nameHeader) String userName,
             @RequestHeader(roleHeader) String userRole,
             @PathVariable Long id) {
@@ -121,15 +123,14 @@ public class NonTargetedCompanyOfferController {
         }
 
         try {
-            nonTargetedCompanyOfferService.accept(userName, userRole, id);
+            ContractDTO contract = nonTargetedCompanyOfferService.accept(userName, userRole, id);
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(new Response<>(
-                            "Application has been accepted successfully!",
-                            null));
+                    .body(new Response<>(contract,
+                            "Application has been accepted successfully!"));
         } catch (NoPermissionException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(new Response<>(null, e.getMessage()));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | ContractCreationException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new Response<>(null, e.getMessage()));
         }

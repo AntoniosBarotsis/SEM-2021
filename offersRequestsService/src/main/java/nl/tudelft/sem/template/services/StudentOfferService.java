@@ -5,7 +5,9 @@ import java.util.Optional;
 import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
+import nl.tudelft.sem.template.entities.dtos.ContractDTO;
 import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.exceptions.ContractCreationException;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import nl.tudelft.sem.template.repositories.TargetedCompanyOfferRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,10 +60,11 @@ public class StudentOfferService extends OfferService {
      * @param targetedCompanyOfferId - the id of the accepted offer.
      * @throws NoPermissionException - is thrown
      *      if the user doesn't have permission to accept the offer.
+     * @throws ContractCreationException - if the request wasn't successful.
      */
-    public void acceptOffer(
+    public ContractDTO acceptOffer(
             String userName, String userRole, Long targetedCompanyOfferId)
-            throws NoPermissionException {
+            throws NoPermissionException, ContractCreationException {
         Optional<TargetedCompanyOffer> targetedCompanyOffer =
                 targetedCompanyOfferRepository.findById(targetedCompanyOfferId);
         if (targetedCompanyOffer.isEmpty()) {
@@ -79,6 +82,14 @@ public class StudentOfferService extends OfferService {
                     "The StudentOffer or TargetedRequest is not active anymore!");
         }
 
+        // First try to create the contract between the 2 parties.
+        // If the contract creation doesn't succeed then the offer isn't accepted.
+        // Throws exception if error:
+        TargetedCompanyOffer tco = targetedCompanyOffer.get();
+        ContractDTO contract = utility.createContract(tco.getCompanyId(), userName, tco.getTotalHours(),
+                tco.getHoursPerWeek(), offer.getPricePerHour(), restTemplate);
+
+
         for (TargetedCompanyOffer t : offer.getTargetedCompanyOffers()) {
             if (!t.equals(targetedCompanyOffer.get())) {
                 t.setStatus(Status.DECLINED);
@@ -90,6 +101,8 @@ public class StudentOfferService extends OfferService {
 
         offer.setStatus(Status.DISABLED);
         studentOfferRepository.save(offer);
+
+        return contract;
     }
 
     /**

@@ -4,11 +4,14 @@ import java.util.Optional;
 import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
+import nl.tudelft.sem.template.entities.dtos.ContractDTO;
 import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.exceptions.ContractCreationException;
 import nl.tudelft.sem.template.repositories.ApplicationRepository;
 import nl.tudelft.sem.template.repositories.NonTargetedCompanyOfferRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class NonTargetedCompanyOfferService extends OfferService {
@@ -18,6 +21,12 @@ public class NonTargetedCompanyOfferService extends OfferService {
 
     @Autowired
     private transient ApplicationRepository applicationRepository;
+
+    @Autowired
+    private transient RestTemplate restTemplate;
+
+    @Autowired
+    private transient Utility utility;
 
     /** Method for applying to a NonTargetedCompanyOffer.
      *
@@ -54,8 +63,10 @@ public class NonTargetedCompanyOfferService extends OfferService {
      * @param id - the id of the application.
      * @throws NoPermissionException - is thrown
      *      if the user doesn't have permission to accept the application.
+     * @throws ContractCreationException - if the request wasn't successful.
      */
-    public void accept(String userName, String userRole, Long id) throws NoPermissionException {
+    public ContractDTO accept(String userName, String userRole, Long id)
+            throws NoPermissionException, ContractCreationException {
         Optional<Application> application = applicationRepository.findById(id);
         if (application.isEmpty()) {
             throw new IllegalArgumentException(
@@ -73,6 +84,15 @@ public class NonTargetedCompanyOfferService extends OfferService {
             throw new IllegalArgumentException("The offer or application is not active anymore!");
         }
 
+        // First try to create the contract between the 2 parties.
+        // If the contract creation doesn't succeed then the application isn't accepted.
+        // Throws exception if error:
+        ContractDTO contract = utility.createContract(userName, application.get().getStudentId(),
+                nonTargetedCompanyOffer.getTotalHours(),
+                nonTargetedCompanyOffer.getHoursPerWeek(),
+                application.get().getPricePerHour(), restTemplate);
+
+
         for (Application app : nonTargetedCompanyOffer.getApplications()) {
             if (app.equals(application.get())) {
                 app.setStatus(Status.ACCEPTED);
@@ -83,5 +103,7 @@ public class NonTargetedCompanyOfferService extends OfferService {
         }
         nonTargetedCompanyOffer.setStatus(Status.DISABLED);
         nonTargetedCompanyOfferRepository.save(nonTargetedCompanyOffer);
+
+        return contract;
     }
 }

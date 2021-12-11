@@ -6,16 +6,20 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
+import nl.tudelft.sem.template.entities.dtos.ContractDTO;
 import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.exceptions.ContractCreationException;
 import nl.tudelft.sem.template.repositories.ApplicationRepository;
 import nl.tudelft.sem.template.repositories.NonTargetedCompanyOfferRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -35,11 +39,15 @@ class NonTargetedCompanyOfferServiceTest {
     @MockBean
     private transient ApplicationRepository applicationRepository;
 
+    @MockBean
+    private transient Utility utility;
+
     private transient NonTargetedCompanyOffer offer;
     private transient Application application;
     private transient String student;
     private transient String role;
     private transient String companyId;
+    private transient ContractDTO contract;
 
     @BeforeEach
     void setup() {
@@ -52,6 +60,14 @@ class NonTargetedCompanyOfferServiceTest {
                 20, 520, expertise,
                 Status.PENDING, requirements, companyId);
         application = new Application(student, 5, Status.PENDING, offer);
+
+        LocalDate startDate = LocalDate.of(2022, 1, 1);
+        LocalDate endDate = startDate.plusWeeks(
+                (long) Math.ceil(offer.getTotalHours() / offer.getHoursPerWeek()));
+
+        contract = new ContractDTO(1L, companyId, student, startDate, endDate,
+                offer.getHoursPerWeek(), offer.getTotalHours(),
+                application.getPricePerHour(), "ACTIVE");
     }
 
     @Test
@@ -117,7 +133,7 @@ class NonTargetedCompanyOfferServiceTest {
     }
 
     @Test
-    void acceptTest() throws NoPermissionException {
+    void acceptTest() throws NoPermissionException, ContractCreationException {
         Application declined = new Application(student, 10, Status.PENDING, offer);
         offer.setApplications(List.of(application, declined));
         Mockito.when(offerRepository.getOfferById(offer.getId()))
@@ -125,12 +141,17 @@ class NonTargetedCompanyOfferServiceTest {
         Mockito.when(applicationRepository.findById(application.getId()))
                 .thenReturn(Optional.of(application));
 
-        service.accept(companyId, role, application.getId());
+        Mockito.when(utility.createContract(any(), any(), any(), any(), any(), any()))
+                .thenReturn(contract);
+
+        ContractDTO actual = service.accept(companyId, role, application.getId());
+
         Mockito.verify(offerRepository, times(1)).save(any());
         Mockito.verify(applicationRepository, times(2)).save(any());
         assertSame(application.getStatus(), Status.ACCEPTED);
         assertSame(offer.getStatus(), Status.DISABLED);
         assertSame(declined.getStatus(), Status.DECLINED);
+        assertEquals(contract, actual);
     }
 
     @Test
