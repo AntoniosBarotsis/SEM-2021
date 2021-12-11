@@ -71,21 +71,32 @@ public class ContractService {
         Contract contract;
         // If we need the current active contract:
         if (active) {
-            // Return current active contract:
+            // Retrieve current active contract:
             contract = contractRepository.findActiveContract(companyId, studentId);
+
+            // Check if it should expire (updates it in the repository as well):
+            if (contract == null || shouldExpire(contract)) {
+                throw new ContractNotFoundException(companyId, studentId);
+            }
+
         } else {
-            // Return most recent (active or not) contract:
+            // Retrieve most recent (active or not) contract:
             contract = contractRepository
                     .findFirstByCompanyIdEqualsAndStudentIdEqualsOrderByStartDateDesc(
                             companyId, studentId
                     );
+
+            if (contract == null) {
+                throw new ContractNotFoundException(companyId, studentId);
+            }
+
+            // Check if it should expire (updates it in the repository as well):
+            if (shouldExpire(contract)) {
+                contract.setStatus(ContractStatus.EXPIRED);
+            }
         }
 
-        if (contract == null) {
-            throw new ContractNotFoundException(companyId, studentId);
-        } else {
-            return contract;
-        }
+        return contract;
     }
 
     /**
@@ -97,13 +108,21 @@ public class ContractService {
      * @throws ContractNotFoundException If the contract doesn't exist.
      */
     public Contract getContract(Long contractId) throws ContractNotFoundException {
-        Optional<Contract> contract = contractRepository.findById(contractId);
+        Optional<Contract> c = contractRepository.findById(contractId);
 
         // If contract doesn't exist throw exception:
-        if (contract.isEmpty()) {
+        if (c.isEmpty()) {
             throw new ContractNotFoundException(contractId);
         }
-        return contract.get();
+
+        Contract contract = c.get();
+
+        // Check if it should expire (updates it in the repository as well):
+        if (shouldExpire(contract)) {
+            contract.setStatus(ContractStatus.EXPIRED);
+        }
+
+        return contract;
     }
 
     /**
@@ -117,7 +136,7 @@ public class ContractService {
      */
     public void terminateContract(Long contractId, String userId)
             throws ContractNotFoundException, InactiveContractException, AccessDeniedException {
-        // Check if contract exists:
+        // Check if contract exists and get contract:
         Contract contract = getContract(contractId);
 
         // Check if user is a participant in the contract:
@@ -218,6 +237,32 @@ public class ContractService {
             throw new InvalidContractException(
                     "Please cancel the existing contract with this party.");
         }
+    }
+
+    /**
+     * Expires a contract if the end date passed already.
+     *
+     * @param contract The contract to expire.
+     * @return true if the contract should expire,
+     *         false if it shouldn't or was already expired/terminated.
+     */
+    public boolean shouldExpire(Contract contract) {
+        if (contract == null) {
+            return false;
+        }
+
+        // Contract already expired or terminated so no further checks:
+        if (contract.getStatus() != ContractStatus.ACTIVE) {
+            return false;
+        }
+
+        LocalDate today = LocalDate.now();
+        if (contract.getEndDate().isBefore(today)) {
+            // Set contract as expired:
+            contractRepository.setExpiredContract(contract.getId());
+            return true;
+        }
+        return false;
     }
 
     /**
