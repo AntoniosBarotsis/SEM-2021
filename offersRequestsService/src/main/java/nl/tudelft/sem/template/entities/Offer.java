@@ -54,4 +54,6 @@ public abstract class Offer {
         this.expertise = expertise;
         this.status = status;
     }
+
+    public abstract String getCreator();
 }

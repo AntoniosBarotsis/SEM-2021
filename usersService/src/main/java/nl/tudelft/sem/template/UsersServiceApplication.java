@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template;
 
+import logger.FileLogger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
@@ -25,5 +26,12 @@ public class UsersServiceApplication {
     @Bean
     BCryptPasswordEncoder getPasswordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    FileLogger getLogger() {
+        FileLogger fileLogger = FileLogger.getInstance();
+        fileLogger.init("usersService");
+        return fileLogger;
     }
 }

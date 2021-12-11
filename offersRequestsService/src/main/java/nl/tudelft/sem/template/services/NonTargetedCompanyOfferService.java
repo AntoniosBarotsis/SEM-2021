@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.services;
 
 import java.util.Optional;
 import javax.naming.NoPermissionException;
+import logger.FileLogger;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
@@ -18,6 +19,9 @@ public class NonTargetedCompanyOfferService extends OfferService {
 
     @Autowired
     private transient ApplicationRepository applicationRepository;
+
+    @Autowired
+    private transient FileLogger logger;
 
     /** Method for applying to a NonTargetedCompanyOffer.
      *
@@ -40,6 +44,10 @@ public class NonTargetedCompanyOfferService extends OfferService {
                         nonTargetedCompanyOffer)) {
             throw new IllegalArgumentException("Student already applied to this offer");
         }
+        logger.log(application.getStudentId()
+                    + " has applied for "
+                    + offerId);
+
         application.setNonTargetedCompanyOffer(nonTargetedCompanyOffer);
         application.setStatus(Status.PENDING);
         return applicationRepository.save(application);
@@ -81,6 +89,11 @@ public class NonTargetedCompanyOfferService extends OfferService {
             }
             applicationRepository.save(app);
         }
+        logger.log(nonTargetedCompanyOffer.getCreator()
+                    + " has accepted "
+                    + application.get().getStudentId()
+                    + " for offer "
+                    + nonTargetedCompanyOffer.getId());
         nonTargetedCompanyOffer.setStatus(Status.DISABLED);
         nonTargetedCompanyOfferRepository.save(nonTargetedCompanyOffer);
     }

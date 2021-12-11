@@ -41,4 +41,8 @@ public class StudentOffer extends Offer {
         this.pricePerHour = pricePerHour;
         this.studentId = studentId;
     }
+
+    public String getCreator() {
+        return this.studentId;
+    }
 }

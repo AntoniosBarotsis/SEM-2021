@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import logger.FileLogger;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
@@ -37,6 +38,9 @@ class TargetedCompanyOfferServiceTest {
 
     @MockBean
     private transient TargetedCompanyOfferRepository targetedCompanyOfferRepository;
+
+    @MockBean
+    private transient FileLogger fileLogger;
 
     private transient StudentOffer studentOffer;
     private transient TargetedCompanyOffer targetedCompanyOffer;
@@ -86,6 +90,8 @@ class TargetedCompanyOfferServiceTest {
         targetedCompanyOffer = Mockito.mock(TargetedCompanyOffer.class);
         Mockito.when(studentOfferRepository.getById(33L))
             .thenReturn(studentOffer);
+        Mockito.when(offerRepository.save(targetedCompanyOffer))
+                        .thenReturn(targetedCompanyOffer);
         targetedCompanyOfferService.saveOffer(targetedCompanyOffer, 33L);
         Mockito.verify(targetedCompanyOffer).setStudentOffer(studentOffer);
     }

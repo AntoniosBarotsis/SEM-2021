@@ -9,6 +9,7 @@ import static org.mockito.Mockito.times;
 import java.util.List;
 import java.util.Optional;
 import javax.naming.NoPermissionException;
+import logger.FileLogger;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
@@ -34,6 +35,9 @@ class NonTargetedCompanyOfferServiceTest {
 
     @MockBean
     private transient ApplicationRepository applicationRepository;
+
+    @MockBean
+    private transient FileLogger fileLogger;
 
     private transient NonTargetedCompanyOffer offer;
     private transient Application application;
