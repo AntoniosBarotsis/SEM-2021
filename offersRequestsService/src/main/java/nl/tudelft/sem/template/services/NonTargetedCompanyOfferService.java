@@ -1,7 +1,9 @@
 package nl.tudelft.sem.template.services;
 
+import java.util.List;
 import java.util.Optional;
 import javax.naming.NoPermissionException;
+import javax.transaction.Transactional;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
@@ -55,6 +57,7 @@ public class NonTargetedCompanyOfferService extends OfferService {
      * @throws NoPermissionException - is thrown
      *      if the user doesn't have permission to accept the application.
      */
+    @Transactional
     public void accept(String userName, String userRole, Long id) throws NoPermissionException {
         Optional<Application> application = applicationRepository.findById(id);
         if (application.isEmpty()) {
@@ -72,8 +75,9 @@ public class NonTargetedCompanyOfferService extends OfferService {
             || application.get().getStatus() != Status.PENDING) {
             throw new IllegalArgumentException("The offer or application is not active anymore!");
         }
-
-        for (Application app : nonTargetedCompanyOffer.getApplications()) {
+        List<Application> applications = nonTargetedCompanyOffer.getApplications();
+        for (int i = 0; i < applications.size(); i++) {
+            Application app = applications.get(i);
             if (app.equals(application.get())) {
                 app.setStatus(Status.ACCEPTED);
             } else {

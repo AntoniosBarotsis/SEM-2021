@@ -51,4 +51,13 @@ public interface StudentOfferRepository extends JpaRepository<StudentOffer, Long
     @Query(value = "SELECT * FROM offer WHERE dtype = 'StudentOffer' AND id = ?1",
             nativeQuery = true)
     StudentOffer getById(Long id);
+
+    @Query("SELECT s FROM StudentOffer s WHERE s.description LIKE %?1% "
+            + "OR s.title LIKE %?1% OR concat(s.hoursPerWeek, '') LIKE %?1% "
+            + "OR concat(s.pricePerHour, '') LIKE %?1% "
+            + "OR concat(s.totalHours, '') LIKE %?1%")
+    List<StudentOffer> getAllByKeyWord(String keyWord);
+
+    @Query("SELECT s FROM StudentOffer s WHERE s.expertise IN ?1")
+    List<StudentOffer> getAllByExpertises(List<String> expertises);
 }
