@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.controllers;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.List;
 import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Offer;
@@ -261,9 +262,9 @@ public class StudentOfferController {
      * @return - A response, which either contains an error message,
      *      or a list of StudentOffers, which contain the keyword.
      */
-    @GetMapping("/student/search/{expertises}")
+    @GetMapping("/student/search/expertises/{expertises}")
     public ResponseEntity<Response<List<StudentOffer>>>
-        getOffersByKeyWord(@PathVariable List<String> expertises,
+        getOffersByExpertises(@PathVariable String expertises,
                            @RequestHeader(nameHeader) String userName,
                            @RequestHeader(roleHeader) String userRole) {
         if (userName.isBlank()) {
@@ -277,8 +278,9 @@ public class StudentOfferController {
         }
 
         try {
+            List<String> expList = Arrays.asList(expertises.split(","));
             return new ResponseEntity<>(
-                    new Response<>(studentOfferService.getByExpertises(expertises), null),
+                    new Response<>(studentOfferService.getByExpertises(expList), null),
                     HttpStatus.OK);
         } catch (UnsupportedEncodingException exception) {
             return new ResponseEntity<>(

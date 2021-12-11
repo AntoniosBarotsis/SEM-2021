@@ -3,8 +3,7 @@ package nl.tudelft.sem.template.services;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import javax.naming.NoPermissionException;
 import javax.transaction.Transactional;
 import nl.tudelft.sem.template.entities.StudentOffer;
@@ -148,8 +147,8 @@ public class StudentOfferService extends OfferService {
             expertises.set(i, decoded);
         }
 
-        List<StudentOffer> offers =
-                studentOfferRepository.getAllByExpertises(expertises);
+        List<StudentOffer> offers = studentOfferRepository.findAllActive();
+        offers.removeIf(offer -> Collections.disjoint(offer.getExpertise(), expertises));
 
         if (offers.isEmpty()) {
             throw new IllegalArgumentException("No Student Offers have any of these expertises!");
