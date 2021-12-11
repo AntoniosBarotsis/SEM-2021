@@ -88,8 +88,8 @@ public class NonTargetedCompanyOfferService extends OfferService {
         // If the contract creation doesn't succeed then the application isn't accepted.
         // Throws exception if error:
         ContractDTO contract = utility.createContract(userName, application.get().getStudentId(),
-                nonTargetedCompanyOffer.getTotalHours(),
                 nonTargetedCompanyOffer.getHoursPerWeek(),
+                nonTargetedCompanyOffer.getTotalHours(),
                 application.get().getPricePerHour(), restTemplate);
 
 
