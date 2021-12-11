@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import java.util.Optional;
+import logger.FileLogger;
 import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.enums.Role;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
@@ -35,6 +36,9 @@ public class UserServiceTest {
 
     @MockBean
     private transient UserRepository userRepository;
+
+    @MockBean
+    private transient FileLogger fileLogger;
 
     private transient User user;
 

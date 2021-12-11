@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import logger.FileLogger;
 import nl.tudelft.sem.template.entities.Contract;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
@@ -28,6 +29,9 @@ class ContractServiceTest {
 
     @MockBean
     private transient ContractRepository contractRepository;
+
+    @MockBean
+    private transient FileLogger fileLogger;
 
     private transient Contract contract;
     private final transient String companyId = "TUDelft";
@@ -52,7 +56,8 @@ class ContractServiceTest {
                 .thenReturn(null);
         contract.setStatus(null);     //not active
         contract.setEndDate(null);     //no end date!
-
+        when(contractRepository.save(contract))
+                .thenReturn(contract);
         contractService.saveContract(contract);
 
         contract.setEndDate(LocalDate.of(2021, 12, 25).plusWeeks(3));

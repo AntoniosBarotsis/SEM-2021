@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.services;
 
 import java.time.LocalDate;
+import logger.FileLogger;
 import nl.tudelft.sem.template.entities.Contract;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
@@ -13,6 +14,8 @@ public class ContractService {
 
     @Autowired
     private transient ContractRepository contractRepository;
+    @Autowired
+    private transient FileLogger logger;
 
     private static final transient double MAX_HOURS = 20;
     private static final transient double MAX_WEEKS = 26;
@@ -71,7 +74,15 @@ public class ContractService {
         // Set as active
         contract.setStatus(Status.ACTIVE);
 
-        return contractRepository.save(contract);
+        contract = contractRepository.save(contract);
+        logger.log("Contract "
+            + contract.getId()
+            + " has been saved between company "
+            + contract.getCompanyId()
+            + " and student "
+            + contract.getStudentId());
+
+        return contract;
     }
 
     /**
@@ -103,6 +114,9 @@ public class ContractService {
         if (contractRepository.findById(contractId).isEmpty()) {
             throw new ContractNotFoundException(contractId);
         }
+        logger.log("Contract "
+            + contractId
+            + " has been terminated");
         contractRepository.terminateContract(contractId);
     }
 }
