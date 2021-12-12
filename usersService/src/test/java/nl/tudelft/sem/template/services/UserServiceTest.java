@@ -13,8 +13,8 @@ import static org.mockito.Mockito.verify;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import java.util.Optional;
+import nl.tudelft.sem.template.entities.StudentFactory;
 import nl.tudelft.sem.template.entities.User;
-import nl.tudelft.sem.template.enums.Role;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
 import nl.tudelft.sem.template.exceptions.UserNotFound;
 import nl.tudelft.sem.template.repositories.UserRepository;
@@ -40,7 +40,7 @@ public class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        user = new User("testing", "testPass", Role.STUDENT);
+        user = new StudentFactory().createUser("testing", "testPass");
     }
 
     @Test
@@ -144,9 +144,9 @@ public class UserServiceTest {
     @Test
     void testVerifyPassword() {
         String password = "test_password";
-        User hashedPasswordUser = new User(
-                "test2", userService.hashPassword(password), Role.STUDENT
-        );
+        User hashedPasswordUser = new StudentFactory()
+            .createUser("test2", userService.hashPassword(password));
+
         assertTrue(userService.verifyPassword(hashedPasswordUser, password));
         assertFalse(userService.verifyPassword(hashedPasswordUser, "different_test_password"));
     }
