@@ -1,4 +1,4 @@
 rootProject.name = 'usersService'
 
-include ":envLoader"
-project(":envLoader").projectDir = file("../envLoader")
+include ":commonUtility"
+project(":commonUtility").projectDir = file("../commonUtility")

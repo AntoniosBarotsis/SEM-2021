@@ -4,7 +4,9 @@ import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.Offer;
+import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.entities.dtos.Response;
+import nl.tudelft.sem.template.exceptions.ContractCreationException;
 import nl.tudelft.sem.template.exceptions.LowRatingException;
 import nl.tudelft.sem.template.exceptions.UpstreamServiceException;
 import nl.tudelft.sem.template.services.NonTargetedCompanyOfferService;
@@ -106,7 +108,7 @@ public class NonTargetedCompanyOfferController {
      * @return - a Response, containing a success or an error message!
      */
     @PostMapping("/accept/{id}")
-    public ResponseEntity<Response<String>> acceptApplication(
+    public ResponseEntity<Response<ContractDto>> acceptApplication(
             @RequestHeader(nameHeader) String userName,
             @RequestHeader(roleHeader) String userRole,
             @PathVariable Long id) {
@@ -116,15 +118,14 @@ public class NonTargetedCompanyOfferController {
         }
 
         try {
-            nonTargetedCompanyOfferService.accept(userName, userRole, id);
+            ContractDto contract = nonTargetedCompanyOfferService.accept(userName, userRole, id);
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(new Response<>(
-                            "Application has been accepted successfully!",
-                            null));
+                    .body(new Response<>(contract,
+                            "Application has been accepted successfully!"));
         } catch (NoPermissionException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(new Response<>(null, e.getMessage()));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | ContractCreationException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new Response<>(null, e.getMessage()));
         }

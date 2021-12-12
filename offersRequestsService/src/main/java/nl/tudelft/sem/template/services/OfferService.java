@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import logger.FileLogger;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.dtos.AverageRatingResponse;
@@ -36,6 +37,9 @@ public class OfferService {
     @Autowired
     private transient RestTemplate restTemplate;
 
+    @Autowired
+    private transient FileLogger logger;
+
     /**
      * Method for saving offers.
      *
@@ -60,7 +64,12 @@ public class OfferService {
         }
 
         offer.setStatus(Status.PENDING);
-        return offerRepository.save(offer);
+        offer = offerRepository.save(offer);
+        logger.log(offer.getClass().getSimpleName()
+                + " " + offer.getId()
+                + " saved by user "
+                + offer.getCreatorUsername());
+        return offer;
     }
 
     /**

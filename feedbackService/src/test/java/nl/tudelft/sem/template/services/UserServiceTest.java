@@ -1,5 +1,11 @@
 package nl.tudelft.sem.template.services;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
+
 import nl.tudelft.sem.template.domain.dtos.enums.UserRole;
 import nl.tudelft.sem.template.domain.dtos.responses.UserResponse;
 import nl.tudelft.sem.template.domain.dtos.responses.UserResponseWrapper;
@@ -11,12 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
-import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -48,7 +48,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void testGetUserNoResponseData(){
+    void testGetUserNoResponseData() {
         UserResponseWrapper userResponseWrapper = new UserResponseWrapper();
         when(restTemplate.getForObject(userServiceEndpoint + userName, UserResponseWrapper.class))
                 .thenReturn(userResponseWrapper);

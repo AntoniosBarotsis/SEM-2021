@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import logger.FileLogger;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
@@ -42,6 +43,9 @@ class OfferServiceTest {
 
     @MockBean
     private transient RestTemplate restTemplate;
+
+    @MockBean
+    private transient FileLogger fileLogger;
 
     private transient StudentOffer studentOffer;
     private transient TargetedCompanyOffer targetedCompanyOffer;
@@ -78,6 +82,8 @@ class OfferServiceTest {
                 .thenReturn(new AverageRatingResponse(5.0));
 
         studentOffer = Mockito.mock(StudentOffer.class);
+        Mockito.when(offerRepository.save(studentOffer))
+                        .thenReturn(studentOffer);
         offerService.saveOffer(studentOffer);
 
         Mockito.verify(studentOffer).setStatus(Status.PENDING);

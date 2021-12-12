@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.sun.istack.NotNull;
 import java.util.Date;
 import java.util.Optional;
+import logger.FileLogger;
 import nl.tudelft.sem.template.entities.JwtConfig;
 import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
@@ -25,6 +26,9 @@ public class UserService {
 
     @Autowired
     private transient JwtConfig jwtConfig;
+
+    @Autowired
+    private transient FileLogger logger;
 
 
     /** Get user by their id.
@@ -62,6 +66,7 @@ public class UserService {
         if (userRepository.existsByUsername(user.getUsername())) {
             throw new UserAlreadyExists(user);
         }
+        logger.log(user.getRole() + " has been created with username " + user.getUsername());
         user.setPassword(hashPassword(user.getPassword()));
         return userRepository.save(user);
     }
@@ -75,6 +80,7 @@ public class UserService {
      */
     public User updateUser(User user) throws UserNotFound {
         if (userRepository.existsByUsername(user.getUsername())) {
+            user.setPassword(hashPassword(user.getPassword()));
             return userRepository.save(user);
         }
         throw new UserNotFound(user.getUsername());
@@ -89,6 +95,7 @@ public class UserService {
     public void deleteUser(String username) throws UserNotFound {
         getUserOrRaise(username);
         userRepository.deleteById(username);
+        logger.log("User " + username + " has been deleted");
     }
 
     /**

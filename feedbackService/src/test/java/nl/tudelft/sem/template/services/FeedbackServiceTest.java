@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Optional;
+import logger.FileLogger;
 import nl.tudelft.sem.template.domain.Feedback;
 import nl.tudelft.sem.template.domain.Rating;
 import nl.tudelft.sem.template.domain.dtos.requests.FeedbackRequest;
@@ -32,6 +33,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.util.Pair;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -46,6 +49,8 @@ public class FeedbackServiceTest {
     private transient FeedbackRepository feedbackRepository;
     @MockBean
     private transient RestTemplate restTemplate;
+    @MockBean
+    private transient FileLogger fileLogger;
 
     private transient FeedbackResponse feedbackResponse;
     private transient FeedbackRequest feedbackRequest;
@@ -105,8 +110,8 @@ public class FeedbackServiceTest {
         when(restTemplate.getForObject(anyString(), eq(UserRoleResponseWrapper.class)))
             .thenReturn(userRoleResponseWrapper);
 
-        when(restTemplate.getForObject(anyString(), eq(ContractResponse.class)))
-            .thenReturn(contractResponse);
+        when(restTemplate.exchange(anyString(), any(), any(), eq(ContractResponse.class)))
+                .thenReturn(new ResponseEntity<>(contractResponse, HttpStatus.OK));
 
         when(feedbackRepository.save(any(Feedback.class)))
             .thenReturn(feedback);
@@ -126,8 +131,8 @@ public class FeedbackServiceTest {
         when(restTemplate.getForObject(anyString(), eq(UserRoleResponseWrapper.class)))
             .thenReturn(userRoleResponseWrapper);
 
-        when(restTemplate.getForObject(anyString(), eq(ContractResponse.class)))
-            .thenReturn(contractResponse);
+        when(restTemplate.exchange(anyString(), any(), any(), eq(ContractResponse.class)))
+            .thenReturn(new ResponseEntity<>(contractResponse, HttpStatus.OK));
 
         when(feedbackRepository.save(any(Feedback.class)))
             .thenReturn(feedback);
@@ -146,8 +151,8 @@ public class FeedbackServiceTest {
 
         contractResponse.setStatus("ACTIVE");
 
-        when(restTemplate.getForObject(anyString(), eq(ContractResponse.class)))
-            .thenReturn(contractResponse);
+        when(restTemplate.exchange(anyString(), any(), any(), eq(ContractResponse.class)))
+                .thenReturn(new ResponseEntity<>(contractResponse, HttpStatus.OK));
 
         assertThrows(ContractNotExpiredException.class,
             () -> feedbackService.create(feedbackRequest, userName, userRole));
@@ -160,8 +165,8 @@ public class FeedbackServiceTest {
         when(restTemplate.getForObject(anyString(), eq(UserRoleResponseWrapper.class)))
             .thenReturn(userRoleResponseWrapper);
 
-        when(restTemplate.getForObject(anyString(), eq(ContractResponse.class)))
-            .thenReturn(contractResponse);
+        when(restTemplate.exchange(anyString(), any(), any(), eq(ContractResponse.class)))
+                .thenReturn(new ResponseEntity<>(contractResponse, HttpStatus.OK));
 
         assertThrows(InvalidFeedbackDetailsException.class,
             () -> feedbackService.create(feedbackRequest, userName, userRole));
@@ -203,7 +208,7 @@ public class FeedbackServiceTest {
         when(restTemplate.getForObject(anyString(), eq(UserRoleResponseWrapper.class)))
             .thenReturn(userRoleResponseWrapper);
 
-        when(restTemplate.getForObject(anyString(), eq(ContractResponse.class)))
+        when(restTemplate.exchange(anyString(), any(), any(), eq(ContractResponse.class)))
             .thenThrow(HttpClientErrorException.class);
 
         assertThrows(NoExistingContractException.class,
@@ -215,7 +220,7 @@ public class FeedbackServiceTest {
         when(restTemplate.getForObject(anyString(), eq(UserRoleResponseWrapper.class)))
             .thenReturn(userRoleResponseWrapper);
 
-        when(restTemplate.getForObject(anyString(), eq(ContractResponse.class)))
+        when(restTemplate.exchange(anyString(), any(), any(), eq(ContractResponse.class)))
             .thenThrow(RestClientException.class);
 
         assertThrows(UserServiceUnavailableException.class,
@@ -248,8 +253,8 @@ public class FeedbackServiceTest {
         when(restTemplate.getForObject(anyString(), eq(UserRoleResponseWrapper.class)))
             .thenReturn(userRoleResponseWrapper);
 
-        when(restTemplate.getForObject(anyString(), eq(ContractResponse.class)))
-            .thenReturn(contractResponse);
+        when(restTemplate.exchange(anyString(), any(), any(), eq(ContractResponse.class)))
+                .thenReturn(new ResponseEntity<>(contractResponse, HttpStatus.OK));
 
         when(feedbackRepository.save(any(Feedback.class)))
             .thenReturn(feedback);

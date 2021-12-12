@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.services;
 
 import java.util.List;
 import java.util.Optional;
+import logger.FileLogger;
 import nl.tudelft.sem.template.domain.Feedback;
 import nl.tudelft.sem.template.domain.dtos.enums.Status;
 import nl.tudelft.sem.template.domain.dtos.enums.UserRole;
@@ -20,6 +21,9 @@ import nl.tudelft.sem.template.exceptions.UserServiceUnavailableException;
 import nl.tudelft.sem.template.repositories.FeedbackRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
@@ -32,6 +36,8 @@ public class FeedbackService {
     private transient FeedbackRepository feedbackRepository;
     @Autowired
     private transient RestTemplate restTemplate;
+    @Autowired
+    private transient FileLogger logger;
 
     /**
      * Get feedback by ID.
@@ -85,7 +91,8 @@ public class FeedbackService {
                 studentName = feedbackRequest.getFrom();
             }
 
-            String contractUrl = "http://contract-service/" + companyName + "/" + studentName;
+            String contractUrl = "http://contract-service/" + companyName + "/" + studentName
+                    + "/mostRecent";
 
             // Check if there exists a contract between the two parties.
             checkExistingContract(feedbackRequest, contractUrl);
@@ -98,6 +105,11 @@ public class FeedbackService {
 
         Feedback feedback = Feedback.from(feedbackRequest);
 
+        logger.log(feedback.getAuthor()
+            + " left a feedback to "
+            + feedback.getRecipient()
+            + " on contract id "
+            + feedback.getContractId());
         Feedback res = feedbackRepository.save(feedback);
 
         return Pair.of(res.to(), res.getId());
@@ -105,8 +117,17 @@ public class FeedbackService {
 
     private void checkExistingContract(FeedbackRequest feedbackRequest, String contractUrl) {
         try {
+
+            // Headers of the request:
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("x-user-name", feedbackRequest.getFrom());
+
+            HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+            // getForObject doesn't support headers, use exchange instead:
             ContractResponse contract = restTemplate
-                .getForObject(contractUrl, ContractResponse.class);
+                    .exchange(contractUrl, HttpMethod.GET, requestEntity, ContractResponse.class)
+                    .getBody();
 
             if (Status.valueOf(contract.getStatus()) == Status.ACTIVE) {
                 String msg = "Can't leave feedback while contract is still active.";
