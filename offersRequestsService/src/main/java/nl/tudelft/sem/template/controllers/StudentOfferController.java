@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.controllers;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Offer;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -29,6 +31,10 @@ public class StudentOfferController {
 
     private final transient String nameHeader = "x-user-name";
     private final transient String roleHeader = "x-user-role";
+    private final transient String roleStudent = "STUDENT";
+    private final transient String roleCompany = "COMPANY";
+    private final transient String unauthenticatedMessage
+            = "User has not been authenticated";
 
     /** Endpoint for creating StudentOffers.
      *
@@ -49,9 +55,9 @@ public class StudentOfferController {
         if (userName.isBlank()) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
-                    .body(new Response<>(null, "User is not authenticated"));
+                    .body(new Response<>(null, unauthenticatedMessage));
         }
-        if (!studentOffer.getStudentId().equals(userName) || !userRole.equals("STUDENT")) {
+        if (!studentOffer.getStudentId().equals(userName) || !userRole.equals(roleStudent)) {
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
                     .body(new Response<>(null, "User not allowed to post this StudentOffer"));
@@ -133,7 +139,6 @@ public class StudentOfferController {
     }
 
     /**
-<<<<<<< HEAD
      * Endpoint, which accepts a Targeted Offer.
      *
      * @param userName - the name of the user.
@@ -150,7 +155,7 @@ public class StudentOfferController {
         if (userName.isBlank()) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
-                    .body(new Response<>(null, "User has not been authenticated"));
+                    .body(new Response<>(null, unauthenticatedMessage));
         }
 
         try {
@@ -185,16 +190,16 @@ public class StudentOfferController {
     public ResponseEntity<Response<String>>
         editStudentOffer(
                 @RequestBody StudentOffer studentOffer,
-                @RequestHeader("x-user-name") String userName,
-                @RequestHeader("x-user-role") String userRole) {
+                @RequestHeader(nameHeader) String userName,
+                @RequestHeader(roleHeader) String userRole) {
 
         if (userName.isBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new Response<>(null, "User has not been authenticated"));
+                    .body(new Response<>(null, unauthenticatedMessage));
         }
 
         if (!userName.equals(studentOffer.getStudentId())
-                || !userRole.equals("STUDENT")) {
+                || !userRole.equals(roleStudent)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(new Response<>(null, "User is not allowed to edit this offer"));
         }
@@ -207,6 +212,76 @@ public class StudentOfferController {
         } catch (IllegalArgumentException exception) {
             return new ResponseEntity<>(
                     new Response<>(null, exception.getMessage()),
+                    HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    /**
+     * Endpoint for getting StudentOffers by keyword.
+     *
+     * @param keyWord - the word, which should be a property of the offer.
+     * @param userName - the username of the requester.
+     * @param userRole - the role of the requester.
+     * @return - A response, which either contains an error message,
+     *      or a list of StudentOffers, which contain the keyword.
+     */
+    @GetMapping("/student/search/{keyWord}")
+    public ResponseEntity<Response<List<StudentOffer>>>
+            getOffersByKeyWord(@PathVariable String keyWord,
+                               @RequestHeader(nameHeader) String userName,
+                               @RequestHeader(roleHeader) String userRole) {
+        if (userName.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new Response<>(null, unauthenticatedMessage));
+        }
+
+        if (!userRole.equals(roleCompany)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new Response<>(null, "User is not allowed to see Student Offers!"));
+        }
+
+        try {
+            return new ResponseEntity<>(
+                    new Response<>(studentOfferService.getByKeyWord(keyWord), null),
+                    HttpStatus.OK);
+        } catch (UnsupportedEncodingException exception) {
+            return new ResponseEntity<>(
+                    new Response<>(null, "Keyword is invalid!"),
+                    HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    /**
+     * Endpoint for getting StudentOffers by expertises.
+     *
+     * @param expertises - the desired expertises
+     * @param userName - the username of the requester.
+     * @param userRole - the role of the requester.
+     * @return - A response, which either contains an error message,
+     *      or a list of StudentOffers, which contain the keyword.
+     */
+    @GetMapping("/student/search/expertises")
+    public ResponseEntity<Response<List<StudentOffer>>>
+        getOffersByExpertises(@RequestParam List<String> expertises,
+                           @RequestHeader(nameHeader) String userName,
+                           @RequestHeader(roleHeader) String userRole) {
+        if (userName.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new Response<>(null, unauthenticatedMessage));
+        }
+
+        if (!userRole.equals(roleCompany)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new Response<>(null, "User is not allowed to see Student Offers!"));
+        }
+
+        try {
+            return new ResponseEntity<>(
+                    new Response<>(studentOfferService.getByExpertises(expertises), null),
+                    HttpStatus.OK);
+        } catch (UnsupportedEncodingException exception) {
+            return new ResponseEntity<>(
+                    new Response<>(null, "An expertise is invalid!"),
                     HttpStatus.BAD_REQUEST);
         }
     }

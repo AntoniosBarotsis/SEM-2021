@@ -201,7 +201,8 @@ class NonTargetedCompanyOfferControllerTest {
     }
 
     @Test
-    void acceptApplicationTestFailIllegalArgument() throws NoPermissionException, ContractCreationException {
+    void acceptApplicationTestFailIllegalArgument()
+            throws NoPermissionException, ContractCreationException {
         String message = "There is no offer associated with this application!";
         Mockito
                 .doThrow(new IllegalArgumentException(
@@ -219,7 +220,8 @@ class NonTargetedCompanyOfferControllerTest {
     }
 
     @Test
-    void acceptApplicationTestFailNoPermission() throws NoPermissionException, ContractCreationException {
+    void acceptApplicationTestFailNoPermission()
+            throws NoPermissionException, ContractCreationException {
         String message = "User can not accept this application!";
         Mockito
                 .doThrow(new NoPermissionException(

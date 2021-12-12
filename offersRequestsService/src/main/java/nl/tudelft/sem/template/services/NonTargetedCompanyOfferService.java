@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.services;
 import java.util.List;
 import java.util.Optional;
 import javax.naming.NoPermissionException;
+import javax.transaction.Transactional;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.dtos.ContractDto;
@@ -12,7 +13,6 @@ import nl.tudelft.sem.template.repositories.ApplicationRepository;
 import nl.tudelft.sem.template.repositories.NonTargetedCompanyOfferRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 @Service

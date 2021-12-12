@@ -143,10 +143,11 @@ class NonTargetedCompanyOfferServiceTest {
         Mockito.when(utility.createContract(any(), any(), any(), any(), any(), any()))
                 .thenReturn(contract);
 
-        ContractDto actual = service.accept(companyId, role, application.getId());
+        final ContractDto actual = service.accept(companyId, role, application.getId());
 
         Mockito.verify(offerRepository, times(1)).save(any());
-        Mockito.verify(applicationRepository, times(2)).save(any());
+        Mockito.verify(applicationRepository,
+                times(2)).save(any());
         assertSame(application.getStatus(), Status.ACCEPTED);
         assertSame(offer.getStatus(), Status.DISABLED);
         assertSame(declined.getStatus(), Status.DECLINED);

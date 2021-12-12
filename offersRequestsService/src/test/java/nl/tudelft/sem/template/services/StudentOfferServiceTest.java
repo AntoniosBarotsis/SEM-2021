@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,7 +61,7 @@ public class StudentOfferServiceTest {
             10, 100,
             Arrays.asList("Drawing", "Swimming", "Running"),
             Status.PENDING,
-            50, "0123454");
+            50, student);
         offerThree = new StudentOffer("Ben's services", "Hey I'm Ben",
             15, 150,
             Arrays.asList("Singing", "Web Dev", "Care-taking"), Status.ACCEPTED,
@@ -129,10 +130,11 @@ public class StudentOfferServiceTest {
         Mockito.when(utility.createContract(any(), any(), any(), any(), any(), any()))
                 .thenReturn(contract);
 
-        ContractDto actual = studentOfferService.acceptOffer(student, role, accepted.getId());
+        final ContractDto actual = studentOfferService.acceptOffer(student, role, accepted.getId());
 
         Mockito.verify(studentOfferRepository, times(1)).save(any());
-        Mockito.verify(targetedCompanyOfferRepository, times(2)).save(any());
+        Mockito.verify(targetedCompanyOfferRepository,
+                times(2)).save(any());
         assertSame(accepted.getStatus(), Status.ACCEPTED);
         assertSame(offerTwo.getStatus(), Status.DISABLED);
         assertSame(declined.getStatus(), Status.DECLINED);
@@ -226,5 +228,27 @@ public class StudentOfferServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> studentOfferService.updateStudentOffer(offerTwo));
         assertEquals(message, exception.getMessage());
+    }
+
+    @Test
+    void getByKeyWordTest() throws UnsupportedEncodingException {
+        String keyWord = "Hey I'm Rado";
+        Mockito.when(studentOfferRepository.getAllByKeyWord(keyWord))
+                .thenReturn(List.of(offerTwo));
+
+        assertEquals(List.of(offerTwo), studentOfferService.getByKeyWord(keyWord));
+    }
+
+    @Test
+    void getByExpertisesTest() throws UnsupportedEncodingException {
+        List<StudentOffer> asd = new ArrayList<>();
+        asd.add(offerTwo);
+        Mockito.when(studentOfferRepository.findAllActive())
+                .thenReturn(asd);
+
+        List<String> expertises = new ArrayList<>();
+        expertises.add("Swimming");
+        assertEquals(List.of(offerTwo),
+                studentOfferService.getByExpertises(expertises));
     }
 }

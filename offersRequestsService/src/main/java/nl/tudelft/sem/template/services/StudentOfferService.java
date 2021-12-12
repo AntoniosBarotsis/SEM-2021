@@ -1,8 +1,14 @@
 package nl.tudelft.sem.template.services;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javax.naming.NoPermissionException;
+import javax.transaction.Transactional;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.dtos.ContractDto;
@@ -71,7 +77,7 @@ public class StudentOfferService extends OfferService {
             throw new IllegalArgumentException("ID is not valid!");
         }
         StudentOffer offer = targetedCompanyOffer.get().getStudentOffer();
-        if (offer
+        if (!offer
                 .getStudentId()
                 .equals(userName) || !userRole.equals("STUDENT")) {
             throw new NoPermissionException("User not allowed to accept this TargetedOffer");
@@ -90,8 +96,9 @@ public class StudentOfferService extends OfferService {
         contract = utility.createContract(tco.getCompanyId(), userName,
                 tco.getHoursPerWeek(), tco.getTotalHours(), offer.getPricePerHour(), restTemplate);
 
+        List<TargetedCompanyOffer> offers = offer.getTargetedCompanyOffers();
 
-        for (TargetedCompanyOffer t : offer.getTargetedCompanyOffers()) {
+        for (TargetedCompanyOffer t : offers) {
             if (!t.equals(targetedCompanyOffer.get())) {
                 t.setStatus(Status.DECLINED);
             } else {
@@ -121,5 +128,39 @@ public class StudentOfferService extends OfferService {
         }
 
         super.saveOffer(studentOffer);
+    }
+
+    /**
+     * Service, which gets all offers, whose fields are equal to the keyword.
+     *
+     * @param keyWord - the parameter we filter by.
+     * @return - a list of Student Offers.
+     * @throws UnsupportedEncodingException  -is thrown, if the input is invalid.
+     */
+    public List<StudentOffer> getByKeyWord(String keyWord) throws UnsupportedEncodingException {
+        String decoded = URLDecoder.decode(keyWord, StandardCharsets.UTF_8);
+
+        return studentOfferRepository.getAllByKeyWord(decoded);
+    }
+
+    /**
+     * Service, which gets all offers, whose expertises contain the criteria.
+     *
+     * @param expertises - the parameter we filter by.
+     * @return - a list of Student Offers.
+     * @throws UnsupportedEncodingException  -is thrown, if the input is invalid.
+     */
+    public List<StudentOffer> getByExpertises(List<String> expertises)
+            throws UnsupportedEncodingException {
+        for (int i = 0; i < expertises.size(); i++) {
+            String decoded =
+                    URLDecoder.decode(expertises.get(i), StandardCharsets.UTF_8);
+            expertises.set(i, decoded);
+        }
+
+        List<StudentOffer> offers = studentOfferRepository.findAllActive();
+        offers.removeIf(offer -> Collections.disjoint(offer.getExpertise(), expertises));
+
+        return offers;
     }
 }
