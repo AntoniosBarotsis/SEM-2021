@@ -33,6 +33,11 @@ public class FeedbackService {
     @Autowired
     private transient RestTemplate restTemplate;
 
+    /**
+     * Get feedback by ID.
+     *
+     * @return FeedbackResponse containing feedback with given ID
+     */
     public FeedbackResponse getById(Long id) {
         Optional<Feedback> res = feedbackRepository.findById(id);
 
@@ -43,6 +48,14 @@ public class FeedbackService {
         return res.get().to();
     }
 
+    /**
+     * Creates a feedback for a contract.
+     *
+     * @param feedbackRequest the feedback request
+     * @param userName the user name
+     * @param userRole the user role
+     * @return the feedback response
+     */
     public Pair<FeedbackResponse, Long> create(FeedbackRequest feedbackRequest, String userName,
                                                String userRole) {
         if (feedbackRequest.getFrom() == null) {
@@ -50,8 +63,8 @@ public class FeedbackService {
         }
 
         try {
-            if (userName.equals(feedbackRequest.getTo()) ||
-                feedbackRequest.getTo().equals(feedbackRequest.getFrom())) {
+            if (userName.equals(feedbackRequest.getTo())
+                    || feedbackRequest.getTo().equals(feedbackRequest.getFrom())) {
                 throw new InvalidFeedbackDetailsException("Cant add a review of yourself");
             }
 
@@ -126,8 +139,8 @@ public class FeedbackService {
 
         // Get the target role
         UserRole targetRole =
-            UserRole.valueOf(userRole) == UserRole.STUDENT ?
-                UserRole.COMPANY : UserRole.STUDENT;
+            UserRole.valueOf(userRole) == UserRole.STUDENT
+                    ? UserRole.COMPANY : UserRole.STUDENT;
 
         UserRoleResponseWrapper recipientUser =
             restTemplate.getForObject(urlRecipient, UserRoleResponseWrapper.class);
@@ -145,5 +158,9 @@ public class FeedbackService {
         }
 
         return targetRole;
+    }
+
+    public Double getAverageRatingByUser(String userName) {
+        return feedbackRepository.getAverageRatingByUser(userName);
     }
 }

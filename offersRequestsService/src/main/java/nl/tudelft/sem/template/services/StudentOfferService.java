@@ -106,6 +106,6 @@ public class StudentOfferService extends OfferService {
             throw new IllegalArgumentException("You are not allowed to edit the Status");
         }
 
-        super.saveOffer(studentOffer);
+        super.saveOfferWithResponse(studentOffer);
     }
 }

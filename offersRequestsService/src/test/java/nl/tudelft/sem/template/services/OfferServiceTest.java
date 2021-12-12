@@ -1,24 +1,34 @@
 package nl.tudelft.sem.template.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
+import nl.tudelft.sem.template.entities.dtos.AverageRatingResponse;
+import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.exceptions.LowRatingException;
+import nl.tudelft.sem.template.exceptions.UpstreamServiceException;
 import nl.tudelft.sem.template.repositories.OfferRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -29,6 +39,9 @@ class OfferServiceTest {
 
     @MockBean
     private transient OfferRepository offerRepository;
+
+    @MockBean
+    private transient RestTemplate restTemplate;
 
     private transient StudentOffer studentOffer;
     private transient TargetedCompanyOffer targetedCompanyOffer;
@@ -50,17 +63,23 @@ class OfferServiceTest {
     }
 
     @Test
-    void saveOfferValidTest() {
+    void saveOfferValidTest() throws LowRatingException, UpstreamServiceException {
         Mockito.when(offerRepository.save(studentOffer))
             .thenReturn(studentOffer);
+        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
+                .thenReturn(new AverageRatingResponse(5.0));
 
         assertEquals(studentOffer, offerService.saveOffer(studentOffer));
     }
 
     @Test
-    void saveOfferPendingTest() {
+    void saveOfferPendingTest() throws LowRatingException, UpstreamServiceException {
+        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
+                .thenReturn(new AverageRatingResponse(5.0));
+
         studentOffer = Mockito.mock(StudentOffer.class);
         offerService.saveOffer(studentOffer);
+
         Mockito.verify(studentOffer).setStatus(Status.PENDING);
     }
 
@@ -98,5 +117,49 @@ class OfferServiceTest {
 
         assertEquals(expected, offerService.getAllByUsername(student));
     }
+
+    @Test
+    void saveOfferWithResponseNoErrorTest() {
+        Mockito.when(offerRepository.save(studentOffer))
+                .thenReturn(studentOffer);
+        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
+                .thenReturn(new AverageRatingResponse(5.0));
+        ResponseEntity<Response<Offer>> response = offerService.saveOfferWithResponse(studentOffer);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(studentOffer, Objects.requireNonNull(response.getBody()).getData());
+    }
+
+    @Test
+    void saveOfferWithResponseLowRatingTest() {
+        Mockito.when(offerRepository.save(studentOffer))
+                .thenReturn(studentOffer);
+        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
+                .thenReturn(new AverageRatingResponse(1.2));
+        ResponseEntity<Response<Offer>> response = offerService.saveOfferWithResponse(studentOffer);
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertNull(Objects.requireNonNull(response.getBody()).getData());
+    }
+
+    @Test
+    void saveOfferWithResponseUpstreamUnavailableTest() {
+        Mockito.when(offerRepository.save(studentOffer))
+                .thenReturn(studentOffer);
+        ResponseEntity<Response<Offer>> response = offerService.saveOfferWithResponse(studentOffer);
+        assertEquals(HttpStatus.SERVICE_UNAVAILABLE, response.getStatusCode());
+        assertNull(Objects.requireNonNull(response.getBody()).getData());
+    }
+
+    @Test
+    void saveOfferWithResponseTooManyHoursTest() {
+        studentOffer.setTotalHours(521);
+        Mockito.when(offerRepository.save(studentOffer))
+                .thenReturn(studentOffer);
+        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
+                .thenReturn(new AverageRatingResponse(4.5));
+        ResponseEntity<Response<Offer>> response = offerService.saveOfferWithResponse(studentOffer);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNull(Objects.requireNonNull(response.getBody()).getData());
+    }
+
 
 }

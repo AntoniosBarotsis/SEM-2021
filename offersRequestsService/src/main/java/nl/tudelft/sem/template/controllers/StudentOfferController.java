@@ -54,21 +54,7 @@ public class StudentOfferController {
                     .status(HttpStatus.FORBIDDEN)
                     .body(new Response<>(null, "User not allowed to post this StudentOffer"));
         }
-        Response<Offer> response;
-        try {
-            response =
-                    new Response<>(studentOfferService.saveOffer(studentOffer),
-                            null);
-
-            return new ResponseEntity<>(response,
-                    HttpStatus.CREATED);
-        } catch (IllegalArgumentException e) {
-            response =
-                    new Response<>(null, e.getMessage());
-
-            return new ResponseEntity<>(response,
-                    HttpStatus.BAD_REQUEST);
-        }
+        return studentOfferService.saveOfferWithResponse(studentOffer);
     }
 
     /**
@@ -131,7 +117,6 @@ public class StudentOfferController {
     }
 
     /**
-<<<<<<< HEAD
      * Endpoint, which accepts a Targeted Offer.
      *
      * @param userName - the name of the user.
