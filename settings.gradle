@@ -1,2 +1,2 @@
 rootProject.name = 'sem'
-include 'contractService', 'eurekaServer', 'feedbackService', 'offersRequestsService', 'usersService', 'envLoader'
+include 'contractService', 'eurekaServer', 'feedbackService', 'offersRequestsService', 'usersService', 'commonUtility'

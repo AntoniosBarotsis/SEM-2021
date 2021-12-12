@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.naming.NoPermissionException;
 import javax.transaction.Transactional;
+import logger.FileLogger;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.dtos.ContractDto;
@@ -31,6 +32,8 @@ public class StudentOfferService extends OfferService {
     private transient RestTemplate restTemplate;
     @Autowired
     private transient Utility utility;
+    @Autowired
+    private transient FileLogger logger;
 
     /**
      * Service, which returns all active StudentOffers, which are stored in the repository.
@@ -107,6 +110,11 @@ public class StudentOfferService extends OfferService {
             targetedCompanyOfferRepository.save(t);
         }
 
+        logger.log(offer.getCreator()
+                    + " has accepted offer"
+                    + targetedCompanyOffer.get().getId()
+                    + " from user "
+                    + targetedCompanyOffer.get().getCreator());
         offer.setStatus(Status.DISABLED);
         studentOfferRepository.save(offer);
 

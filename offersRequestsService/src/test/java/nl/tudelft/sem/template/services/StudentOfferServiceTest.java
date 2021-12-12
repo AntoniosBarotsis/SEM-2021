@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import javax.naming.NoPermissionException;
+import logger.FileLogger;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.dtos.ContractDto;
@@ -23,6 +24,7 @@ import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import nl.tudelft.sem.template.repositories.TargetedCompanyOfferRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -45,6 +47,9 @@ public class StudentOfferServiceTest {
 
     @MockBean
     private transient Utility utility;
+
+    @MockBean
+    private transient FileLogger fileLogger;
 
     private transient StudentOffer offerTwo;
     private transient StudentOffer offerThree;
@@ -200,6 +205,8 @@ public class StudentOfferServiceTest {
         edited.setPricePerHour(100.0);
         Mockito.when(studentOfferRepository.getById(offerTwo.getId()))
                 .thenReturn(offerTwo);
+        Mockito.when(offerRepository.save(offerTwo))
+                        .thenReturn(offerTwo);
 
         studentOfferService.updateStudentOffer(edited);
         Mockito.verify(offerRepository).save(edited);

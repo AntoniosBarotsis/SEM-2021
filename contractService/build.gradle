@@ -53,6 +53,7 @@ dependencies {
     implementation 'com.h2database:h2'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     developmentOnly 'org.hibernate:hibernate-entitymanager'
+    implementation project(path: ':commonUtility', configuration: 'default')
 
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'

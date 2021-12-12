@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.services;
 
 import java.util.List;
 import java.util.Optional;
+import logger.FileLogger;
 import nl.tudelft.sem.template.domain.Feedback;
 import nl.tudelft.sem.template.domain.dtos.enums.Status;
 import nl.tudelft.sem.template.domain.dtos.enums.UserRole;
@@ -35,6 +36,8 @@ public class FeedbackService {
     private transient FeedbackRepository feedbackRepository;
     @Autowired
     private transient RestTemplate restTemplate;
+    @Autowired
+    private transient FileLogger logger;
 
     public FeedbackResponse getById(Long id) {
         Optional<Feedback> res = feedbackRepository.findById(id);
@@ -89,6 +92,11 @@ public class FeedbackService {
 
         Feedback feedback = Feedback.from(feedbackRequest);
 
+        logger.log(feedback.getAuthor()
+            + " left a feedback to "
+            + feedback.getRecipient()
+            + " on contract id "
+            + feedback.getContractId());
         Feedback res = feedbackRepository.save(feedback);
 
         return Pair.of(res.to(), res.getId());

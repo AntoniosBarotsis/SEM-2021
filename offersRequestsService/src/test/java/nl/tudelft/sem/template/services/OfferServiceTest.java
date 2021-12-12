@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import logger.FileLogger;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
@@ -29,6 +30,9 @@ class OfferServiceTest {
 
     @MockBean
     private transient OfferRepository offerRepository;
+
+    @MockBean
+    private transient FileLogger fileLogger;
 
     private transient StudentOffer studentOffer;
     private transient TargetedCompanyOffer targetedCompanyOffer;
@@ -60,6 +64,8 @@ class OfferServiceTest {
     @Test
     void saveOfferPendingTest() {
         studentOffer = Mockito.mock(StudentOffer.class);
+        Mockito.when(offerRepository.save(studentOffer))
+                        .thenReturn(studentOffer);
         offerService.saveOffer(studentOffer);
         Mockito.verify(studentOffer).setStatus(Status.PENDING);
     }

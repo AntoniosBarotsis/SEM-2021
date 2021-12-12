@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.services;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+import logger.FileLogger;
 import nl.tudelft.sem.template.entities.Contract;
 import nl.tudelft.sem.template.entities.ContractChangeProposal;
 import nl.tudelft.sem.template.enums.ContractStatus;
@@ -20,6 +21,8 @@ public class ContractService {
 
     @Autowired
     private transient ContractRepository contractRepository;
+    @Autowired
+    private transient FileLogger logger;
 
     private static final transient double MAX_HOURS = 20;
     private static final transient double MAX_WEEKS = 26;
@@ -47,7 +50,15 @@ public class ContractService {
         // Set as active
         contract.setStatus(ContractStatus.ACTIVE);
 
-        return contractRepository.save(contract);
+        contract = contractRepository.save(contract);
+        logger.log("Contract "
+            + contract.getId()
+            + " has been saved between company "
+            + contract.getCompanyId()
+            + " and student "
+            + contract.getStudentId());
+
+        return contract;
     }
 
     /**
@@ -146,6 +157,9 @@ public class ContractService {
         if (!contract.getStatus().equals(ContractStatus.ACTIVE)) {
             throw new InactiveContractException();
         }
+        logger.log("Contract "
+            + contractId
+            + " has been terminated");
         contractRepository.terminateContract(contractId);
     }
 

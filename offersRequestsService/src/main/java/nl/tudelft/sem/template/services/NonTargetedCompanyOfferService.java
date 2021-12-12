@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.naming.NoPermissionException;
 import javax.transaction.Transactional;
+import logger.FileLogger;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.dtos.ContractDto;
@@ -30,6 +31,9 @@ public class NonTargetedCompanyOfferService extends OfferService {
     @Autowired
     private transient Utility utility;
 
+    @Autowired
+    private transient FileLogger logger;
+
     /** Method for applying to a NonTargetedCompanyOffer.
      *
      * @param application Application that we want to save.
@@ -51,6 +55,10 @@ public class NonTargetedCompanyOfferService extends OfferService {
                         nonTargetedCompanyOffer)) {
             throw new IllegalArgumentException("Student already applied to this offer");
         }
+        logger.log(application.getStudentId()
+                    + " has applied for "
+                    + offerId);
+
         application.setNonTargetedCompanyOffer(nonTargetedCompanyOffer);
         application.setStatus(Status.PENDING);
         return applicationRepository.save(application);
@@ -106,6 +114,11 @@ public class NonTargetedCompanyOfferService extends OfferService {
             }
             applicationRepository.save(app);
         }
+        logger.log(nonTargetedCompanyOffer.getCreator()
+                    + " has accepted "
+                    + application.get().getStudentId()
+                    + " for offer "
+                    + nonTargetedCompanyOffer.getId());
         nonTargetedCompanyOffer.setStatus(Status.DISABLED);
         nonTargetedCompanyOfferRepository.save(nonTargetedCompanyOffer);
 

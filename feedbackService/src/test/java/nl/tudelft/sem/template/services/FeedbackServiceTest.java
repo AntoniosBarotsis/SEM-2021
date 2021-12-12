@@ -9,6 +9,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Optional;
+
+import logger.FileLogger;
 import nl.tudelft.sem.template.domain.Feedback;
 import nl.tudelft.sem.template.domain.Rating;
 import nl.tudelft.sem.template.domain.dtos.requests.FeedbackRequest;
@@ -48,6 +50,8 @@ public class FeedbackServiceTest {
     private transient FeedbackRepository feedbackRepository;
     @MockBean
     private transient RestTemplate restTemplate;
+    @MockBean
+    private transient FileLogger fileLogger;
 
     private transient FeedbackResponse feedbackResponse;
     private transient FeedbackRequest feedbackRequest;

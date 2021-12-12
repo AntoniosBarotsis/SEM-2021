@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import logger.FileLogger;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.repositories.OfferRepository;
@@ -23,6 +24,9 @@ public class OfferService {
     @Autowired
     private transient OfferRepository offerRepository;
 
+    @Autowired
+    private transient FileLogger logger;
+
     /**
      * Method for saving offers.
      *
@@ -38,9 +42,13 @@ public class OfferService {
         if (offer.getTotalHours() / offer.getHoursPerWeek() > MAX_WEEKS) {
             throw new IllegalArgumentException("Offer exceeds 6 month duration");
         }
-
         offer.setStatus(Status.PENDING);
-        return offerRepository.save(offer);
+        offer = offerRepository.save(offer);
+        logger.log(offer.getClass().getSimpleName()
+                + " " + offer.getId()
+                + " saved by user "
+                + offer.getCreator());
+        return offer;
     }
 
     /** Method for getting all Offers of a user.
