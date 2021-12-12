@@ -30,6 +30,7 @@ public class StudentOfferController {
     private final transient String nameHeader = "x-user-name";
     private final transient String roleHeader = "x-user-role";
     private final transient String roleStudent = "STUDENT";
+    private final transient String roleCompany = "COMPANY";
     private final transient String unauthenticatedMessage
             = "User has not been authenticated";
 
@@ -233,9 +234,9 @@ public class StudentOfferController {
                     .body(new Response<>(null, unauthenticatedMessage));
         }
 
-        if (!userRole.equals(roleStudent)) {
+        if (!userRole.equals(roleCompany)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new Response<>(null, "User is not allowed to edit this offer"));
+                    .body(new Response<>(null, "User is not allowed to see Student Offers!"));
         }
 
         try {
@@ -272,9 +273,9 @@ public class StudentOfferController {
                     .body(new Response<>(null, unauthenticatedMessage));
         }
 
-        if (!userRole.equals(roleStudent)) {
+        if (!userRole.equals(roleCompany)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new Response<>(null, "User is not allowed to edit this offer"));
+                    .body(new Response<>(null, "User is not allowed to see Student Offers!"));
         }
 
         try {

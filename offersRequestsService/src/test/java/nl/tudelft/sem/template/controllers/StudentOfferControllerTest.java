@@ -1,7 +1,9 @@
 package nl.tudelft.sem.template.controllers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -37,13 +39,19 @@ class StudentOfferControllerTest {
     private transient StudentOffer studentOffer;
     private transient String student;
     private transient String studentRole;
+    private transient String company;
+    private transient String companyRole;
+    private transient String unauthenticated;
     private transient TargetedCompanyOffer targetedCompanyOffer;
 
     @BeforeEach
     void setup() {
-        List<String> expertise = Arrays.asList("Expertise 1", "Expertise 2", "Expertise 3");
         student = "Student";
         studentRole = "STUDENT";
+        company = "Our Company";
+        companyRole = "COMPANY";
+        unauthenticated = "User has not been authenticated";
+        List<String> expertise = Arrays.asList("Expertise 1", "Expertise 2", "Expertise 3");
         studentOffer = new StudentOffer("This is a title",
             "This is a description", 20, 520,
             expertise, Status.DISABLED,
@@ -52,7 +60,7 @@ class StudentOfferControllerTest {
                 15, 150,
                 Arrays.asList("Singing", "Web Dev", "Care-taking"), Status.PENDING,
                 Arrays.asList("Singing", "Web Dev", "Care-taking"),
-                "Our Company", studentOffer);
+                company, studentOffer);
     }
 
 
@@ -162,9 +170,8 @@ class StudentOfferControllerTest {
 
     @Test
     void editStudentOfferTestFailRole() {
-        studentRole = "COMPANY";
         ResponseEntity<Response<String>> res
-                = studentOfferController.editStudentOffer(studentOffer, student, studentRole);
+                = studentOfferController.editStudentOffer(studentOffer, student, companyRole);
         Response<String> response =
                 new Response<>(null, "User is not allowed to edit this offer");
 
@@ -192,7 +199,7 @@ class StudentOfferControllerTest {
         ResponseEntity<Response<Offer>> response = studentOfferController
                 .saveStudentOffer("", "", studentOffer);
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals("User is not authenticated",
+        assertEquals(unauthenticated,
                 Objects.requireNonNull(response.getBody()).getErrorMessage());
 
     }
@@ -200,7 +207,7 @@ class StudentOfferControllerTest {
     @Test
     void saveStudentOfferNotAuthorTest() {
         ResponseEntity<Response<Offer>> response = studentOfferController
-                .saveStudentOffer("fake", "STUDENT", studentOffer);
+                .saveStudentOffer("fake", studentRole, studentOffer);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         assertEquals("User not allowed to post this StudentOffer",
                 Objects.requireNonNull(response.getBody()).getErrorMessage());
@@ -209,7 +216,7 @@ class StudentOfferControllerTest {
     @Test
     void saveStudentOfferNotStudentTest() {
         ResponseEntity<Response<Offer>> response = studentOfferController
-                .saveStudentOffer("fake", "COMPANY", studentOffer);
+                .saveStudentOffer("fake", companyRole, studentOffer);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         assertEquals("User not allowed to post this StudentOffer",
                 Objects.requireNonNull(response.getBody()).getErrorMessage());
@@ -239,7 +246,7 @@ class StudentOfferControllerTest {
                 = studentOfferController
                 .acceptTargetedOffer(student, studentRole, targetedCompanyOffer.getId());
         Response<String> response =
-                new Response<>(null, "User has not been authenticated");
+                new Response<>(null, unauthenticated);
 
         assertEquals(HttpStatus.UNAUTHORIZED, res.getStatusCode());
         assertEquals(response, res.getBody());
@@ -266,17 +273,16 @@ class StudentOfferControllerTest {
 
     @Test
     void acceptTargetedOfferTestFailNoPermission() throws NoPermissionException {
-        studentRole = "COMPANY";
         String message = "User not allowed to accept this TargetedOffer";
         Mockito
                 .doThrow(new NoPermissionException(
                         message))
                 .when(studentOfferService)
-                .acceptOffer(student, studentRole, targetedCompanyOffer.getId());
+                .acceptOffer(student, companyRole, targetedCompanyOffer.getId());
 
         ResponseEntity<Response<String>> res
                 = studentOfferController
-                .acceptTargetedOffer(student, studentRole, targetedCompanyOffer.getId());
+                .acceptTargetedOffer(student, companyRole, targetedCompanyOffer.getId());
         Response<String> response =
                 new Response<>(null, message);
 
@@ -292,7 +298,8 @@ class StudentOfferControllerTest {
         ResponseEntity<Response<List<StudentOffer>>> response =
                 studentOfferController.getStudentOffersById(student);
         assertEquals(HttpStatus.SERVICE_UNAVAILABLE, response.getStatusCode());
-        assertEquals("test", response.getBody().getErrorMessage());
+        assertEquals("test",
+                Objects.requireNonNull(response.getBody()).getErrorMessage());
     }
 
     @Test
@@ -303,7 +310,155 @@ class StudentOfferControllerTest {
         ResponseEntity<Response<List<StudentOffer>>> response =
                 studentOfferController.getStudentOffersById(student);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertEquals("error", response.getBody().getErrorMessage());
+        assertEquals("error",
+                Objects.requireNonNull(response.getBody()).getErrorMessage());
     }
+
+    @Test
+    void getOffersByKeyWordTestFailUserName() {
+        ResponseEntity<Response<List<StudentOffer>>> res
+                = studentOfferController
+                .getOffersByKeyWord("Word", "", companyRole);
+        Response<List<StudentOffer>> response =
+                new Response<>(null, unauthenticated);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void getOffersByKeyWordTestRole() {
+        ResponseEntity<Response<List<StudentOffer>>> res
+                = studentOfferController
+                .getOffersByKeyWord("title", company, studentRole);
+        Response<List<StudentOffer>> response =
+                new Response<>(null, "User is not allowed to see Student Offers!");
+
+        assertEquals(HttpStatus.FORBIDDEN, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void getOffersByKeyWordTest() throws UnsupportedEncodingException {
+        Mockito.when(studentOfferService.getByKeyWord("student"))
+                .thenReturn(List.of(studentOffer));
+
+        ResponseEntity<Response<List<StudentOffer>>> res
+                = studentOfferController
+                .getOffersByKeyWord("student", company, companyRole);
+        Response<List<StudentOffer>> response =
+                new Response<>(List.of(studentOffer), null);
+
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void getOffersByKeyWordTestFailEncoding() throws UnsupportedEncodingException {
+        Mockito
+                .doThrow(new UnsupportedEncodingException())
+                .when(studentOfferService)
+                .getByKeyWord(any());
+        ResponseEntity<Response<List<StudentOffer>>> res
+                = studentOfferController
+                .getOffersByKeyWord("explore", company, companyRole);
+        Response<List<StudentOffer>> response =
+                new Response<>(null, "Keyword is invalid!");
+
+        assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void getOffersByKeyWordTestFailIllegal() throws UnsupportedEncodingException {
+        String message = "No Student Offers contain this keyword!";
+        Mockito
+                .doThrow(new IllegalArgumentException(
+                        message))
+                .when(studentOfferService)
+                .getByKeyWord(any());
+        ResponseEntity<Response<List<StudentOffer>>> res
+                = studentOfferController
+                .getOffersByKeyWord("nothing", company, companyRole);
+        Response<List<StudentOffer>> response =
+                new Response<>(null, message);
+
+        assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void getOffersByExpertisesTestFailUserName() {
+        ResponseEntity<Response<List<StudentOffer>>> res
+                = studentOfferController
+                .getOffersByExpertises("Swimming", "", companyRole);
+        Response<List<StudentOffer>> response =
+                new Response<>(null, unauthenticated);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void getOffersByExpertisesTestRole() {
+        ResponseEntity<Response<List<StudentOffer>>> res
+                = studentOfferController
+                .getOffersByExpertises("e1,e2", company, studentRole);
+        Response<List<StudentOffer>> response =
+                new Response<>(null, "User is not allowed to see Student Offers!");
+
+        assertEquals(HttpStatus.FORBIDDEN, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void getOffersByExpertisesTest() throws UnsupportedEncodingException {
+        Mockito.when(studentOfferService.getByExpertises(List.of("Swimming", "Drawing")))
+                .thenReturn(List.of(studentOffer));
+
+        ResponseEntity<Response<List<StudentOffer>>> res
+                = studentOfferController
+                .getOffersByExpertises("Swimming,Drawing", company, companyRole);
+        Response<List<StudentOffer>> response =
+                new Response<>(List.of(studentOffer), null);
+
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void getOffersByExpertisesTestFailEncoding() throws UnsupportedEncodingException {
+        Mockito
+                .doThrow(new UnsupportedEncodingException())
+                .when(studentOfferService)
+                .getByExpertises(any());
+        ResponseEntity<Response<List<StudentOffer>>> res
+                = studentOfferController
+                .getOffersByExpertises("e1,e2", company, companyRole);
+        Response<List<StudentOffer>> response =
+                new Response<>(null, "An expertise is invalid!");
+
+        assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
+    @Test
+    void getOffersByExpertisesTestFailIllegal() throws UnsupportedEncodingException {
+        String message = "No Student Offers have any of these expertises!";
+        Mockito
+                .doThrow(new IllegalArgumentException(
+                        message))
+                .when(studentOfferService)
+                .getByExpertises(any());
+        ResponseEntity<Response<List<StudentOffer>>> res
+                = studentOfferController
+                .getOffersByExpertises("Drawing,Computers", company, companyRole);
+        Response<List<StudentOffer>> response =
+                new Response<>(null, message);
+
+        assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
+        assertEquals(response, res.getBody());
+    }
+
 
 }
