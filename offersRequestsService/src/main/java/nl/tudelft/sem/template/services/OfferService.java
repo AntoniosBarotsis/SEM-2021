@@ -55,7 +55,7 @@ public class OfferService {
 
         // Contact the user feedback service to get the average rating.
         double rating = getAverageRating(offer.getCreatorUsername());
-        if (rating < MIN_RATING && rating != 0) {
+        if (rating < MIN_RATING && rating != -1) {
             throw new LowRatingException("create offer", MIN_RATING);
         }
 
