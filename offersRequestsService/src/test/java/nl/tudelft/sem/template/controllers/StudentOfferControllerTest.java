@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.controllers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -9,8 +10,10 @@ import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
+import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.exceptions.ContractCreationException;
 import nl.tudelft.sem.template.exceptions.UserDoesNotExistException;
 import nl.tudelft.sem.template.exceptions.UserServiceUnvanvailableException;
 import nl.tudelft.sem.template.services.StudentOfferService;
@@ -38,6 +41,7 @@ class StudentOfferControllerTest {
     private transient String student;
     private transient String studentRole;
     private transient TargetedCompanyOffer targetedCompanyOffer;
+    private transient ContractDto contract;
 
     @BeforeEach
     void setup() {
@@ -53,6 +57,15 @@ class StudentOfferControllerTest {
                 Arrays.asList("Singing", "Web Dev", "Care-taking"), Status.PENDING,
                 Arrays.asList("Singing", "Web Dev", "Care-taking"),
                 "Our Company", studentOffer);
+
+        LocalDate startDate = LocalDate.of(2022, 1, 1);
+        LocalDate endDate = startDate.plusWeeks(
+                (long) Math.ceil(studentOffer.getTotalHours() / studentOffer.getHoursPerWeek()));
+
+        contract = new ContractDto(1L, targetedCompanyOffer.getCompanyId(), student,
+                startDate, endDate, targetedCompanyOffer.getHoursPerWeek(),
+                targetedCompanyOffer.getTotalHours(),
+                studentOffer.getPricePerHour(), "ACTIVE");
     }
 
 
@@ -216,17 +229,16 @@ class StudentOfferControllerTest {
     }
 
     @Test
-    void acceptTargetedOfferTest() throws NoPermissionException {
-        Mockito.doNothing()
-                .when(studentOfferService)
-                .acceptOffer(student, studentRole, targetedCompanyOffer.getId());
+    void acceptTargetedOfferTest() throws NoPermissionException, ContractCreationException {
+        Mockito.when(studentOfferService
+                .acceptOffer(student, studentRole, targetedCompanyOffer.getId()))
+                .thenReturn(contract);
 
-        ResponseEntity<Response<String>> res
+        ResponseEntity<Response<ContractDto>> res
                 = studentOfferController
                 .acceptTargetedOffer(student, studentRole, targetedCompanyOffer.getId());
-        Response<String> response =
-                new Response<>("The Company Offer was accepted successfully!",
-                        null);
+        Response<ContractDto> response =
+                new Response<>(contract, "The Company Offer was accepted successfully!");
 
         assertEquals(HttpStatus.OK, res.getStatusCode());
         assertEquals(response, res.getBody());
@@ -235,10 +247,10 @@ class StudentOfferControllerTest {
     @Test
     void acceptTargetedOfferTestFailUserName() {
         student = "";
-        ResponseEntity<Response<String>> res
+        ResponseEntity<Response<ContractDto>> res
                 = studentOfferController
                 .acceptTargetedOffer(student, studentRole, targetedCompanyOffer.getId());
-        Response<String> response =
+        Response<ContractDto> response =
                 new Response<>(null, "User has not been authenticated");
 
         assertEquals(HttpStatus.UNAUTHORIZED, res.getStatusCode());
@@ -246,7 +258,7 @@ class StudentOfferControllerTest {
     }
 
     @Test
-    void acceptTargetedOfferTestFailIllegalArgument() throws NoPermissionException {
+    void acceptTargetedOfferTestFailIllegalArgument() throws NoPermissionException, ContractCreationException {
         String message = "The StudentOffer or TargetedRequest is not active anymore!";
         Mockito
                 .doThrow(new IllegalArgumentException(
@@ -254,10 +266,10 @@ class StudentOfferControllerTest {
                 .when(studentOfferService)
                 .acceptOffer(student, studentRole, targetedCompanyOffer.getId());
 
-        ResponseEntity<Response<String>> res
+        ResponseEntity<Response<ContractDto>> res
                 = studentOfferController
                 .acceptTargetedOffer(student, studentRole, targetedCompanyOffer.getId());
-        Response<String> response =
+        Response<ContractDto> response =
                 new Response<>(null, message);
 
         assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
@@ -265,7 +277,7 @@ class StudentOfferControllerTest {
     }
 
     @Test
-    void acceptTargetedOfferTestFailNoPermission() throws NoPermissionException {
+    void acceptTargetedOfferTestFailNoPermission() throws NoPermissionException, ContractCreationException {
         studentRole = "COMPANY";
         String message = "User not allowed to accept this TargetedOffer";
         Mockito
@@ -274,10 +286,10 @@ class StudentOfferControllerTest {
                 .when(studentOfferService)
                 .acceptOffer(student, studentRole, targetedCompanyOffer.getId());
 
-        ResponseEntity<Response<String>> res
+        ResponseEntity<Response<ContractDto>> res
                 = studentOfferController
                 .acceptTargetedOffer(student, studentRole, targetedCompanyOffer.getId());
-        Response<String> response =
+        Response<ContractDto> response =
                 new Response<>(null, message);
 
         assertEquals(HttpStatus.FORBIDDEN, res.getStatusCode());

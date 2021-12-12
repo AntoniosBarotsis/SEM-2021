@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,20 +14,19 @@ import java.util.Optional;
 import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
+import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.exceptions.ContractCreationException;
 import nl.tudelft.sem.template.repositories.OfferRepository;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import nl.tudelft.sem.template.repositories.TargetedCompanyOfferRepository;
-import org.hibernate.mapping.Any;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -50,6 +50,7 @@ public class StudentOfferServiceTest {
     private transient String student;
     private transient String role;
     private transient TargetedCompanyOffer accepted;
+    private transient ContractDto contract;
 
     @BeforeEach
     void setUp() {
@@ -71,6 +72,14 @@ public class StudentOfferServiceTest {
                 "Our Company", offerTwo);
         offerTwo.setTargetedCompanyOffers(new ArrayList<>());
         offerThree.setTargetedCompanyOffers(new ArrayList<>());
+
+        LocalDate startDate = LocalDate.of(2022, 1, 1);
+        LocalDate endDate = startDate.plusWeeks(
+                (long) Math.ceil(accepted.getTotalHours() / accepted.getHoursPerWeek()));
+
+        contract = new ContractDto(1L, accepted.getCompanyId(), student, startDate, endDate,
+                accepted.getHoursPerWeek(), accepted.getTotalHours(),
+                accepted.getStudentOffer().getPricePerHour(), "ACTIVE");
     }
 
     @Test
@@ -110,20 +119,24 @@ public class StudentOfferServiceTest {
     }
 
     @Test
-    void acceptOfferTest() throws NoPermissionException {
+    void acceptOfferTest() throws NoPermissionException, ContractCreationException {
         TargetedCompanyOffer declined = new TargetedCompanyOffer();
         offerTwo.setTargetedCompanyOffers(List.of(declined, accepted));
 
         Mockito.when(targetedCompanyOfferRepository.findById(accepted.getId()))
                         .thenReturn(Optional.of(accepted));
 
-        studentOfferService.acceptOffer(student, role, accepted.getId());
+        Mockito.when(utility.createContract(any(), any(), any(), any(), any(), any()))
+                .thenReturn(contract);
+
+        ContractDto actual = studentOfferService.acceptOffer(student, role, accepted.getId());
 
         Mockito.verify(studentOfferRepository, times(1)).save(any());
         Mockito.verify(targetedCompanyOfferRepository, times(2)).save(any());
         assertSame(accepted.getStatus(), Status.ACCEPTED);
         assertSame(offerTwo.getStatus(), Status.DISABLED);
         assertSame(declined.getStatus(), Status.DECLINED);
+        assertEquals(contract, actual);
     }
 
     @Test

@@ -4,7 +4,9 @@ import java.util.List;
 import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
+import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.entities.dtos.Response;
+import nl.tudelft.sem.template.exceptions.ContractCreationException;
 import nl.tudelft.sem.template.exceptions.UserDoesNotExistException;
 import nl.tudelft.sem.template.exceptions.UserServiceUnvanvailableException;
 import nl.tudelft.sem.template.services.StudentOfferService;
@@ -140,7 +142,7 @@ public class StudentOfferController {
      * @return - A Response with a success or an error message!
      */
     @PostMapping("/student/accept/{id}")
-    public ResponseEntity<Response<String>>
+    public ResponseEntity<Response<ContractDto>>
         acceptTargetedOffer(
             @RequestHeader(nameHeader) String userName,
             @RequestHeader(roleHeader) String userRole,
@@ -152,17 +154,16 @@ public class StudentOfferController {
         }
 
         try {
-            studentOfferService.acceptOffer(userName, userRole, id);
+            ContractDto contract = studentOfferService.acceptOffer(userName, userRole, id);
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(new Response<>("The Company Offer was accepted successfully!",
-                            null));
+                    .body(new Response<>(contract, "The Company Offer was accepted successfully!"));
         } catch (NoPermissionException exception) {
             exception.printStackTrace();
 
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
                     .body(new Response<>(null, exception.getMessage()));
-        } catch (IllegalArgumentException exception) {
+        } catch (IllegalArgumentException | ContractCreationException exception) {
             exception.printStackTrace();
 
             return ResponseEntity

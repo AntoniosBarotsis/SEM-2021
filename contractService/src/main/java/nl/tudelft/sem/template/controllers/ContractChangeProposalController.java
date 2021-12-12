@@ -88,7 +88,7 @@ public class ContractChangeProposalController {
             return new ResponseEntity<>(contract, HttpStatus.OK);
         } catch (ChangeProposalNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (InactiveContractException | InvalidChangeProposalException e) {
+        } catch (InvalidChangeProposalException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (AccessDeniedException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
@@ -101,7 +101,6 @@ public class ContractChangeProposalController {
      * @param userName   The id of the user making the request.
      * @param proposalId The id of the proposal that will be rejected.
      * @return 200 OK if successful,
-     *         400 BAD REQUEST if the contract is inactive,
      *         404 NOT FOUND if the proposal is not found,
      *         401 UNAUTHORIZED if the user is not the one that should review the proposal.
      */
@@ -115,8 +114,6 @@ public class ContractChangeProposalController {
             return ResponseEntity.ok(null);
         } catch (ChangeProposalNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (InactiveContractException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (AccessDeniedException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
         }
@@ -162,6 +159,7 @@ public class ContractChangeProposalController {
             @PathVariable(name = "contractId") Long contractId) {
 
         try {
+            // Get contract and mark it expired if needed:
             Contract contract = contractService.getContract(contractId);
             List<ContractChangeProposal> proposals =
                     changeProposalService.getProposals(contract, userName);

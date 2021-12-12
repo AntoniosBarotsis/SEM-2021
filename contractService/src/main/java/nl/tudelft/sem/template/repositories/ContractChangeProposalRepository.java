@@ -34,4 +34,9 @@ public interface ContractChangeProposalRepository extends
     @Modifying
     @Query("DELETE FROM ContractChangeProposal p WHERE p.contract = ?1 AND p.status = 'REJECTED'")
     void deleteAllRejectedProposalsOfContract(Contract c);
+
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM ContractChangeProposal p WHERE p.contract = ?1")
+    void deleteAllProposalsOfContract(Contract c);
 }

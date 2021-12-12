@@ -46,14 +46,14 @@ public class ContractChangeProposalService {
                                                  Long contractId, String userId)
             throws InvalidChangeProposalException, InactiveContractException,
             ContractNotFoundException, AccessDeniedException {
-        // Get contract:
+        // Get contract (also marks it as expired if needed):
         Contract contract = contractService.getContract(contractId);
 
         // Convert to the contractChangeProposalEntity:
         // Checks for authorization as well:
         ContractChangeProposal proposal = changeRequest.toContractChangeProposal(contract, userId);
 
-        // Check if proposal is valid:
+        // Check if proposal is valid and if contract is active:
         validateContractProposal(proposal);
 
         return changeProposalRepository.save(proposal);
@@ -66,20 +66,19 @@ public class ContractChangeProposalService {
      * @param participant The user that accepts the proposal.
      * @return The updated contract.
      * @throws ChangeProposalNotFoundException If the proposal doesn't exist.
-     * @throws InactiveContractException       If the contract is no longer active.
      * @throws InvalidChangeProposalException  If the proposal's parameters are no longer valid,
      *                                         meaning the contract was changed once before.
      *                                         (not likely to happen but just for caution)
      * @throws AccessDeniedException           If the participant is not in the contract.
      */
     public Contract acceptProposal(Long proposalId, String participant)
-            throws ChangeProposalNotFoundException, InactiveContractException,
-            InvalidChangeProposalException, AccessDeniedException {
+            throws ChangeProposalNotFoundException, InvalidChangeProposalException,
+            AccessDeniedException {
 
-        // Check if proposal exists:
+        // Check if proposal exists and if contract is active:
         ContractChangeProposal proposal = getProposal(proposalId);
 
-        // Check if the participant can reject the proposal and if contract is active:
+        // Check if the participant can reject the proposal:
         validateProposalAction(proposal, participant);
 
         // Try to update contract:
@@ -100,16 +99,15 @@ public class ContractChangeProposalService {
      * @param proposalId  The proposal's id.
      * @param participant The user that rejects the proposal.
      * @throws ChangeProposalNotFoundException If the proposal doesn't exist.
-     * @throws InactiveContractException       If the contract is no longer active.
      * @throws AccessDeniedException           If the participant is not in the contract.
      */
     public void rejectProposal(Long proposalId, String participant)
-            throws ChangeProposalNotFoundException, InactiveContractException,
+            throws ChangeProposalNotFoundException,
             AccessDeniedException {
 
-        // Check if proposal exists:
+        // Check if proposal exists and if contract is active:
         ContractChangeProposal proposal = getProposal(proposalId);
-        // Check if the participant can reject the proposal and if contract is active:
+        // Check if the participant can reject the proposal:
         validateProposalAction(proposal, participant);
 
         changeProposalRepository.rejectProposal(proposalId);
@@ -126,7 +124,7 @@ public class ContractChangeProposalService {
      */
     public void deleteProposal(Long proposalId, String proposer)
             throws ChangeProposalNotFoundException, AccessDeniedException {
-        // Check if proposal exists:
+        // Check if proposal exists and if contract is active:
         ContractChangeProposal proposal = getProposal(proposalId);
 
         // Can't delete proposal if it was reviewed (accepted/rejected):
@@ -180,6 +178,7 @@ public class ContractChangeProposalService {
      *                                        or the company's id and student's id are the same
      *                                        or if the contract is expired or cancelled
      *                                        or if the previous proposal wasn't reviewed.
+     * @throws InactiveContractException      Thrown if the contract has expired or was terminated.
      */
     public void validateContractProposal(ContractChangeProposal proposal)
             throws InvalidChangeProposalException, InactiveContractException {
@@ -246,19 +245,14 @@ public class ContractChangeProposalService {
      * @param participant The id of the user that wants to accept / reject the proposal.
      * @throws IllegalArgumentException Thrown when the participant isn't in the proposal
      *                                  (only the contract participant can accept/reject a proposal)
-     *                                  or if the contract is expired or cancelled
+     *                                  or if the contract is expired or cancelled.
      */
     public void validateProposalAction(ContractChangeProposal proposal, String participant)
-            throws InactiveContractException, AccessDeniedException {
+            throws AccessDeniedException {
 
         // Participant is not in the contract:
         if (!proposal.getParticipant().equals(participant)) {
             throw new AccessDeniedException();
-        }
-
-        // Inactive contract:
-        if (!proposal.getContract().getStatus().equals(ContractStatus.ACTIVE)) {
-            throw new InactiveContractException();
         }
     }
 
@@ -277,7 +271,27 @@ public class ContractChangeProposalService {
         if (p.isEmpty()) {
             throw new ChangeProposalNotFoundException(proposalId);
         } else {
-            return p.get();
+            // Get the proposal only if the contract is active:
+
+            ContractChangeProposal proposal = p.get();
+            Contract contract = proposal.getContract();
+
+            // Set contract as expired if needed (also updates it in the repository):
+            if (contractService.shouldExpire(contract)
+                    || contract.getStatus() != ContractStatus.ACTIVE) {
+
+                // Set locally as well for the next repository call:
+                if (contract.getStatus() == ContractStatus.ACTIVE) {
+                    contract.setStatus(ContractStatus.EXPIRED);
+                }
+                // Get rid of the proposals if the contract is not active:
+                changeProposalRepository.deleteAllProposalsOfContract(contract);
+
+                // Not found because it was deleted:
+                throw new ChangeProposalNotFoundException(proposalId);
+            }
+
+            return proposal;
         }
     }
 }
