@@ -6,6 +6,7 @@ import nl.tudelft.sem.template.domain.dtos.requests.FeedbackRequest;
 import nl.tudelft.sem.template.domain.dtos.responses.AverageRatingResponse;
 import nl.tudelft.sem.template.domain.dtos.responses.FeedbackResponse;
 import nl.tudelft.sem.template.services.FeedbackService;
+import nl.tudelft.sem.template.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,15 @@ public class FeedbackController {
     @Autowired
     private transient FeedbackService feedbackService;
 
+    @Autowired
+    private transient UserService userService;
+
+    /**
+     * Get Feedback by id.
+     *
+     * @param id The id of the feedback.
+     * @return The feedback.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<Response<FeedbackResponse>> getById(@PathVariable Long id) {
         try {
@@ -35,6 +45,14 @@ public class FeedbackController {
         }
     }
 
+    /**
+     * Create new feedback for user.
+     *
+     * @param feedbackRequest The request containing the feedback.
+     * @param userName The name of the user making the feedback, inserted by Eureka.
+     * @param userRole The role of the user making the feedback, inserted by Eureka.
+     * @return Created feedback.
+     */
     @PostMapping("/create")
     public ResponseEntity<Response<FeedbackResponse>> create(
         @RequestBody FeedbackRequest feedbackRequest,
@@ -61,9 +79,20 @@ public class FeedbackController {
         }
     }
 
+    /**
+     * Get the average rating of a given user.
+     *
+     * @param userName The name of the user.
+     * @return The average rating of the user.
+     */
     @GetMapping("/user/{userName}")
-    public ResponseEntity<Response<AverageRatingResponse>> getUserFeedback(@PathVariable String userName) {
-        // TODO Should we mark this as internal only? Or should all the ratings of all the users be public?
+    public ResponseEntity<Response<AverageRatingResponse>> getUserFeedback(
+            @PathVariable String userName) {
+        // First check if the user actually exists
+        if (!userService.userExists(userName)) {
+            return ResponseEntity.notFound().build();
+        }
+
         double avgRating = feedbackService.getAverageRatingByUser(userName);
         return ResponseEntity.ok(new Response<>(new AverageRatingResponse(avgRating), null));
     }
