@@ -10,6 +10,7 @@ public class JwtConfig {
 
     public JwtConfig() throws FileNotFoundException {
         var loader = new EnvLoaderBuilder()
+            .doNotThrowFileNotFoundException()
             .packageName("usersService")
             .load();
 

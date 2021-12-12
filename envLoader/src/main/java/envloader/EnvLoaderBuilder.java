@@ -3,28 +3,25 @@ package envloader;
 import envloader.exceptions.PackageNameNotDefined;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
+import java.util.Locale;
 
 /**
  * The <code>EnvLoader</code> builder class.
- *
  * <p>
  * Example usage:
- *
  * Say you have a `.env` file in your <code>resources</code> folder with the following contents;<br>
  * <br>
  * <code>key=value</code>
  * <br><br>
  * This is how you would read the <code>key</code> variable.
- *
  * <pre>
  *     {@code
- *var tmp = new EnvLoaderBuilder()
+ * var tmp = new EnvLoaderBuilder()
  *    .packageName("experimenting")
  *    .load();
- *
- *tmp.get("key") // "text"
- *tmp.get("test") // null
- *tmp.get("test", "default") // "default"
+ * tmp.get("key") // "text"
+ * tmp.get("test") // null
+ * tmp.get("test", "default") // "default"
  *     }
  * </pre>
  * </p>
@@ -33,7 +30,7 @@ public class EnvLoaderBuilder {
     private transient String filenameValue = ".env";
     private transient String pathValue = "src/main/resources";
     private transient String packageNameValue = null;
-    private transient boolean throwFileNotFoundExceptionValue = false;
+    private transient boolean doNotThrowFileNotFoundExceptionValue = false;
 
     /**
      * Sets the filename. The default is <code>.env</code>.
@@ -72,13 +69,13 @@ public class EnvLoaderBuilder {
     }
 
     /**
-     * Makes it so the EnvLoader will throw an exception if the file is not found instead of
-     * returning nulls.
+     * Makes it so the EnvLoader will not throw an exception if the file is not found, instead it
+     * will return an empty envLoader (you'll have to use the get with default method or get nulls).
      *
      * @return EnvLoaderBuilder
      */
-    public EnvLoaderBuilder throwFileNotFoundException() {
-        this.throwFileNotFoundExceptionValue = true;
+    public EnvLoaderBuilder doNotThrowFileNotFoundException() {
+        this.doNotThrowFileNotFoundExceptionValue = true;
 
         return this;
     }
@@ -94,17 +91,19 @@ public class EnvLoaderBuilder {
             throw new PackageNameNotDefined();
         }
 
-        var parser = new EnvLoaderParser(packageNameValue + "/" + pathValue, filenameValue);
+        var parser = packageNameValue.toLowerCase(Locale.ROOT).equals("envloader") ?
+            new EnvLoaderParser(pathValue, filenameValue) :
+            new EnvLoaderParser(packageNameValue + "/" + pathValue, filenameValue);
 
         try {
             var res = parser.parse();
 
             return new EnvLoaderImpl(res);
         } catch (FileNotFoundException e) {
-            if (throwFileNotFoundExceptionValue) {
-                throw e;
-            } else {
+            if (doNotThrowFileNotFoundExceptionValue) {
                 return new EnvLoaderImpl(new HashMap<>());
+            } else {
+                throw e;
             }
         }
     }

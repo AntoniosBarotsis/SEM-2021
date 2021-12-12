@@ -20,6 +20,7 @@ public class JwtConfig {
     public JwtConfig() throws FileNotFoundException {
         var loader = new EnvLoaderBuilder()
             .packageName("usersService")
+            .doNotThrowFileNotFoundException()
             .load();
 
         jwtSecret = loader.get("JWT_SECRET", "secret");
