@@ -1,7 +1,6 @@
 package nl.tudelft.sem.template.controllers;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
 import java.util.List;
 import javax.naming.NoPermissionException;
 import nl.tudelft.sem.template.entities.Offer;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -247,10 +247,6 @@ public class StudentOfferController {
             return new ResponseEntity<>(
                     new Response<>(null, "Keyword is invalid!"),
                     HttpStatus.BAD_REQUEST);
-        } catch (IllegalArgumentException exception) {
-            return new ResponseEntity<>(
-                    new Response<>(null, exception.getMessage()),
-                    HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -263,9 +259,9 @@ public class StudentOfferController {
      * @return - A response, which either contains an error message,
      *      or a list of StudentOffers, which contain the keyword.
      */
-    @GetMapping("/student/search/expertises/{expertises}")
+    @GetMapping("/student/search/expertises")
     public ResponseEntity<Response<List<StudentOffer>>>
-        getOffersByExpertises(@PathVariable String expertises,
+        getOffersByExpertises(@RequestParam List<String> expertises,
                            @RequestHeader(nameHeader) String userName,
                            @RequestHeader(roleHeader) String userRole) {
         if (userName.isBlank()) {
@@ -279,17 +275,12 @@ public class StudentOfferController {
         }
 
         try {
-            List<String> expList = Arrays.asList(expertises.split(","));
             return new ResponseEntity<>(
-                    new Response<>(studentOfferService.getByExpertises(expList), null),
+                    new Response<>(studentOfferService.getByExpertises(expertises), null),
                     HttpStatus.OK);
         } catch (UnsupportedEncodingException exception) {
             return new ResponseEntity<>(
                     new Response<>(null, "An expertise is invalid!"),
-                    HttpStatus.BAD_REQUEST);
-        } catch (IllegalArgumentException exception) {
-            return new ResponseEntity<>(
-                    new Response<>(null, exception.getMessage()),
                     HttpStatus.BAD_REQUEST);
         }
     }

@@ -126,13 +126,8 @@ public class StudentOfferService extends OfferService {
      */
     public List<StudentOffer> getByKeyWord(String keyWord) throws UnsupportedEncodingException {
         String decoded = URLDecoder.decode(keyWord, StandardCharsets.UTF_8);
-        List<StudentOffer> offers =
-                studentOfferRepository.getAllByKeyWord(decoded);
 
-        if (offers.isEmpty()) {
-            throw new IllegalArgumentException("No Student Offers contain this keyword!");
-        }
-        return offers;
+        return studentOfferRepository.getAllByKeyWord(decoded);
     }
 
     /**
@@ -153,9 +148,6 @@ public class StudentOfferService extends OfferService {
         List<StudentOffer> offers = studentOfferRepository.findAllActive();
         offers.removeIf(offer -> Collections.disjoint(offer.getExpertise(), expertises));
 
-        if (offers.isEmpty()) {
-            throw new IllegalArgumentException("No Student Offers have any of these expertises!");
-        }
         return offers;
     }
 }

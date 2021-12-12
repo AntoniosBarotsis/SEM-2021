@@ -223,18 +223,6 @@ public class StudentOfferServiceTest {
     }
 
     @Test
-    void getByKeyWordTestFail() {
-        Mockito.when(studentOfferRepository.getAllByKeyWord(any()))
-                .thenReturn(new ArrayList<>());
-
-        String message = "No Student Offers contain this keyword!";
-        IllegalArgumentException exception =
-                assertThrows(IllegalArgumentException.class,
-                    () -> studentOfferService.getByKeyWord("Hey I'm Rado"));
-        assertEquals(message, exception.getMessage());
-    }
-
-    @Test
     void getByExpertisesTest() throws UnsupportedEncodingException {
         List<StudentOffer> asd = new ArrayList<>();
         asd.add(offerTwo);
@@ -246,19 +234,4 @@ public class StudentOfferServiceTest {
         assertEquals(List.of(offerTwo),
                 studentOfferService.getByExpertises(expertises));
     }
-
-    @Test
-    void getByExpertisesTestFail() {
-        Mockito.when(studentOfferRepository.findAllActive())
-                .thenReturn(new ArrayList<>());
-
-        String message = "No Student Offers have any of these expertises!";
-        List<String> expertises = new ArrayList<>();
-        expertises.add("Swimming");
-        IllegalArgumentException exception =
-                assertThrows(IllegalArgumentException.class,
-                        () -> studentOfferService.getByExpertises(expertises));
-        assertEquals(message, exception.getMessage());
-    }
-
 }
