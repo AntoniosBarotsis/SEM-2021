@@ -5,6 +5,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -17,11 +18,12 @@ import nl.tudelft.sem.template.enums.Role;
 @AllArgsConstructor
 @EqualsAndHashCode
 @Table(name = "users")
-public class User {
+public abstract class User {
 
     @Id
     private String username;
     private String password;
+    @Transient
     @Enumerated(EnumType.STRING)
     private Role role;
 

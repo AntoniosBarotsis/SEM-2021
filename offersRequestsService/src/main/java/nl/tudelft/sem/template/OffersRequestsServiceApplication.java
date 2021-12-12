@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template;
 
+import logger.FileLogger;
 import nl.tudelft.sem.template.services.Utility;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -25,5 +26,17 @@ public class OffersRequestsServiceApplication {
     @Bean
     public Utility getUtility() {
         return new Utility();
+    }
+
+    /**
+     * Bean for the FileLogger.
+     *
+     * @return FileLogger instance.
+     */
+    @Bean
+    public FileLogger getLogger() {
+        FileLogger fileLogger = FileLogger.getInstance();
+        fileLogger.init("offersRequestsService");
+        return fileLogger;
     }
 }

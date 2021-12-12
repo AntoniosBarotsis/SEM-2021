@@ -1,14 +1,20 @@
 package nl.tudelft.sem.template.services;
 
+import java.util.List;
 import java.util.Optional;
 import javax.naming.NoPermissionException;
+import javax.transaction.Transactional;
+import logger.FileLogger;
 import nl.tudelft.sem.template.entities.Application;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
+import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.exceptions.ContractCreationException;
 import nl.tudelft.sem.template.repositories.ApplicationRepository;
 import nl.tudelft.sem.template.repositories.NonTargetedCompanyOfferRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class NonTargetedCompanyOfferService extends OfferService {
@@ -18,6 +24,15 @@ public class NonTargetedCompanyOfferService extends OfferService {
 
     @Autowired
     private transient ApplicationRepository applicationRepository;
+
+    @Autowired
+    private transient RestTemplate restTemplate;
+
+    @Autowired
+    private transient Utility utility;
+
+    @Autowired
+    private transient FileLogger logger;
 
     /** Method for applying to a NonTargetedCompanyOffer.
      *
@@ -40,6 +55,10 @@ public class NonTargetedCompanyOfferService extends OfferService {
                         nonTargetedCompanyOffer)) {
             throw new IllegalArgumentException("Student already applied to this offer");
         }
+        logger.log(application.getStudentId()
+                    + " has applied for "
+                    + offerId);
+
         application.setNonTargetedCompanyOffer(nonTargetedCompanyOffer);
         application.setStatus(Status.PENDING);
         return applicationRepository.save(application);
@@ -54,8 +73,11 @@ public class NonTargetedCompanyOfferService extends OfferService {
      * @param id - the id of the application.
      * @throws NoPermissionException - is thrown
      *      if the user doesn't have permission to accept the application.
+     * @throws ContractCreationException - if the request wasn't successful.
      */
-    public void accept(String userName, String userRole, Long id) throws NoPermissionException {
+    @Transactional
+    public ContractDto accept(String userName, String userRole, Long id)
+            throws NoPermissionException, ContractCreationException {
         Optional<Application> application = applicationRepository.findById(id);
         if (application.isEmpty()) {
             throw new IllegalArgumentException(
@@ -73,7 +95,18 @@ public class NonTargetedCompanyOfferService extends OfferService {
             throw new IllegalArgumentException("The offer or application is not active anymore!");
         }
 
-        for (Application app : nonTargetedCompanyOffer.getApplications()) {
+        ContractDto contract;
+        // First try to create the contract between the 2 parties.
+        // If the contract creation doesn't succeed then the application isn't accepted.
+        // Throws exception if error:
+        contract = utility.createContract(userName, application.get().getStudentId(),
+                nonTargetedCompanyOffer.getHoursPerWeek(),
+                nonTargetedCompanyOffer.getTotalHours(),
+                application.get().getPricePerHour(), restTemplate);
+
+        List<Application> applications = nonTargetedCompanyOffer.getApplications();
+
+        for (Application app : applications) {
             if (app.equals(application.get())) {
                 app.setStatus(Status.ACCEPTED);
             } else {
@@ -81,7 +114,14 @@ public class NonTargetedCompanyOfferService extends OfferService {
             }
             applicationRepository.save(app);
         }
+        logger.log(nonTargetedCompanyOffer.getCreatorUsername()
+                    + " has accepted "
+                    + application.get().getStudentId()
+                    + " for offer "
+                    + nonTargetedCompanyOffer.getId());
         nonTargetedCompanyOffer.setStatus(Status.DISABLED);
         nonTargetedCompanyOfferRepository.save(nonTargetedCompanyOffer);
+
+        return contract;
     }
 }

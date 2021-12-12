@@ -10,6 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface ContractRepository extends JpaRepository<Contract, Long> {
 
+    Contract findFirstByCompanyIdEqualsAndStudentIdEqualsOrderByStartDateDesc(
+            String companyId, String studentId);
+
     @Query("SELECT c FROM Contract c WHERE c.companyId = ?1 "
             + "AND c.studentId = ?2 AND c.status = 'ACTIVE'")
     Contract findActiveContract(String companyId, String studentId);

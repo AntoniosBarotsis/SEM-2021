@@ -6,16 +6,16 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 
 import nl.tudelft.sem.template.domain.dtos.Response;
+import nl.tudelft.sem.template.domain.dtos.UserCreateRequest;
 import nl.tudelft.sem.template.domain.dtos.UserLoginRequest;
 import nl.tudelft.sem.template.domain.dtos.UserLoginResponse;
+import nl.tudelft.sem.template.entities.StudentFactory;
 import nl.tudelft.sem.template.entities.User;
-import nl.tudelft.sem.template.enums.Role;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
 import nl.tudelft.sem.template.exceptions.UserNotFound;
 import nl.tudelft.sem.template.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -39,7 +39,7 @@ public class UserControllerTests {
 
     @BeforeEach
     void setUp() {
-        user = new User("testing", "testPass", Role.STUDENT);
+        user = new StudentFactory().createUser("testing", "testPass");
         response = new Response<>(user, null);
     }
 
@@ -72,7 +72,9 @@ public class UserControllerTests {
         ResponseEntity<Response<User>> entity =
                 new ResponseEntity<>(response, HttpStatus.CREATED);
 
-        assertEquals(entity, userController.createUser(user));
+        UserCreateRequest userRequest =
+            new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
+        assertEquals(entity, userController.createUser(userRequest));
     }
 
     @Test
@@ -87,7 +89,9 @@ public class UserControllerTests {
         ResponseEntity<Response<User>> entity =
                 new ResponseEntity<>(response, HttpStatus.CONFLICT);
 
-        assertEquals(entity, userController.createUser(user));
+        UserCreateRequest userRequest =
+            new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
+        assertEquals(entity, userController.createUser(userRequest));
     }
 
 
@@ -123,7 +127,9 @@ public class UserControllerTests {
         ResponseEntity<Response<User>> entity =
                 new ResponseEntity<>(response, HttpStatus.OK);
 
-        assertEquals(entity, userController.updateUser(user));
+        UserCreateRequest userRequest =
+            new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
+        assertEquals(entity, userController.updateUser(userRequest));
     }
 
     @Test
@@ -138,7 +144,9 @@ public class UserControllerTests {
         ResponseEntity<Response<User>> entity =
                 new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 
-        assertEquals(entity, userController.updateUser(user));
+        UserCreateRequest userRequest =
+            new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
+        assertEquals(entity, userController.updateUser(userRequest));
     }
 
     @Test

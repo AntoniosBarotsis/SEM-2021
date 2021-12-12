@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template;
 
+import logger.FileLogger;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -23,5 +24,16 @@ public class ContractServiceApplication {
     @LoadBalanced
     public RestTemplate getRestTemplate() {
         return new RestTemplate();
+    }
+
+    /** Bearn for the FileLogger.
+     *
+     * @return FileLogger instance.
+     */
+    @Bean
+    public FileLogger getLogger() {
+        FileLogger fileLogger = FileLogger.getInstance();
+        fileLogger.init("contractService");
+        return fileLogger;
     }
 }

@@ -38,6 +38,7 @@ public abstract class CompanyOffer extends Offer {
         this.companyId = companyId;
     }
 
+
     @Override
     public String getCreatorUsername() {
         return companyId;
