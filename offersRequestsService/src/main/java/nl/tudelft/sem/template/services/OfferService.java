@@ -11,6 +11,7 @@ import logger.FileLogger;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.dtos.AverageRatingResponse;
+import nl.tudelft.sem.template.entities.dtos.AverageRatingResponseWrapper;
 import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.LowRatingException;
@@ -133,11 +134,13 @@ public class OfferService {
     public double getAverageRating(String username) throws UpstreamServiceException {
         String feedbackServiceUrl = "http://feedback-service/user/" + username;
         try {
-            AverageRatingResponse response = restTemplate.getForObject(
-                    feedbackServiceUrl, AverageRatingResponse.class
+            AverageRatingResponseWrapper response = restTemplate.getForObject(
+                    feedbackServiceUrl, AverageRatingResponseWrapper.class
             );
+            System.out.println(response.getData().getAverageRating());
             Objects.requireNonNull(response);
-            return response.getAverageRating();
+            Objects.requireNonNull(response.getData());
+            return response.getData().getAverageRating();
         } catch (Exception exception) {
             throw new UpstreamServiceException(
                     "Unable to get an average rating for " + username + " from feedback service.",

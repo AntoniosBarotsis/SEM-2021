@@ -71,6 +71,7 @@ public class StudentOfferService extends OfferService {
      *      if the user doesn't have permission to accept the offer.
      * @throws ContractCreationException - if the request wasn't successful.
      */
+    @Transactional
     public ContractDto acceptOffer(
             String userName, String userRole, Long targetedCompanyOfferId)
             throws NoPermissionException, ContractCreationException {
