@@ -32,6 +32,7 @@ public class ContractController {
     private transient ContractService contractService;
 
     private final transient String nameHeader = "x-user-name";
+    private final transient String roleHeader = "x-user-role";
 
     /**
      * Validates a ContractRequest when creating a contract.
@@ -60,9 +61,8 @@ public class ContractController {
         return errors;
     }
 
-    //TODO NEED TO MAKE THIS AS A PRIVATE ENDPOINT (NOT PUBLICLY AVAILABLE)
     /**
-     * Create a contract.
+     * Create a contract. Only available for internal requests.
      *
      * @param contractRequest The contract to create.
      * @return 201 CREATED along with the created contract entity,
@@ -71,7 +71,13 @@ public class ContractController {
      */
     @PostMapping("/")
     public ResponseEntity<Object> createContract(
-            @Valid @RequestBody ContractRequest contractRequest) {
+            @RequestHeader(roleHeader) String role,
+            @Valid @RequestBody ContractRequest contractRequest
+    ) {
+        String internalServiceRole = "INTERNAL_SERVICE";
+        if (!internalServiceRole.equals(role)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
         try {
             Contract c = contractService.saveContract(contractRequest.toContract());
             return new ResponseEntity<>(c, HttpStatus.CREATED);

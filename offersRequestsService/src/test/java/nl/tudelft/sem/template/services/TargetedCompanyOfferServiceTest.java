@@ -14,6 +14,7 @@ import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.dtos.AverageRatingResponse;
+import nl.tudelft.sem.template.entities.dtos.AverageRatingResponseWrapper;
 import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.LowRatingException;
@@ -91,8 +92,12 @@ class TargetedCompanyOfferServiceTest {
 
     @Test
     void saveTargetedCompanyOfferValidTest() throws LowRatingException, UpstreamServiceException {
+        AverageRatingResponse fakeResponse = new AverageRatingResponse(5.0);
+        AverageRatingResponseWrapper responseWrapper = new AverageRatingResponseWrapper();
+        responseWrapper.setData(fakeResponse);
         Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
-                .thenReturn(new AverageRatingResponse(5.0));
+                .thenReturn(responseWrapper);
+
         TargetedCompanyOffer targetedCompanyOffer2 = createCompanyOffer2(studentOffer);
         studentOffer.setId(33L);
         Mockito.when(studentOfferRepository.getById(33L))
@@ -106,8 +111,12 @@ class TargetedCompanyOfferServiceTest {
 
     @Test
     void saveTargetedCompanyOfferStudentTest() throws LowRatingException, UpstreamServiceException {
+        AverageRatingResponse fakeResponse = new AverageRatingResponse(5.0);
+        AverageRatingResponseWrapper responseWrapper = new AverageRatingResponseWrapper();
+        responseWrapper.setData(fakeResponse);
         Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
-                .thenReturn(new AverageRatingResponse(5.0));
+                .thenReturn(responseWrapper);
+
         targetedCompanyOffer = Mockito.mock(TargetedCompanyOffer.class);
         Mockito.when(studentOfferRepository.getById(33L))
             .thenReturn(studentOffer);
@@ -200,8 +209,11 @@ class TargetedCompanyOfferServiceTest {
 
     @Test
     void saveTargetedCompanyOfferWithResponseValidTest() {
+        AverageRatingResponse fakeResponse = new AverageRatingResponse(5.0);
+        AverageRatingResponseWrapper responseWrapper = new AverageRatingResponseWrapper();
+        responseWrapper.setData(fakeResponse);
         Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
-                .thenReturn(new AverageRatingResponse(5.0));
+                .thenReturn(responseWrapper);
 
         TargetedCompanyOffer targetedCompanyOffer2 = createCompanyOffer2(studentOffer);
         studentOffer.setId(33L);
@@ -233,8 +245,11 @@ class TargetedCompanyOfferServiceTest {
 
     @Test
     void saveTargetedCompanyOfferWithResponseLowRatingTest() {
+        AverageRatingResponse fakeResponse = new AverageRatingResponse(1.0);
+        AverageRatingResponseWrapper responseWrapper = new AverageRatingResponseWrapper();
+        responseWrapper.setData(fakeResponse);
         Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
-                .thenReturn(new AverageRatingResponse(1.0));
+                .thenReturn(responseWrapper);
 
         TargetedCompanyOffer targetedCompanyOffer2 = createCompanyOffer2(studentOffer);
         studentOffer.setId(33L);
