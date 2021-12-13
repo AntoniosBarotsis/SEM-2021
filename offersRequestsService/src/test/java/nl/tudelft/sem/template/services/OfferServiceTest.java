@@ -14,6 +14,7 @@ import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.dtos.AverageRatingResponse;
+import nl.tudelft.sem.template.entities.dtos.AverageRatingResponseWrapper;
 import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.LowRatingException;
@@ -70,16 +71,22 @@ class OfferServiceTest {
     void saveOfferValidTest() throws LowRatingException, UpstreamServiceException {
         Mockito.when(offerRepository.save(studentOffer))
             .thenReturn(studentOffer);
+        AverageRatingResponse fakeResponse = new AverageRatingResponse(5.0);
+        AverageRatingResponseWrapper responseWrapper = new AverageRatingResponseWrapper();
+        responseWrapper.setData(fakeResponse);
         Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
-                .thenReturn(new AverageRatingResponse(5.0));
+                .thenReturn(responseWrapper);
 
         assertEquals(studentOffer, offerService.saveOffer(studentOffer));
     }
 
     @Test
     void saveOfferPendingTest() throws LowRatingException, UpstreamServiceException {
+        AverageRatingResponse fakeResponse = new AverageRatingResponse(5.0);
+        AverageRatingResponseWrapper responseWrapper = new AverageRatingResponseWrapper();
+        responseWrapper.setData(fakeResponse);
         Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
-                .thenReturn(new AverageRatingResponse(5.0));
+                .thenReturn(responseWrapper);
 
         studentOffer = Mockito.mock(StudentOffer.class);
         Mockito.when(offerRepository.save(studentOffer))
@@ -128,9 +135,15 @@ class OfferServiceTest {
     void saveOfferWithResponseNoErrorTest() {
         Mockito.when(offerRepository.save(studentOffer))
                 .thenReturn(studentOffer);
+
+        AverageRatingResponse fakeResponse = new AverageRatingResponse(5.0);
+        AverageRatingResponseWrapper responseWrapper = new AverageRatingResponseWrapper();
+        responseWrapper.setData(fakeResponse);
         Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
-                .thenReturn(new AverageRatingResponse(5.0));
+                .thenReturn(responseWrapper);
+
         ResponseEntity<Response<Offer>> response = offerService.saveOfferWithResponse(studentOffer);
+        System.out.println(response.getBody());
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(studentOffer, Objects.requireNonNull(response.getBody()).getData());
     }
@@ -139,8 +152,13 @@ class OfferServiceTest {
     void saveOfferWithResponseLowRatingTest() {
         Mockito.when(offerRepository.save(studentOffer))
                 .thenReturn(studentOffer);
+
+        AverageRatingResponse fakeResponse = new AverageRatingResponse(1.2);
+        AverageRatingResponseWrapper responseWrapper = new AverageRatingResponseWrapper();
+        responseWrapper.setData(fakeResponse);
         Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
-                .thenReturn(new AverageRatingResponse(1.2));
+                .thenReturn(responseWrapper);
+
         ResponseEntity<Response<Offer>> response = offerService.saveOfferWithResponse(studentOffer);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         assertNull(Objects.requireNonNull(response.getBody()).getData());

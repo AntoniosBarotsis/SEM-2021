@@ -17,6 +17,7 @@ import logger.FileLogger;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.dtos.AverageRatingResponse;
+import nl.tudelft.sem.template.entities.dtos.AverageRatingResponseWrapper;
 import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.ContractCreationException;
@@ -205,8 +206,11 @@ public class StudentOfferServiceTest {
 
     @Test
     void updateStudentOfferTest() {
+        AverageRatingResponse fakeResponse = new AverageRatingResponse(5.0);
+        AverageRatingResponseWrapper responseWrapper = new AverageRatingResponseWrapper();
+        responseWrapper.setData(fakeResponse);
         Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
-                .thenReturn(new AverageRatingResponse(5.0));
+                .thenReturn(responseWrapper);
 
         StudentOffer edited = offerTwo;
         edited.setDescription("New Description, last one was awful");

@@ -15,7 +15,6 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @NoArgsConstructor
-@Service
 public class Utility {
 
     /**
