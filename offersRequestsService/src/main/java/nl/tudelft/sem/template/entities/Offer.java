@@ -55,5 +55,10 @@ public abstract class Offer {
         this.status = status;
     }
 
-    public abstract String getCreator();
+    /**
+     * Return the company or student username that created the offer.
+     *
+     * @return String with the username of the company or student that created the offer.
+     */
+    public abstract String getCreatorUsername();
 }

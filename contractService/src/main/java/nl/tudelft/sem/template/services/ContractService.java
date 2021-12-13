@@ -27,6 +27,7 @@ public class ContractService {
     private static final transient double MAX_HOURS = 20;
     private static final transient double MAX_WEEKS = 26;
 
+
     /**
      * Saves a contract in the repository.
      *
@@ -246,10 +247,12 @@ public class ContractService {
 
             throw new InvalidContractException();
         }
-        if (contractRepository.findActiveContract(contract.getCompanyId(),
-                contract.getStudentId()) != null) {
+        Contract existingContract = contractRepository.findActiveContract(
+                contract.getCompanyId(), contract.getStudentId());
+        if (existingContract != null) {
             throw new InvalidContractException(
-                    "Please cancel the existing contract with this party.");
+                    "Please cancel the existing contract (#" + contract.getId()
+                            + ") with this party.");
         }
     }
 

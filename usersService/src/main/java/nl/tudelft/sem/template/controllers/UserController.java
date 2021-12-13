@@ -39,13 +39,13 @@ public class UserController {
      *
      * @param username User's username.
      * @return 200 OK with the user entity if the user is found,
-     * else 404 NOT FOUND.
+     *          else 404 NOT FOUND.
      */
     @GetMapping("/{username}")
     public ResponseEntity<Response<User>> getUser(@PathVariable String username) {
         try {
             return new ResponseEntity<>(new Response<>(userService.getUserOrRaise(username), null),
-                HttpStatus.OK);
+                    HttpStatus.OK);
         } catch (UserNotFound e) {
             return new ResponseEntity<>(new Response<>(null, e.getMessage()), HttpStatus.NOT_FOUND);
         }
@@ -54,10 +54,10 @@ public class UserController {
     /**
      * Create a new user.
      *
-     * @param user User to create
+     * @param userRequest User to create
      * @return 201 CREATED if the user is created,
-     * 409 CONFLICT if the user already exists
-     * else 400 BAD REQUEST
+     *          409 CONFLICT if the user already exists
+     *          else 400 BAD REQUEST
      */
     @PostMapping("/")
     public ResponseEntity<Response<User>> createUser(@RequestBody UserCreateRequest userRequest) {
@@ -65,7 +65,7 @@ public class UserController {
             User user = getUser(userRequest);
 
             return new ResponseEntity<>(new Response<>(userService.createUser(user), null),
-                HttpStatus.CREATED);
+                    HttpStatus.CREATED);
         } catch (UserAlreadyExists e) {
             return new ResponseEntity<>(new Response<>(null, e.getMessage()), HttpStatus.CONFLICT);
         }
@@ -74,10 +74,10 @@ public class UserController {
     /**
      * Update a user.
      *
-     * @param user User to update.
+     * @param userRequest User to update.
      * @return 200 OK if the user is updated,
-     * 404 NOT FOUND if the user is not found
-     * else 400 BAD REQUEST
+     *          404 NOT FOUND if the user is not found
+     *          else 400 BAD REQUEST
      */
     @PutMapping("/")
     public ResponseEntity<Response<User>> updateUser(@RequestBody UserCreateRequest userRequest) {
@@ -85,7 +85,7 @@ public class UserController {
             User user = getUser(userRequest);
 
             return new ResponseEntity<>(new Response<>(userService.updateUser(user), null),
-                HttpStatus.OK);
+                    HttpStatus.OK);
         } catch (UserNotFound e) {
             return new ResponseEntity<>(new Response<>(null, e.getMessage()), HttpStatus.NOT_FOUND);
         }
@@ -96,7 +96,7 @@ public class UserController {
      *
      * @param username User's id.
      * @return 200 OK if the user is deleted,
-     * 404 NOT FOUND if the user is not found.
+     *          404 NOT FOUND if the user is not found.
      */
     @DeleteMapping("/{username}")
     public ResponseEntity<String> deleteUser(@PathVariable String username) {
@@ -113,7 +113,7 @@ public class UserController {
      *
      * @param user User ID and password to login
      * @return 200 OK with JWT token if user is logged in,
-     * else 401 UNAUTHORIZED
+     *          else 401 UNAUTHORIZED
      */
     @PostMapping("/login")
     public ResponseEntity<Response<UserLoginResponse>> login(@RequestBody UserLoginRequest user) {
@@ -121,7 +121,7 @@ public class UserController {
         if (u.isPresent() && userService.verifyPassword(u.get(), user.getPassword())) {
             String token = userService.generateJwtToken(u.get());
             return new ResponseEntity<>(new Response<>(new UserLoginResponse(token), null),
-                HttpStatus.OK);
+                    HttpStatus.OK);
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
@@ -130,10 +130,10 @@ public class UserController {
         switch (userCreateRequest.getRole()) {
             case STUDENT:
                 return studentFactory.createUser(userCreateRequest.getUsername(),
-                    userCreateRequest.getPassword());
+                        userCreateRequest.getPassword());
             case COMPANY:
                 return companyFactory.createUser(userCreateRequest.getUsername(),
-                    userCreateRequest.getPassword());
+                        userCreateRequest.getPassword());
             default:
                 throw new IllegalArgumentException("Invalid role " + userCreateRequest.getRole());
         }

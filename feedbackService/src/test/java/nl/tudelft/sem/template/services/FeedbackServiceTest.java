@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Optional;
-
 import logger.FileLogger;
 import nl.tudelft.sem.template.domain.Feedback;
 import nl.tudelft.sem.template.domain.Rating;
@@ -62,10 +61,10 @@ public class FeedbackServiceTest {
     private final transient ContractResponse contractResponse =
         new ContractResponse("EXPIRED");
 
-    private transient final long id = 1;
-    private transient final String userName = "username";
-    private transient final String userRole = "STUDENT";
-    private transient final Long contractId = -1L;
+    private final transient long id = 1;
+    private final transient String userName = "username";
+    private final transient String userRole = "STUDENT";
+    private final transient Long contractId = -1L;
 
     @BeforeEach
     void setUp() {
@@ -262,5 +261,11 @@ public class FeedbackServiceTest {
 
         assertThrows(FeedbackAlreadyExistsException.class,
             () -> feedbackService.create(feedbackRequest, userName, userRole));
+    }
+
+    @Test
+    void getAverageRatingByUserTest() {
+        when(feedbackRepository.getAverageRatingByUser(userName)).thenReturn(5.0);
+        assertEquals(5.0, feedbackService.getAverageRatingByUser(userName));
     }
 }

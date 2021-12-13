@@ -71,6 +71,7 @@ public class StudentOfferService extends OfferService {
      *      if the user doesn't have permission to accept the offer.
      * @throws ContractCreationException - if the request wasn't successful.
      */
+    @Transactional
     public ContractDto acceptOffer(
             String userName, String userRole, Long targetedCompanyOfferId)
             throws NoPermissionException, ContractCreationException {
@@ -110,11 +111,11 @@ public class StudentOfferService extends OfferService {
             targetedCompanyOfferRepository.save(t);
         }
 
-        logger.log(offer.getCreator()
+        logger.log(offer.getCreatorUsername()
                     + " has accepted offer"
                     + targetedCompanyOffer.get().getId()
                     + " from user "
-                    + targetedCompanyOffer.get().getCreator());
+                    + targetedCompanyOffer.get().getCreatorUsername());
         offer.setStatus(Status.DISABLED);
         studentOfferRepository.save(offer);
 
@@ -135,7 +136,7 @@ public class StudentOfferService extends OfferService {
             throw new IllegalArgumentException("You are not allowed to edit the Status");
         }
 
-        super.saveOffer(studentOffer);
+        super.saveOfferWithResponse(studentOffer);
     }
 
     /**
