@@ -33,6 +33,8 @@ public class ContractController {
 
     private final transient String nameHeader = "x-user-name";
     private final transient String roleHeader = "x-user-role";
+    private final transient String unauthenticatedMessage
+            = "User has not been authenticated";
 
     /**
      * Validates a ContractRequest when creating a contract.
@@ -65,9 +67,10 @@ public class ContractController {
      * Create a contract. Only available for internal requests.
      *
      * @param contractRequest The contract to create.
-     * @return 201 CREATED along with the created contract entity,
-     *         else 400 BAD REQUEST if there already exists a contract between the 2 parties
-     *         or if the contract has invalid parameters.
+     * @return 201 CREATED along with the created contract entity if successful,
+     *         400 BAD REQUEST if there already exists a contract between the 2 parties
+     *         or if the contract has invalid parameters,
+     *         403 FORBIDDEN if the request didn't come from an internal service.
      */
     @PostMapping("/")
     public ResponseEntity<Object> createContract(
@@ -93,13 +96,19 @@ public class ContractController {
      * @param id       The id of the contract that should be terminated.
      * @return 200 OK if successful,
      *         400 BAD REQUEST if the contract is not active,
-     *         404 NOT FOUND if the contract is not found,
-     *         401 UNAUTHORIZED if the contract doesn't belong to the user.
+     *         401 UNAUTHORIZED if user is not authenticated,
+     *         403 FORBIDDEN if the contract doesn't belong to the user,
+     *         404 NOT FOUND if the contract is not found.
      */
     @PutMapping("/{id}/terminate")
     public ResponseEntity<String> terminateContract(
             @RequestHeader(nameHeader) String userName,
             @PathVariable Long id) {
+
+        // Check if authenticated:
+        if (userName.isBlank()) {
+            return new ResponseEntity<>(unauthenticatedMessage, HttpStatus.UNAUTHORIZED);
+        }
 
         try {
             contractService.terminateContract(id, userName);
@@ -109,7 +118,7 @@ public class ContractController {
         } catch (InactiveContractException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (AccessDeniedException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         }
     }
 
@@ -120,21 +129,28 @@ public class ContractController {
      * @param companyId The id of the company.
      * @param studentId The id of the student.
      * @return 200 OK along with the contract between the company and student,
-     *         404 NOT FOUND if there is no current active contract,
-     *         401 UNAUTHORIZED if the contract doesn't belong to the user.
+     *         401 UNAUTHORIZED if user is not authenticated,
+     *         403 FORBIDDEN if the contract doesn't belong to the user,
+     *         404 NOT FOUND if there is no current active contract.
      */
     @GetMapping("/{companyId}/{studentId}/current")
     public ResponseEntity<Object> getContract(
             @RequestHeader(nameHeader) String userName,
             @PathVariable(name = "companyId") String companyId,
             @PathVariable(name = "studentId") String studentId) {
+
+        // Check if authenticated:
+        if (userName.isBlank()) {
+            return new ResponseEntity<>(unauthenticatedMessage, HttpStatus.UNAUTHORIZED);
+        }
+
         try {
             Contract contract = contractService.getContract(companyId, studentId, true, userName);
             return ResponseEntity.ok().body(contract);
         } catch (ContractNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (AccessDeniedException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         }
     }
 
@@ -145,21 +161,28 @@ public class ContractController {
      * @param companyId The id of the company.
      * @param studentId The id of the student.
      * @return 200 OK along with the contract between the company and student,
-     *         404 NOT FOUND if there is no contract between the parties,
-     *         401 UNAUTHORIZED if the contract doesn't belong to the user.
+     *         401 UNAUTHORIZED if user is not authenticated,
+     *         403 FORBIDDEN if the contract doesn't belong to the user,
+     *         404 NOT FOUND if there is no contract between the parties.
      */
     @GetMapping("/{companyId}/{studentId}/mostRecent")
     public ResponseEntity<Object> getMostRecentContract(
             @RequestHeader(nameHeader) String userName,
             @PathVariable(name = "companyId") String companyId,
             @PathVariable(name = "studentId") String studentId) {
+
+        // Check if authenticated:
+        if (userName.isBlank()) {
+            return new ResponseEntity<>(unauthenticatedMessage, HttpStatus.UNAUTHORIZED);
+        }
+
         try {
             Contract contract = contractService.getContract(companyId, studentId, false, userName);
             return ResponseEntity.ok().body(contract);
         } catch (ContractNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (AccessDeniedException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         }
     }
 
