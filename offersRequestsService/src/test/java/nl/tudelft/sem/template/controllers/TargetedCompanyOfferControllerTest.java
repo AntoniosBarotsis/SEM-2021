@@ -198,16 +198,6 @@ class TargetedCompanyOfferControllerTest {
     }
 
     @Test
-    void getCompanyOffersByStudentOfferUnauthenticatedTest() {
-        ResponseEntity<Response<List<Offer>>> response =
-                targetedCompanyOfferController
-                        .getCompanyOffersByStudentOffer("", 3L);
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals(authenticationError,
-                Objects.requireNonNull(response.getBody()).getErrorMessage());
-    }
-
-    @Test
     void getCompanyOffersByStudentOfferNotAuthorTest() {
         Mockito.when(targetedCompanyOfferService
                         .getOffersByStudentOffer(3L, student))
