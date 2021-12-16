@@ -1,19 +1,26 @@
 package nl.tudelft.sem.template.services;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
 import java.util.Optional;
-
 import logger.FileLogger;
 import nl.tudelft.sem.template.dtos.requests.ContractRequest;
 import nl.tudelft.sem.template.entities.Contract;
 import nl.tudelft.sem.template.entities.ContractChangeProposal;
 import nl.tudelft.sem.template.enums.ChangeStatus;
 import nl.tudelft.sem.template.enums.ContractStatus;
-import nl.tudelft.sem.template.exceptions.*;
+import nl.tudelft.sem.template.exceptions.AccessDeniedException;
+import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
+import nl.tudelft.sem.template.exceptions.InactiveContractException;
+import nl.tudelft.sem.template.exceptions.InvalidChangeProposalException;
+import nl.tudelft.sem.template.exceptions.InvalidContractException;
 import nl.tudelft.sem.template.repositories.ContractRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -26,6 +33,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")  // Repeating strings in @Tag are not an issue
 class ContractServiceTest {
 
     @Autowired
@@ -44,7 +52,8 @@ class ContractServiceTest {
 
     private transient ContractChangeProposal proposal;
 
-    ArgumentCaptor<Contract> contractArgumentCaptor = ArgumentCaptor.forClass(Contract.class);
+    private final transient ArgumentCaptor<Contract> contractArgumentCaptor =
+            ArgumentCaptor.forClass(Contract.class);
 
     @BeforeEach
     void setUp() {
@@ -58,8 +67,8 @@ class ContractServiceTest {
         contractToBeSaved = contractRequest.toContract();
 
         // Student suggested the change:
-        proposal = new ContractChangeProposal(1L, contract, studentId, companyId, null, null, null, null,
-                ChangeStatus.PENDING);
+        proposal = new ContractChangeProposal(1L, contract, studentId, companyId,
+                null, null, null, null, ChangeStatus.PENDING);
     }
 
     @Test
@@ -70,7 +79,7 @@ class ContractServiceTest {
                 .thenReturn(null);
         when(contractRepository.save(contractToBeSaved)).thenReturn(contract);
 
-        Contract actual = contractService.saveContract(contractToBeSaved);
+        final Contract actual = contractService.saveContract(contractToBeSaved);
 
         verify(contractRepository).save(contractArgumentCaptor.capture());
 
@@ -156,7 +165,8 @@ class ContractServiceTest {
         contract.setEndDate(LocalDate.of(4000, 1, 1));
 
         when(contractRepository
-                .findFirstByCompanyIdEqualsAndStudentIdEqualsOrderByStartDateDesc(companyId, studentId))
+                .findFirstByCompanyIdEqualsAndStudentIdEqualsOrderByStartDateDesc(
+                        companyId, studentId))
                 .thenReturn(contract);
 
         assertEquals(contract, contractService.getContract(companyId, studentId, false, studentId));
@@ -166,7 +176,8 @@ class ContractServiceTest {
     @Tag("getContractByCompanyAndStudent")
     void getMostRecentContractNotFound() throws ContractNotFoundException, AccessDeniedException {
         when(contractRepository
-                .findFirstByCompanyIdEqualsAndStudentIdEqualsOrderByStartDateDesc(companyId, studentId))
+                .findFirstByCompanyIdEqualsAndStudentIdEqualsOrderByStartDateDesc(
+                        companyId, studentId))
                 .thenReturn(null);
 
         assertThrows(ContractNotFoundException.class,
@@ -179,7 +190,8 @@ class ContractServiceTest {
         contract.setEndDate(LocalDate.of(2021, 12, 1));
         // Contract still active:
         when(contractRepository
-                .findFirstByCompanyIdEqualsAndStudentIdEqualsOrderByStartDateDesc(companyId, studentId))
+                .findFirstByCompanyIdEqualsAndStudentIdEqualsOrderByStartDateDesc(
+                        companyId, studentId))
                 .thenReturn(contract);
 
         Contract actual = contractService.getContract(companyId, studentId, false, studentId);
@@ -348,7 +360,7 @@ class ContractServiceTest {
     }
 
     /**
-     * 20h per week and 26 total weeks is an ON-POINT (also an OUT-POINT)
+     * 20h per week and 26 total weeks is an ON-POINT (also an OUT-POINT).
      */
     @Test
     @Tag("updateContract")
@@ -402,6 +414,15 @@ class ContractServiceTest {
         contract.setTotalHours(totalHours);
         contract.setEndDate(newEndDate);
         assertEquals(contract, contractArgumentCaptor.getValue());
+    }
+
+    @Test
+    @Tag("updateContract")
+    void updateEndDateButItsTooManyWeeks() {
+        proposal.setEndDate(contract.getStartDate().plusWeeks(27));
+
+        assertThrows(InvalidChangeProposalException.class,
+                () -> contractService.updateContract(contract, proposal));
     }
 
     @Test
@@ -464,7 +485,7 @@ class ContractServiceTest {
     @Test
     @Tag("ValidateContract")
     @Tag("BoundaryTest")
-    void validateContractMaxHoursCorrect() {
+    void validateContractHoursPerWeekCorrect() {
         contractToBeSaved.setHoursPerWeek(20d);
 
         assertDoesNotThrow(() -> contractService.validateContract(contractToBeSaved));
@@ -476,7 +497,7 @@ class ContractServiceTest {
     @Test
     @Tag("ValidateContract")
     @Tag("BoundaryTest")
-    void validateContractMaxHoursExceeded() {
+    void validateContractHoursPerWeekExceeded() {
         contractToBeSaved.setHoursPerWeek(21d);
 
         assertThrows(InvalidContractException.class,
@@ -529,7 +550,7 @@ class ContractServiceTest {
     }
 
     /**
-     * ON-POINT (OUT POINT as well) -> (checks if status != ACTIVE)
+     * ON-POINT (OUT POINT as well) -> (checks if status != ACTIVE).
      */
     @Test
     @Tag("shouldExpire")
@@ -541,7 +562,7 @@ class ContractServiceTest {
     }
 
     /**
-     * OFF-POINT (IN POINT as well) -> (checks if status != ACTIVE)
+     * OFF-POINT (IN POINT as well) -> (checks if status != ACTIVE).
      */
     @Test
     @Tag("shouldExpire")
@@ -552,7 +573,7 @@ class ContractServiceTest {
     }
 
     /**
-     * OFF-POINT (IN POINT as well) -> (checks if status != ACTIVE)
+     * OFF-POINT (IN POINT as well) -> (checks if status != ACTIVE).
      */
     @Test
     @Tag("shouldExpire")

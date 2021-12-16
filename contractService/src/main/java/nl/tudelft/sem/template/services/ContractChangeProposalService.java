@@ -146,12 +146,11 @@ public class ContractChangeProposalService {
      * @param contract The contract the user checks for proposals.
      * @param userId   The id of the user.
      * @return List of all change proposals for that contract.
-     * @throws ContractNotFoundException If the contract is not found.
      * @throws AccessDeniedException     If the user is not in the contract.
      * @throws InactiveContractException If the contract is no longer active.
      */
     public List<ContractChangeProposal> getProposals(Contract contract, String userId)
-            throws ContractNotFoundException, AccessDeniedException, InactiveContractException {
+            throws AccessDeniedException, InactiveContractException {
         // Check if user is a participant in the contract:
         if (!contract.getCompanyId().equals(userId) && !contract.getStudentId().equals(userId)) {
             throw new AccessDeniedException();
@@ -184,6 +183,7 @@ public class ContractChangeProposalService {
             throws InvalidChangeProposalException, InactiveContractException {
         // When creating the proposal from a request there are
         // already checks to see if the 'proposer' is in the contract
+        // also at least one suggested change field is not null.
 
         Contract contract = proposal.getContract();
         ContractStatus contractStatus = contract.getStatus();
@@ -257,13 +257,13 @@ public class ContractChangeProposalService {
     }
 
     /**
-     * PRIVATE method to get a proposal by the passed id.
+     * Get a proposal by the passed id.
      * Also used to check if a proposal exists.
      *
      * @param proposalId The id of the proposal.
      * @throws ChangeProposalNotFoundException If the proposal doesn't exist.
      */
-    private ContractChangeProposal getProposal(Long proposalId)
+    public ContractChangeProposal getProposal(Long proposalId)
             throws ChangeProposalNotFoundException {
 
         Optional<ContractChangeProposal> p = changeProposalRepository.findById(proposalId);
