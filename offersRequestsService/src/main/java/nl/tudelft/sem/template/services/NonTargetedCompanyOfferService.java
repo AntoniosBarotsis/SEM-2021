@@ -69,14 +69,13 @@ public class NonTargetedCompanyOfferService extends OfferService {
      * Service, which accepts an application and declines all others.
      *
      * @param userName - the potential company's id.
-     * @param userRole - the potential company's role.
      * @param id - the id of the application.
      * @throws NoPermissionException - is thrown
      *      if the user doesn't have permission to accept the application.
      * @throws ContractCreationException - if the request wasn't successful.
      */
     @Transactional
-    public ContractDto accept(String userName, String userRole, Long id)
+    public ContractDto accept(String userName, Long id)
             throws NoPermissionException, ContractCreationException {
         Optional<Application> application = applicationRepository.findById(id);
         if (application.isEmpty()) {
@@ -86,8 +85,7 @@ public class NonTargetedCompanyOfferService extends OfferService {
         NonTargetedCompanyOffer nonTargetedCompanyOffer =
                 application.get().getNonTargetedCompanyOffer();
 
-        if (!userName.equals(nonTargetedCompanyOffer.getCompanyId())
-                || !userRole.equals("COMPANY")) {
+        if (!userName.equals(nonTargetedCompanyOffer.getCompanyId())) {
             throw new NoPermissionException("User can not accept this application!");
         }
         if (nonTargetedCompanyOffer.getStatus() != Status.PENDING

@@ -2,6 +2,7 @@ package nl.tudelft.sem.template.repositories;
 
 import java.util.List;
 import javax.transaction.Transactional;
+import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.enums.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -43,7 +44,7 @@ public interface StudentOfferRepository extends JpaRepository<StudentOffer, Long
     void updatePricePerHour(Long studentOfferId, double pricePerHour);
     
     @Query("SELECT s FROM StudentOffer s WHERE s.studentId = ?1")
-    List<StudentOffer> findAllByStudentId(String studentId);
+    List<Offer> findAllByStudentId(String studentId);
 
     @Query("select s FROM StudentOffer s WHERE s.status = 'PENDING'")
     List<StudentOffer> findAllActive();

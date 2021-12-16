@@ -16,7 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -39,7 +38,6 @@ public class StudentOfferController {
     /** Endpoint for creating StudentOffers.
      *
      * @param userName Name of person making the request.
-     * @param userRole Role of the person making the request.
      * @param studentOffer StudentOffer than needs to bed created.
      * @return ResponseEntity that can take various codes.
      *          401 UNAUTHORIZED if user not authenticated.
@@ -47,17 +45,11 @@ public class StudentOfferController {
      *          400 BAD REQUEST if conditions for offer are not met.
      *          201 CREATED with Offer in body if successful.
      */
-    @PostMapping("/student/create")
     public ResponseEntity<Response<Offer>>
         saveStudentOffer(@RequestHeader(nameHeader) String userName,
-                         @RequestHeader(roleHeader) String userRole,
                          @RequestBody StudentOffer studentOffer) {
-        if (userName.isBlank()) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(new Response<>(null, unauthenticatedMessage));
-        }
-        if (!studentOffer.getStudentId().equals(userName) || !userRole.equals(roleStudent)) {
+
+        if (!studentOffer.getStudentId().equals(userName)) {
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
                     .body(new Response<>(null, "User not allowed to post this StudentOffer"));
@@ -104,13 +96,10 @@ public class StudentOfferController {
      *     which contains list of StudentOffers if valid
      *     and 400 BAD Request with a Response containing error message otherwise.
      */
-    @GetMapping("/student/getOffers/{studentId}")
-    public ResponseEntity<Response<List<StudentOffer>>>
-        getStudentOffersById(@PathVariable String studentId) {
-        // Check if student with that id exists.
-        // Also check if the one who seeks the info can get it.
+    public ResponseEntity<Response<List<Offer>>>
+        getStudentOffersById(String studentId) {
 
-        Response<List<StudentOffer>> responseOffersById;
+        Response<List<Offer>> responseOffersById;
         try {
             responseOffersById =
                     new Response<>(studentOfferService
@@ -142,24 +131,16 @@ public class StudentOfferController {
      * Endpoint, which accepts a Targeted Offer.
      *
      * @param userName - the name of the user.
-     * @param userRole - the role of the user.
      * @param id - the id of the offer, which the user wants to be accepted.
      * @return - A Response with a success or an error message!
      */
-    @PostMapping("/student/accept/{id}")
     public ResponseEntity<Response<ContractDto>>
         acceptTargetedOffer(
-            @RequestHeader(nameHeader) String userName,
-            @RequestHeader(roleHeader) String userRole,
-            @PathVariable Long id) {
-        if (userName.isBlank()) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(new Response<>(null, unauthenticatedMessage));
-        }
+             String userName,
+             Long id) {
 
         try {
-            ContractDto contract = studentOfferService.acceptOffer(userName, userRole, id);
+            ContractDto contract = studentOfferService.acceptOffer(userName, id);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(new Response<>(contract, "The Company Offer was accepted successfully!"));
         } catch (NoPermissionException exception) {

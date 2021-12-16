@@ -90,7 +90,7 @@ class StudentOfferControllerTest {
         Response<Offer> res = new Response<>(studentOffer2, null);
 
         ResponseEntity<Response<Offer>> response
-                = studentOfferController.saveStudentOffer(student, studentRole, studentOffer);
+                = studentOfferController.saveStudentOffer(student, studentOffer);
         assertEquals(res, response.getBody());
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
@@ -103,7 +103,7 @@ class StudentOfferControllerTest {
             .thenThrow(new IllegalArgumentException(errorMessage));
 
         ResponseEntity<Response<Offer>> response
-                = studentOfferController.saveStudentOffer(student, studentRole, studentOffer);
+                = studentOfferController.saveStudentOffer(student, studentOffer);
 
         Response<Offer> errorResponse = new Response<>(null, errorMessage);
         assertEquals(errorResponse, response.getBody());
@@ -127,13 +127,13 @@ class StudentOfferControllerTest {
 
     @Test
     void getStudentOffersByIdValidTest() {
-        List<StudentOffer> studentOffers = List.of(studentOffer);
+        List<Offer> studentOffers = List.of(studentOffer);
         Mockito.when(studentOfferService.getOffersById(student))
             .thenReturn(studentOffers);
 
-        ResponseEntity<Response<List<StudentOffer>>> response
+        ResponseEntity<Response<List<Offer>>> response
                 = studentOfferController.getStudentOffersById(student);
-        Response<List<StudentOffer>> offersRespond =
+        Response<List<Offer>> offersRespond =
                 new Response<>(studentOffers, null);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -146,9 +146,9 @@ class StudentOfferControllerTest {
         Mockito.when(studentOfferService.getOffersById(student))
             .thenThrow(new IllegalArgumentException(errorMessage));
 
-        ResponseEntity<Response<List<StudentOffer>>> response
+        ResponseEntity<Response<List<Offer>>> response
                 = studentOfferController.getStudentOffersById(student);
-        Response<List<StudentOffer>> responseError =
+        Response<List<Offer>> responseError =
                 new Response<>(null, errorMessage);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -209,19 +209,9 @@ class StudentOfferControllerTest {
     }
 
     @Test
-    void saveStudentOfferUnauthenticatedTest() {
-        ResponseEntity<Response<Offer>> response = studentOfferController
-                .saveStudentOffer("", "", studentOffer);
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals(unauthenticated,
-                Objects.requireNonNull(response.getBody()).getErrorMessage());
-
-    }
-
-    @Test
     void saveStudentOfferNotAuthorTest() {
         ResponseEntity<Response<Offer>> response = studentOfferController
-                .saveStudentOffer("fake", studentRole, studentOffer);
+                .saveStudentOffer("fake", studentOffer);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         assertEquals("User not allowed to post this StudentOffer",
                 Objects.requireNonNull(response.getBody()).getErrorMessage());
@@ -230,7 +220,7 @@ class StudentOfferControllerTest {
     @Test
     void saveStudentOfferNotStudentTest() {
         ResponseEntity<Response<Offer>> response = studentOfferController
-                .saveStudentOffer("fake", companyRole, studentOffer);
+                .saveStudentOffer("fake", studentOffer);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         assertEquals("User not allowed to post this StudentOffer",
                 Objects.requireNonNull(response.getBody()).getErrorMessage());
@@ -239,29 +229,16 @@ class StudentOfferControllerTest {
     @Test
     void acceptTargetedOfferTest() throws NoPermissionException, ContractCreationException {
         Mockito.when(studentOfferService
-                .acceptOffer(student, studentRole, targetedCompanyOffer.getId()))
+                .acceptOffer(student, targetedCompanyOffer.getId()))
                 .thenReturn(contract);
 
         ResponseEntity<Response<ContractDto>> res
                 = studentOfferController
-                .acceptTargetedOffer(student, studentRole, targetedCompanyOffer.getId());
+                .acceptTargetedOffer(student, targetedCompanyOffer.getId());
         Response<ContractDto> response =
                 new Response<>(contract, "The Company Offer was accepted successfully!");
 
         assertEquals(HttpStatus.OK, res.getStatusCode());
-        assertEquals(response, res.getBody());
-    }
-
-    @Test
-    void acceptTargetedOfferTestFailUserName() {
-        student = "";
-        ResponseEntity<Response<ContractDto>> res
-                = studentOfferController
-                .acceptTargetedOffer(student, studentRole, targetedCompanyOffer.getId());
-        Response<String> response =
-                new Response<>(null, unauthenticated);
-
-        assertEquals(HttpStatus.UNAUTHORIZED, res.getStatusCode());
         assertEquals(response, res.getBody());
     }
 
@@ -273,11 +250,11 @@ class StudentOfferControllerTest {
                 .doThrow(new IllegalArgumentException(
                         message))
                 .when(studentOfferService)
-                .acceptOffer(student, studentRole, targetedCompanyOffer.getId());
+                .acceptOffer(student, targetedCompanyOffer.getId());
 
         ResponseEntity<Response<ContractDto>> res
                 = studentOfferController
-                .acceptTargetedOffer(student, studentRole, targetedCompanyOffer.getId());
+                .acceptTargetedOffer(student, targetedCompanyOffer.getId());
         Response<ContractDto> response =
                 new Response<>(null, message);
 
@@ -288,18 +265,17 @@ class StudentOfferControllerTest {
     @Test
     void acceptTargetedOfferTestFailNoPermission()
             throws NoPermissionException, ContractCreationException {
-        studentRole = "COMPANY";
         String message = "User not allowed to accept this TargetedOffer";
         Mockito
                 .doThrow(new NoPermissionException(
                         message))
                 .when(studentOfferService)
-                .acceptOffer(student, companyRole, targetedCompanyOffer.getId());
+                .acceptOffer(company, targetedCompanyOffer.getId());
 
         ResponseEntity<Response<ContractDto>> res
                 = studentOfferController
-                .acceptTargetedOffer(student, companyRole, targetedCompanyOffer.getId());
-        Response<String> response =
+                .acceptTargetedOffer(company, targetedCompanyOffer.getId());
+        Response<ContractDto> response =
                 new Response<>(null, message);
 
         assertEquals(HttpStatus.FORBIDDEN, res.getStatusCode());
@@ -311,7 +287,7 @@ class StudentOfferControllerTest {
         Mockito.when(studentOfferService.getOffersById(student))
                 .thenThrow(new UserServiceUnvanvailableException("test"));
 
-        ResponseEntity<Response<List<StudentOffer>>> response =
+        ResponseEntity<Response<List<Offer>>> response =
                 studentOfferController.getStudentOffersById(student);
         assertEquals(HttpStatus.SERVICE_UNAVAILABLE, response.getStatusCode());
         assertEquals("test",
@@ -323,7 +299,7 @@ class StudentOfferControllerTest {
         Mockito.when(studentOfferService.getOffersById(student))
                 .thenThrow(new UserDoesNotExistException("error"));
 
-        ResponseEntity<Response<List<StudentOffer>>> response =
+        ResponseEntity<Response<List<Offer>>> response =
                 studentOfferController.getStudentOffersById(student);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertEquals("error",

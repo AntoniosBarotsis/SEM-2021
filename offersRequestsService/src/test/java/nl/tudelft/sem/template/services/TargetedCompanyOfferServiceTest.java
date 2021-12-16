@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import logger.FileLogger;
+import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
@@ -121,7 +122,7 @@ class TargetedCompanyOfferServiceTest {
 
     @Test
     void getOffersByIdTestPass() {
-        List<TargetedCompanyOffer> returned = new ArrayList<>();
+        List<Offer> returned = new ArrayList<>();
         returned.add(targetedCompanyOffer);
         Mockito.when(targetedCompanyOfferRepository.findAllByCompanyId("MyCompany"))
             .thenReturn(returned);
@@ -131,7 +132,7 @@ class TargetedCompanyOfferServiceTest {
 
     @Test
     void getOffersByStudentTestPass() {
-        List<TargetedCompanyOffer> returned = new ArrayList<>();
+        List<Offer> returned = new ArrayList<>();
         returned.add(targetedCompanyOffer);
 
         Mockito.when(studentOfferRepository.getById(any()))

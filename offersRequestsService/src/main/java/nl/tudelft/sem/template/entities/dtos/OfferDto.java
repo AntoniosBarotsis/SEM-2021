@@ -7,17 +7,15 @@ import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 import nl.tudelft.sem.template.converters.StringListConverter;
 import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class OfferDTO {
+public class OfferDto {
     @NotBlank(message = "Please enter a title!")
     private String title;
     @NotBlank(message = "Please enter a description!")
@@ -37,27 +35,30 @@ public class OfferDTO {
 
     /**
      * Creates a TargetedCompanyOffer out of the DTO.
+     *
      * @return - a new TargetedCompanyOffer.
      */
-    public TargetedCompanyOffer toTargetedCompanyOffer(){
+    public TargetedCompanyOffer toTargetedCompanyOffer() {
         return new TargetedCompanyOffer(title, description, hoursPerWeek,
                 totalHours, expertise, null, requirements, companyId, null);
     }
 
     /**
      * Creates a NonTargetedCompanyOffer out of the DTO.
+     *
      * @return - a new NonTargetedCompanyOffer.
      */
-    public NonTargetedCompanyOffer toNonTargetedCompanyOffer(){
+    public NonTargetedCompanyOffer toNonTargetedCompanyOffer() {
         return new NonTargetedCompanyOffer(title, description, hoursPerWeek,
                 totalHours, expertise, null, requirements, companyId);
     }
 
     /**
      * Creates a StudentOffer out of the DTO.
+     *
      * @return - a new StudentOffer.
      */
-    public StudentOffer toStudentOffer(){
+    public StudentOffer toStudentOffer() {
         return new StudentOffer(title, description, hoursPerWeek,
                 totalHours, expertise, null, pricePerHour, studentId);
     }

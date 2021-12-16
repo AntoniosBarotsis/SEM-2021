@@ -67,30 +67,10 @@ class NonTargetedCompanyOfferControllerTest {
     }
 
     @Test
-    void saveOfferNotAuthenticatedTest() {
-        String errorMessage = "User has not been authenticated";
-        ResponseEntity<Response<Offer>> response = offerController
-                .createNonTargetedCompanyOffer(offer, "", "");
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals(errorMessage,
-                Objects.requireNonNull(response.getBody()).getErrorMessage());
-    }
-
-    @Test
     void saveOfferNotSameAuthorTest() {
         String errorMessage = "User can not make this offer";
         ResponseEntity<Response<Offer>> response = offerController
-                .createNonTargetedCompanyOffer(offer, "google", companyRole);
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        assertEquals(errorMessage,
-                Objects.requireNonNull(response.getBody()).getErrorMessage());
-    }
-
-    @Test
-    void saveOfferNotCompanyTest() {
-        String errorMessage = "User can not make this offer";
-        ResponseEntity<Response<Offer>> response = offerController
-                .createNonTargetedCompanyOffer(offer, company, studentRole);
+                .createNonTargetedCompanyOffer("google", offer);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         assertEquals(errorMessage,
                 Objects.requireNonNull(response.getBody()).getErrorMessage());
@@ -101,7 +81,7 @@ class NonTargetedCompanyOfferControllerTest {
         Mockito.when(offerService.saveOffer(offer))
                 .thenReturn(offer);
         ResponseEntity<Response<Offer>> response = offerController
-                .createNonTargetedCompanyOffer(offer, company, companyRole);
+                .createNonTargetedCompanyOffer(company, offer);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(new Response<>(offer), response.getBody());
     }
@@ -113,7 +93,7 @@ class NonTargetedCompanyOfferControllerTest {
                 .thenThrow(new IllegalArgumentException(error));
 
         ResponseEntity<Response<Offer>> response = offerController
-                .createNonTargetedCompanyOffer(offer, company, companyRole);
+                .createNonTargetedCompanyOffer(company, offer);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals("error",
                 Objects.requireNonNull(response.getBody()).getErrorMessage());
@@ -175,28 +155,16 @@ class NonTargetedCompanyOfferControllerTest {
 
     @Test
     void acceptApplicationTest() throws NoPermissionException, ContractCreationException {
-        Mockito.when(offerService.accept(company, companyRole, application.getId()))
+        Mockito.when(offerService.accept(company, application.getId()))
                 .thenReturn(contract);
 
         ResponseEntity<Response<ContractDto>> res
                 = offerController
-                .acceptApplication(company, companyRole, application.getId());
+                .acceptApplication(company, application.getId());
         Response<ContractDto> response =
                 new Response<>(contract, "Application has been accepted successfully!");
 
         assertEquals(HttpStatus.OK, res.getStatusCode());
-        assertEquals(response, res.getBody());
-    }
-
-    @Test
-    void acceptApplicationFailUserName() {
-        ResponseEntity<Response<ContractDto>> res
-                = offerController
-                .acceptApplication("", companyRole, application.getId());
-        Response<ContractDto> response =
-                new Response<>(null, "User has not been authenticated!");
-
-        assertEquals(HttpStatus.UNAUTHORIZED, res.getStatusCode());
         assertEquals(response, res.getBody());
     }
 
@@ -207,11 +175,11 @@ class NonTargetedCompanyOfferControllerTest {
         Mockito
                 .doThrow(new IllegalArgumentException(
                         message))
-                .when(offerService).accept(company, companyRole, application.getId());
+                .when(offerService).accept(company, application.getId());
 
         ResponseEntity<Response<ContractDto>> res
                 = offerController
-                .acceptApplication(company, companyRole, application.getId());
+                .acceptApplication(company, application.getId());
         Response<ContractDto> response =
                 new Response<>(null, message);
 
@@ -226,11 +194,11 @@ class NonTargetedCompanyOfferControllerTest {
         Mockito
                 .doThrow(new NoPermissionException(
                         message))
-                .when(offerService).accept(company, companyRole, application.getId());
+                .when(offerService).accept(company, application.getId());
 
         ResponseEntity<Response<ContractDto>> res
                 = offerController
-                .acceptApplication(company, companyRole, application.getId());
+                .acceptApplication(company, application.getId());
         Response<ContractDto> response =
                 new Response<>(null, message);
 
