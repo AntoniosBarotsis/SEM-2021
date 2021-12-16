@@ -39,6 +39,13 @@ public class FeedbackService {
     @Autowired
     private transient FileLogger logger;
 
+    /**
+     * Service, which gets a feedback by given id.
+     *
+     * @param id - the id of the desired feedback.
+     * @return - a feedbackresponse, if the feedback is found,
+     *      error if no such feedback exists.
+     */
     public FeedbackResponse getById(Long id) {
         Optional<Feedback> res = feedbackRepository.findById(id);
 
@@ -49,6 +56,14 @@ public class FeedbackService {
         return res.get().to();
     }
 
+    /**
+     * Creates a FeedbackResponse.
+     *
+     * @param feedbackRequest - the requested feedback.
+     * @param userName - the name of the user.
+     * @param userRole - the role of the user.
+     * @return - a Pair of feedbackResponse and it's id.
+     */
     public Pair<FeedbackResponse, Long> create(FeedbackRequest feedbackRequest, String userName,
                                                String userRole) {
         if (feedbackRequest.getFrom() == null) {
@@ -56,8 +71,9 @@ public class FeedbackService {
         }
 
         try {
-            if (userName.equals(feedbackRequest.getTo()) ||
-                feedbackRequest.getTo().equals(feedbackRequest.getFrom())) {
+            if (userName.equals(feedbackRequest.getTo())
+                    || feedbackRequest.getTo()
+                    .equals(feedbackRequest.getFrom())) {
                 throw new InvalidFeedbackDetailsException("Cant add a review of yourself");
             }
 
@@ -147,8 +163,8 @@ public class FeedbackService {
 
         // Get the target role
         UserRole targetRole =
-            UserRole.valueOf(userRole) == UserRole.STUDENT ?
-                UserRole.COMPANY : UserRole.STUDENT;
+            UserRole.valueOf(userRole) == UserRole.STUDENT
+                    ? UserRole.COMPANY : UserRole.STUDENT;
 
         UserRoleResponseWrapper recipientUser =
             restTemplate.getForObject(urlRecipient, UserRoleResponseWrapper.class);

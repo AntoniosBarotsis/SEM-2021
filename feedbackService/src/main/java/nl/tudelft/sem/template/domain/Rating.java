@@ -7,6 +7,11 @@ import nl.tudelft.sem.template.exceptions.InvalidRatingException;
 public class Rating {
     private int stars;
 
+    /**
+     * Creates a rating, by checking if the input is valid.
+     *
+     * @param stars - the given stars.
+     */
     public Rating(int stars) {
         if (stars < 0 || stars > 5) {
             throw new InvalidRatingException();

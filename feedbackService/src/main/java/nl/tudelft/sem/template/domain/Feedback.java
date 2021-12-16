@@ -29,6 +29,12 @@ public class Feedback {
     private String recipient;
     private Long contractId;
 
+    /**
+     * Creates a feedback from given FeedbackRequest.
+     *
+     * @param feedbackRequest - the request, which will be converted.
+     * @return - a new feedback.
+     */
     public static Feedback from(FeedbackRequest feedbackRequest) {
         return new Feedback(null,
             feedbackRequest.getReview(),
@@ -39,7 +45,13 @@ public class Feedback {
         );
     }
 
+    /**
+     * Creates a FeedbackResponse with the current attributes.
+     *
+     * @return - The FeedbackResponse.
+     */
     public FeedbackResponse to() {
-        return new FeedbackResponse(this.review, this.rating.getStars(), this.author, this.recipient, this.contractId);
+        return new FeedbackResponse(this.review, this.rating.getStars(),
+                this.author, this.recipient, this.contractId);
     }
 }

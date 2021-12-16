@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Optional;
-
 import logger.FileLogger;
 import nl.tudelft.sem.template.domain.Feedback;
 import nl.tudelft.sem.template.domain.Rating;
@@ -62,13 +61,13 @@ public class FeedbackServiceTest {
     private final transient ContractResponse contractResponse =
         new ContractResponse("EXPIRED");
 
-    private transient final long id = 1;
-    private transient final String userName = "username";
-    private transient final String userRole = "STUDENT";
-    private transient final Long contractId = -1L;
+    private transient long id = 1;
+    private transient String userName = "username";
+    private transient String userRole = "STUDENT";
 
     @BeforeEach
     void setUp() {
+        Long contractId = -1L;
         feedbackResponse =
             new FeedbackResponse("review", 0, userName, "to", contractId);
         feedbackRequest =

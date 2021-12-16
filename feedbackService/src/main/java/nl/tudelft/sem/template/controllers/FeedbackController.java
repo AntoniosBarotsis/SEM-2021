@@ -20,6 +20,12 @@ public class FeedbackController {
     @Autowired
     private transient FeedbackService feedbackService;
 
+    /**
+     * Endpoint for getting feedbacks by id.
+     *
+     * @param id - id of Feedback.
+     * @return - returns a FeedbackResponse or an error message.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<Response<FeedbackResponse>> getById(@PathVariable Long id) {
         try {
@@ -34,6 +40,14 @@ public class FeedbackController {
         }
     }
 
+    /**
+     * Endpoint for creating a feedback.
+     *
+     * @param feedbackRequest - the feedback to be created.
+     * @param userName - the username of the requester.
+     * @param userRole - the role of the requester.
+     * @return - the created feedback or an error message.
+     */
     @PostMapping("/create")
     public ResponseEntity<Response<FeedbackResponse>> create(
         @RequestBody FeedbackRequest feedbackRequest,
