@@ -10,11 +10,10 @@ import java.util.Optional;
 import logger.FileLogger;
 import nl.tudelft.sem.template.dtos.requests.ContractRequest;
 import nl.tudelft.sem.template.entities.Contract;
+import nl.tudelft.sem.template.entities.ContractChangeProposal;
+import nl.tudelft.sem.template.enums.ChangeStatus;
 import nl.tudelft.sem.template.enums.ContractStatus;
-import nl.tudelft.sem.template.exceptions.AccessDeniedException;
-import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
-import nl.tudelft.sem.template.exceptions.InactiveContractException;
-import nl.tudelft.sem.template.exceptions.InvalidContractException;
+import nl.tudelft.sem.template.exceptions.*;
 import nl.tudelft.sem.template.repositories.ContractRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -43,6 +42,10 @@ class ContractServiceTest {
     private final transient String companyId = "TUDelft";
     private final transient String studentId = "JohnDoe";
 
+    private transient ContractChangeProposal proposal;
+
+    ArgumentCaptor<Contract> contractArgumentCaptor = ArgumentCaptor.forClass(Contract.class);
+
     @BeforeEach
     void setUp() {
         LocalDate startDate = LocalDate.of(2021, 12, 25);
@@ -53,6 +56,10 @@ class ContractServiceTest {
         // Contract passed with the request body:
         ContractRequest contractRequest = new ContractRequest(companyId, studentId, 14d, 42d, 15d);
         contractToBeSaved = contractRequest.toContract();
+
+        // Student suggested the change:
+        proposal = new ContractChangeProposal(1L, contract, studentId, companyId, null, null, null, null,
+                ChangeStatus.PENDING);
     }
 
     @Test
@@ -64,12 +71,7 @@ class ContractServiceTest {
         when(contractRepository.save(contractToBeSaved)).thenReturn(contract);
 
         Contract actual = contractService.saveContract(contractToBeSaved);
-        
-        // Set contract id to null for the argumentCaptor assertion:
-        contract.setId(null);
 
-        // Assert that the contract params are correct before saving:
-        ArgumentCaptor<Contract> contractArgumentCaptor = ArgumentCaptor.forClass(Contract.class);
         verify(contractRepository).save(contractArgumentCaptor.capture());
 
         // Get current date from the captured contract value:
@@ -77,8 +79,11 @@ class ContractServiceTest {
         contract.setStartDate(today);
         contract.setEndDate(today.plusWeeks(3));
 
+        // Assert that the contract params are correct before saving:
+        contract.setId(null);
         assertEquals(contract, contractArgumentCaptor.getValue());
 
+        // After saving the id is updated:
         contract.setId(1L);
         assertEquals(contract, actual);
 
@@ -246,6 +251,193 @@ class ContractServiceTest {
 
         assertThrows(InactiveContractException.class,
                 () -> contractService.terminateContract(contract.getId(), studentId));
+    }
+
+    // -----------------------
+    //  UPDATING CONTRACTS:
+    // -----------------------
+
+    @Test
+    @Tag("updateContract")
+    void updateOnlyPrice() throws InvalidChangeProposalException {
+        double price = 16d;
+        proposal.setPricePerHour(price);
+
+        contractService.updateContract(contract, proposal);
+
+        verify(contractRepository).save(contractArgumentCaptor.capture());
+
+        // Assert that the contract params are correct before updating it:
+        contract.setPricePerHour(price);
+        assertEquals(contract, contractArgumentCaptor.getValue());
+    }
+
+    /**
+     * ON-POINT (also an OUT-POINT) boundary test (max hours per week > 20 throws exception).
+     */
+    @Test
+    @Tag("updateContract")
+    @Tag("BoundaryTest")
+    void updateHoursPerWeekValid() throws InvalidChangeProposalException {
+        double hours = 20d;
+        proposal.setHoursPerWeek(hours);
+
+        contractService.updateContract(contract, proposal);
+
+        verify(contractRepository).save(contractArgumentCaptor.capture());
+
+        // Assert that the contract params are correct before updating it:
+        contract.setPricePerHour(hours);
+        assertEquals(contract, contractArgumentCaptor.getValue());
+    }
+
+    /**
+     * OFF-POINT (also an IN-POINT) boundary test (max hours per week > 20 throws exception).
+     */
+    @Test
+    @Tag("updateContract")
+    @Tag("BoundaryTest")
+    void updateHoursPerWeekInvalid() {
+        double hours = 21d;
+        proposal.setHoursPerWeek(hours);
+
+        assertThrows(InvalidChangeProposalException.class,
+                () -> contractService.updateContract(contract, proposal));
+    }
+
+    /**
+     * ON-POINT (also an OUT-POINT) boundary test (total weeks > 26 throws exception).
+     */
+    @Test
+    @Tag("updateContract")
+    @Tag("BoundaryTest")
+    void updateTotalHoursValid() throws InvalidChangeProposalException {
+        contract.setHoursPerWeek(2);
+        contract.setTotalHours(50);  // 25 weeks total
+
+        // 52 total hours will be exactly 26 weeks:
+        double hours = 52d;
+        proposal.setTotalHours(hours);
+
+        contractService.updateContract(contract, proposal);
+
+        verify(contractRepository).save(contractArgumentCaptor.capture());
+
+        // Assert that the contract params are correct before updating it:
+        contract.setTotalHours(hours);
+        contract.setEndDate(contract.getStartDate().plusWeeks(26));
+        assertEquals(contract, contractArgumentCaptor.getValue());
+    }
+
+    /**
+     * OFF-POINT (also an IN-POINT) boundary test (total weeks > 26 throws exception).
+     */
+    @Test
+    @Tag("updateContract")
+    @Tag("BoundaryTest")
+    void updateTotalHoursInvalid() {
+        contract.setHoursPerWeek(2);
+        contract.setTotalHours(50);  // 25 weeks total
+
+        // 52 total hours will be exactly 26 weeks:
+        double hours = 52.01;
+        proposal.setTotalHours(hours);
+
+        assertThrows(InvalidChangeProposalException.class,
+                () -> contractService.updateContract(contract, proposal));
+    }
+
+    /**
+     * 20h per week and 26 total weeks is an ON-POINT (also an OUT-POINT)
+     */
+    @Test
+    @Tag("updateContract")
+    void updateHoursPerWeekAndTotalHoursValid() throws InvalidChangeProposalException {
+        // Exactly 26 weeks and 20h per week:
+        double hoursPerWeek = 20d;
+        double totalHours = 520d;
+        proposal.setHoursPerWeek(hoursPerWeek);
+        proposal.setTotalHours(totalHours);
+
+        contractService.updateContract(contract, proposal);
+
+        verify(contractRepository).save(contractArgumentCaptor.capture());
+
+        // Assert that the contract params are correct before updating it:
+        contract.setHoursPerWeek(hoursPerWeek);
+        contract.setTotalHours(totalHours);
+        contract.setEndDate(contract.getStartDate().plusWeeks(26));
+        assertEquals(contract, contractArgumentCaptor.getValue());
+    }
+
+    @Test
+    @Tag("updateContract")
+    void updateOnlyEndDate() throws InvalidChangeProposalException {
+        LocalDate newEndDate = contract.getEndDate().plusWeeks(1); // extend by 1 week
+        proposal.setEndDate(newEndDate);
+
+        contractService.updateContract(contract, proposal);
+
+        verify(contractRepository).save(contractArgumentCaptor.capture());
+
+        // Assert that the contract params are correct before updating it:
+        contract.setEndDate(newEndDate);
+        assertEquals(contract, contractArgumentCaptor.getValue());
+    }
+
+    @Test
+    @Tag("updateContract")
+    void updateTotalHoursAndEndDate() throws InvalidChangeProposalException {
+        // Current contract: 14h per week, 42h total, 3 weeks
+        double totalHours = 43d;    // will add one more week to the endDate
+        LocalDate newEndDate = contract.getEndDate().plusWeeks(2);  // add 2 weeks (1 extra)
+        proposal.setTotalHours(totalHours);
+        proposal.setEndDate(newEndDate);
+
+        contractService.updateContract(contract, proposal);
+
+        verify(contractRepository).save(contractArgumentCaptor.capture());
+
+        // Assert that the contract params are correct before updating it:
+        contract.setTotalHours(totalHours);
+        contract.setEndDate(newEndDate);
+        assertEquals(contract, contractArgumentCaptor.getValue());
+    }
+
+    @Test
+    @Tag("updateContract")
+    void updateEndDateButItsTooSoon() throws InvalidChangeProposalException {
+        // Current contract: 14h per week, 42h total, 3 weeks
+        double totalHours = 43d;    // will add one more week to the endDate
+        LocalDate newEndDate = contract.getEndDate();  // keep the previous endDate
+        proposal.setTotalHours(totalHours);
+        proposal.setEndDate(newEndDate);
+
+        // The endDate should be one week or more after the current one, so it fails
+        assertThrows(InvalidChangeProposalException.class,
+                () -> contractService.updateContract(contract, proposal));
+    }
+
+    @Test
+    @Tag("updateContract")
+    void updateHoursPerWeekAndTotalHoursAndExtendEndDate() throws InvalidChangeProposalException {
+        // Current contract: 14h per week, 42h total, 3 weeks
+        double hoursPerWeek = 10d;
+        double totalHours = 100d;    //10 weeks
+        LocalDate newEndDate = contract.getStartDate().plusWeeks(13);  // add 3 weeks extra
+        proposal.setHoursPerWeek(hoursPerWeek);
+        proposal.setTotalHours(totalHours);
+        proposal.setEndDate(newEndDate);
+
+        contractService.updateContract(contract, proposal);
+
+        verify(contractRepository).save(contractArgumentCaptor.capture());
+
+        // Assert that the contract params are correct before updating it:
+        contract.setHoursPerWeek(hoursPerWeek);
+        contract.setTotalHours(totalHours);
+        contract.setEndDate(newEndDate);
+        assertEquals(contract, contractArgumentCaptor.getValue());
     }
 
     // -----------------------

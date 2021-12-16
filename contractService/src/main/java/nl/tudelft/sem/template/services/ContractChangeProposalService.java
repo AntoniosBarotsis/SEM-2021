@@ -209,7 +209,7 @@ public class ContractChangeProposalService {
         }
 
         // Computed end date:
-        long weeks = (long) (totalHours / hoursPerWeek);
+        double weeks = totalHours / hoursPerWeek;
 
         // Specified end date:
         if (proposal.getEndDate() != null) {

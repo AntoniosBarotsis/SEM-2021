@@ -193,7 +193,7 @@ public class ContractService {
         }
 
         // Set computed end date:
-        long weeks = (long) (contract.getTotalHours() / contract.getHoursPerWeek());
+        double weeks = contract.getTotalHours() / contract.getHoursPerWeek();
         LocalDate endDate = contract.getStartDate().plusWeeks((int) Math.ceil(weeks));
         contract.setEndDate(endDate);
 
