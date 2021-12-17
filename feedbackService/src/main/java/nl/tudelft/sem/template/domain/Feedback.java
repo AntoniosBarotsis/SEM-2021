@@ -45,8 +45,13 @@ public class Feedback {
         );
     }
 
+    /**
+     * Creates a FeedbackResponse with the current attributes.
+     *
+     * @return - The FeedbackResponse.
+     */
     public FeedbackResponse to() {
-        return new FeedbackResponse(this.review, this.rating.getStars(), this.author,
-                this.recipient, this.contractId);
+        return new FeedbackResponse(this.review, this.rating.getStars(),
+                this.author, this.recipient, this.contractId);
     }
 }

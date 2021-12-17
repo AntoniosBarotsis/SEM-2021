@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.naming.NoPermissionException;
 import logger.FileLogger;
+import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.dtos.AverageRatingResponse;
@@ -26,7 +27,6 @@ import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import nl.tudelft.sem.template.repositories.TargetedCompanyOfferRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -60,14 +60,12 @@ public class StudentOfferServiceTest {
     private transient StudentOffer offerTwo;
     private transient StudentOffer offerThree;
     private transient String student;
-    private transient String role;
     private transient TargetedCompanyOffer accepted;
     private transient ContractDto contract;
 
     @BeforeEach
     void setUp() {
         student = "Student";
-        role = "STUDENT";
         offerTwo = new StudentOffer("Rado's services", "Hey I'm Rado",
             10, 100,
             Arrays.asList("Drawing", "Swimming", "Running"),
@@ -108,7 +106,7 @@ public class StudentOfferServiceTest {
 
     @Test
     void getOffersByIdTestPass() {
-        List<StudentOffer> returned = new ArrayList<>();
+        List<Offer> returned = new ArrayList<>();
         returned.add(offerThree);
 
         Mockito.doNothing().when(utility).userExists(any(), any());
@@ -141,7 +139,7 @@ public class StudentOfferServiceTest {
         Mockito.when(utility.createContract(any(), any(), any(), any(), any(), any()))
                 .thenReturn(contract);
 
-        final ContractDto actual = studentOfferService.acceptOffer(student, role, accepted.getId());
+        final ContractDto actual = studentOfferService.acceptOffer(student, accepted.getId());
 
         Mockito.verify(studentOfferRepository, times(1)).save(any());
         Mockito.verify(targetedCompanyOfferRepository,
@@ -159,7 +157,7 @@ public class StudentOfferServiceTest {
 
         IllegalArgumentException exception
                 = assertThrows(IllegalArgumentException.class,
-                    () -> studentOfferService.acceptOffer(student, role, accepted.getId()));
+                    () -> studentOfferService.acceptOffer(student, accepted.getId()));
         String errorMessage = "ID is not valid!";
         assertEquals(errorMessage, exception.getMessage());
     }
@@ -172,7 +170,7 @@ public class StudentOfferServiceTest {
 
         IllegalArgumentException exception
                 = assertThrows(IllegalArgumentException.class,
-                    () -> studentOfferService.acceptOffer(student, role, accepted.getId()));
+                    () -> studentOfferService.acceptOffer(student, accepted.getId()));
         String errorMessage = "The StudentOffer or TargetedRequest is not active anymore!";
         assertEquals(errorMessage, exception.getMessage());
     }
@@ -185,21 +183,20 @@ public class StudentOfferServiceTest {
 
         IllegalArgumentException exception
                 = assertThrows(IllegalArgumentException.class,
-                    () -> studentOfferService.acceptOffer(student, role, accepted.getId()));
+                    () -> studentOfferService.acceptOffer(student, accepted.getId()));
         String errorMessage = "The StudentOffer or TargetedRequest is not active anymore!";
         assertEquals(errorMessage, exception.getMessage());
     }
 
     @Test
     void acceptOfferTestFailRole() {
-        role = "COMPANY";
         accepted.setStatus(Status.DECLINED);
         Mockito.when(targetedCompanyOfferRepository.findById(accepted.getId()))
                 .thenReturn(Optional.of(accepted));
 
         NoPermissionException exception
                 = assertThrows(NoPermissionException.class,
-                    () -> studentOfferService.acceptOffer(student, role, accepted.getId()));
+                    () -> studentOfferService.acceptOffer("different", accepted.getId()));
         String errorMessage = "User not allowed to accept this TargetedOffer";
         assertEquals(errorMessage, exception.getMessage());
     }

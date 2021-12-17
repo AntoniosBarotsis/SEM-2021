@@ -193,7 +193,7 @@ public class ContractService {
         }
 
         // Set computed end date:
-        long weeks = (long) (contract.getTotalHours() / contract.getHoursPerWeek());
+        double weeks = contract.getTotalHours() / contract.getHoursPerWeek();
         LocalDate endDate = contract.getStartDate().plusWeeks((int) Math.ceil(weeks));
         contract.setEndDate(endDate);
 
@@ -283,14 +283,14 @@ public class ContractService {
     }
 
     /**
-     * PRIVATE method that checks if the user can access the contract entity,
+     * Checks if the user can access the contract entity,
      * which is if the userId is in the contract (as companyId or studentId).
      *
      * @param contract The contract the user wants to access.
      * @param userId   The userId of the user we check.
      * @throws AccessDeniedException If the user isn't in the contract.
      */
-    private void checkAuthorization(Contract contract, String userId)
+    public void checkAuthorization(Contract contract, String userId)
             throws AccessDeniedException {
         if (!contract.getStudentId().equals(userId) && !contract.getCompanyId().equals(userId)) {
             throw new AccessDeniedException();

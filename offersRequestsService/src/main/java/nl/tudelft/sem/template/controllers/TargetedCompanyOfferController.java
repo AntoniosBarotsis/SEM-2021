@@ -10,9 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,32 +26,19 @@ public class TargetedCompanyOfferController {
     /** Endpoint for creating TargetedCompanyOffers.
      *
      * @param userName Name of person making request.
-     * @param userRole Role of person making request.
      * @param targetedCompanyOffer TargetedCompanyOffer that needs to be saved.
-     * @param id Id of StudentOffer that TargetedCompanyOffer targets.
+     * @param id id of StudentOffer that TargetedCompanyOffer targets.
      * @return ResponseEntity that can take various codes.
      *          401 OK if user not authenticated.
      *          403 UNAUTHORIZED if user not Company or not author of offer.
      *          400 BAD REQUEST is conditions are not met.
      *          201 CREATED if successful with offer in the body.
      */
-    @PostMapping("/company/targeted/create/{id}")
     public ResponseEntity<Response<Offer>> saveTargetedCompanyOffer(
-            @RequestHeader(nameHeader) String userName,
-            @RequestHeader(roleHeader) String userRole,
-            @RequestBody TargetedCompanyOffer targetedCompanyOffer,
-            @PathVariable Long id) {
-        if (userName.isBlank()) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(new Response<>(null, authenticationError));
-        }
-        if (!userRole.equals("COMPANY")) {
-            return ResponseEntity
-                    .status(HttpStatus.FORBIDDEN)
-                    .body(new Response<>(null,
-                            "Only companies can create targeted offers"));
-        }
+            String userName,
+            TargetedCompanyOffer targetedCompanyOffer,
+            Long id) {
+
         if (!userName.equals(targetedCompanyOffer.getCompanyId())) {
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
@@ -67,28 +51,15 @@ public class TargetedCompanyOfferController {
     /** Endpoint for getting TargetedCompanyOffers by a company, which created them.
      *
      * @param userName Name of person making the request.
-     * @param userRole Role of person making the request.
      * @return ResponseEntity that can take various codes.
      *          401 UNAUTHORIZED if user not authenticated.
      *          403 FORBIDDEN if user not a company.
      *          200 OK if successful with List in body.
      */
-    @GetMapping("/company/targeted/getOffersById/")
-    public ResponseEntity<Response<List<TargetedCompanyOffer>>>
-        getCompanyOffersById(@RequestHeader(nameHeader) String userName,
-                             @RequestHeader(roleHeader) String userRole) {
-        //Authenticate and check if the requester is a company.
-        if (userName.isBlank()) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(new Response<>(null, authenticationError));
-        }
-        if (!userRole.equals("COMPANY")) {
-            return ResponseEntity
-                    .status(HttpStatus.FORBIDDEN)
-                    .body(new Response<>(null, "User is not a company"));
-        }
-        Response<List<TargetedCompanyOffer>> responseOffersById;
+    public ResponseEntity<Response<List<Offer>>>
+        getCompanyOffersById(String userName) {
+
+        Response<List<Offer>> responseOffersById;
         try {
             responseOffersById =
                     new Response<>(
@@ -120,16 +91,11 @@ public class TargetedCompanyOfferController {
      *          200 OK if successful with list of offers that belong to the StudentOffer.
      *          400 BAD REQUEST if conditions are not met.
      */
-    @GetMapping("/company/targeted/getOffersByOffer/{studentOfferId}")
-    public ResponseEntity<Response<List<TargetedCompanyOffer>>>
-        getCompanyOffersByStudentOffer(@RequestHeader(nameHeader) String userName,
-                                       @PathVariable Long studentOfferId) {
-        if (userName.isBlank()) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(new Response<>(null, authenticationError));
-        }
-        Response<List<TargetedCompanyOffer>> offers;
+    public ResponseEntity<Response<List<Offer>>>
+        getCompanyOffersByStudentOffer(String userName,
+                                       Long studentOfferId) {
+
+        Response<List<Offer>> offers;
         try {
             offers =
                     new Response<>(

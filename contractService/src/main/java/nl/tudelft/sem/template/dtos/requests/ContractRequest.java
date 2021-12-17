@@ -26,6 +26,6 @@ public class ContractRequest {
 
     public Contract toContract() {
         return new Contract(null, companyId, studentId, null,
-                null, hoursPerWeek, totalHours, pricePerHour, null);
+                null, hoursPerWeek, totalHours, pricePerHour, null, null);
     }
 }

@@ -39,30 +39,4 @@ public class Contract {
     @OneToMany(mappedBy = "contract")
     private List<ContractChangeProposal> proposedChanges;
 
-    /**
-     * Constructor for the Contract class WITHOUT THE ID.
-     *
-     * @param id             The contract's id.
-     * @param companyId      String with company's id.
-     * @param studentId      String with student's id.
-     * @param startDate      LocalDate indicating when the contract started.
-     * @param endDate        LocalDate indicating when the contract ends.
-     * @param hoursPerWeek   Double indicating how many hours per week.
-     * @param totalHours     Double indicating the total amount of hours.
-     * @param pricePerHour   Double indicating the price per hour.
-     * @param status Enum indicating whether the contract is active, expired or terminated.
-     */
-    public Contract(Long id, String companyId, String studentId, LocalDate startDate,
-                    LocalDate endDate, double hoursPerWeek, double totalHours,
-                    double pricePerHour, ContractStatus status) {
-        this.id = id;
-        this.companyId = companyId;
-        this.studentId = studentId;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.hoursPerWeek = hoursPerWeek;
-        this.totalHours = totalHours;
-        this.pricePerHour = pricePerHour;
-        this.status = status;
-    }
 }

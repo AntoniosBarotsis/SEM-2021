@@ -24,10 +24,11 @@ import org.springframework.http.ResponseEntity;
 @SpringBootTest
 @AutoConfigureMockMvc
 public class FeedbackControllerTest {
-    private final transient long id = 1;
-    private final transient String userName = "username";
-    private final transient String userRole = "STUDENT";
-    private final transient Long contractId = -1L;
+    private transient long id = 1;
+    private transient String userName = "username";
+    private transient String userRole = "STUDENT";
+    private transient Long contractId = -1L;
+
     @Autowired
     private transient FeedbackController feedbackController;
     @MockBean

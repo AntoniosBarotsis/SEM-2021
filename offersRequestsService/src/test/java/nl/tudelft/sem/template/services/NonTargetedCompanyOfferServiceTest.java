@@ -48,13 +48,11 @@ class NonTargetedCompanyOfferServiceTest {
     private transient NonTargetedCompanyOffer offer;
     private transient Application application;
     private transient String student;
-    private transient String role;
     private transient String companyId;
     private transient ContractDto contract;
 
     @BeforeEach
     void setup() {
-        role = "COMPANY";
         student = "student";
         companyId = "facebook";
         List<String> expertise = List.of("e1", "e2", "e3");
@@ -147,7 +145,7 @@ class NonTargetedCompanyOfferServiceTest {
         Mockito.when(utility.createContract(any(), any(), any(), any(), any(), any()))
                 .thenReturn(contract);
 
-        final ContractDto actual = service.accept(companyId, role, application.getId());
+        final ContractDto actual = service.accept(companyId, application.getId());
 
         Mockito.verify(offerRepository, times(1)).save(any());
         Mockito.verify(applicationRepository,
@@ -168,7 +166,7 @@ class NonTargetedCompanyOfferServiceTest {
 
         IllegalArgumentException exception
                 = assertThrows(IllegalArgumentException.class,
-                    () -> service.accept(companyId, role, application.getId()));
+                    () -> service.accept(companyId, application.getId()));
         String errorMessage = "The offer or application is not active anymore!";
         assertEquals(errorMessage, exception.getMessage());
     }
@@ -183,7 +181,7 @@ class NonTargetedCompanyOfferServiceTest {
 
         IllegalArgumentException exception
                 = assertThrows(IllegalArgumentException.class,
-                    () -> service.accept(companyId, role, application.getId()));
+                    () -> service.accept(companyId, application.getId()));
         String errorMessage = "The offer or application is not active anymore!";
         assertEquals(errorMessage, exception.getMessage());
     }
@@ -198,7 +196,7 @@ class NonTargetedCompanyOfferServiceTest {
 
         NoPermissionException exception
                 = assertThrows(NoPermissionException.class,
-                    () -> service.accept(companyId, "STUDENT", application.getId()));
+                    () -> service.accept("different", application.getId()));
         String errorMessage = "User can not accept this application!";
         assertEquals(errorMessage, exception.getMessage());
     }
@@ -210,7 +208,7 @@ class NonTargetedCompanyOfferServiceTest {
                 .thenReturn(Optional.empty());
         IllegalArgumentException exception
                 = assertThrows(IllegalArgumentException.class,
-                    () -> service.accept(companyId, "STUDENT", 3L));
+                    () -> service.accept(companyId, 3L));
         assertEquals(errorMessage, exception.getMessage());
     }
 
