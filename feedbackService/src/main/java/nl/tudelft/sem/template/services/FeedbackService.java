@@ -43,7 +43,7 @@ public class FeedbackService {
      * Service, which gets a feedback by given id.
      *
      * @param id - the id of the desired feedback.
-     * @return - a feedbackresponse, if the feedback is found,
+     * @return - a FeedbackResponse, if the feedback is found,
      *      error if no such feedback exists.
      */
     public FeedbackResponse getById(Long id) {
@@ -57,12 +57,12 @@ public class FeedbackService {
     }
 
     /**
-     * Creates a FeedbackResponse.
+     * Creates a feedback for a contract.
      *
-     * @param feedbackRequest - the requested feedback.
-     * @param userName - the name of the user.
-     * @param userRole - the role of the user.
-     * @return - a Pair of feedbackResponse and it's id.
+     * @param feedbackRequest the feedback request
+     * @param userName the user name
+     * @param userRole the user role
+     * @return the feedback response
      */
     public Pair<FeedbackResponse, Long> create(FeedbackRequest feedbackRequest, String userName,
                                                String userRole) {
@@ -182,5 +182,9 @@ public class FeedbackService {
         }
 
         return targetRole;
+    }
+
+    public Double getAverageRatingByUser(String userName) {
+        return feedbackRepository.getAverageRatingByUser(userName);
     }
 }

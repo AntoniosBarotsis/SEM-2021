@@ -16,6 +16,8 @@ import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.ContractCreationException;
+import nl.tudelft.sem.template.exceptions.LowRatingException;
+import nl.tudelft.sem.template.exceptions.UpstreamServiceException;
 import nl.tudelft.sem.template.exceptions.UserDoesNotExistException;
 import nl.tudelft.sem.template.exceptions.UserServiceUnvanvailableException;
 import nl.tudelft.sem.template.services.StudentOfferService;
@@ -79,13 +81,13 @@ class StudentOfferControllerTest {
 
 
     @Test
-    void saveStudentOfferValid() {
+    void saveStudentOfferValid() throws LowRatingException, UpstreamServiceException {
         Offer studentOffer2 = new StudentOffer("This is a title",
             "This is a description", 20,
             520, Arrays.asList("Expertise 1", "Expertise 2", "Expertise 3"), Status.PENDING,
             32, "Student");
-        Mockito.when(studentOfferService.saveOffer(studentOffer))
-            .thenReturn(studentOffer2);
+        Mockito.when(studentOfferService.saveOfferWithResponse(studentOffer))
+            .thenReturn(new ResponseEntity<>(new Response<>(studentOffer2), HttpStatus.CREATED));
 
         Response<Offer> res = new Response<>(studentOffer2, null);
 
@@ -96,11 +98,12 @@ class StudentOfferControllerTest {
     }
 
     @Test
-    void saveStudentOfferIllegal() {
+    void saveStudentOfferIllegal() throws LowRatingException, UpstreamServiceException {
         studentOffer.setHoursPerWeek(21);
         String errorMessage = "Offer exceeds 20 hours per week";
-        Mockito.when(studentOfferService.saveOffer(studentOffer))
-            .thenThrow(new IllegalArgumentException(errorMessage));
+        Mockito.when(studentOfferService.saveOfferWithResponse(studentOffer)).thenReturn(
+            new ResponseEntity<>(new Response<>(null, errorMessage), HttpStatus.BAD_REQUEST)
+        );
 
         ResponseEntity<Response<Offer>> response
                 = studentOfferController.saveStudentOffer(student, studentOffer);

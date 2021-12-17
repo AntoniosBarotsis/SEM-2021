@@ -39,31 +39,13 @@ public class TargetedCompanyOfferController {
             TargetedCompanyOffer targetedCompanyOffer,
             Long id) {
 
-        if (!targetedCompanyOffer.getCompanyId().equals(userName)) {
+        if (!userName.equals(targetedCompanyOffer.getCompanyId())) {
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
                     .body(new Response<>(null,
-                            "User not allowed to post this TargetedCompanyOffer"));
+                            "You can only post an offer for your own company"));
         }
-        Response<Offer> responseSave;
-        try {
-            responseSave =
-                new Response<>(targetedCompanyOfferService
-                    .saveOffer(targetedCompanyOffer, id),
-                    null);
-
-            return new ResponseEntity<>(
-                responseSave,
-                HttpStatus.CREATED);
-        } catch (IllegalArgumentException e) {
-
-            responseSave =
-                new Response<>(null,
-                    e.getMessage());
-
-            return new ResponseEntity<>(responseSave,
-                HttpStatus.BAD_REQUEST);
-        }
+        return targetedCompanyOfferService.saveOfferWithResponse(targetedCompanyOffer, id);
     }
 
     /** Endpoint for getting TargetedCompanyOffers by a company, which created them.

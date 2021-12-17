@@ -30,10 +30,10 @@ public class Feedback {
     private Long contractId;
 
     /**
-     * Creates a feedback from given FeedbackRequest.
+     * Creates a feedback from a request.
      *
-     * @param feedbackRequest - the request, which will be converted.
-     * @return - a new feedback.
+     * @param feedbackRequest the request
+     * @return the feedback
      */
     public static Feedback from(FeedbackRequest feedbackRequest) {
         return new Feedback(null,

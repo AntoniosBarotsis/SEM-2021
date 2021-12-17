@@ -17,6 +17,8 @@ import logger.FileLogger;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
+import nl.tudelft.sem.template.entities.dtos.AverageRatingResponse;
+import nl.tudelft.sem.template.entities.dtos.AverageRatingResponseWrapper;
 import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.ContractCreationException;
@@ -30,6 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.RestTemplate;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -44,6 +48,8 @@ public class StudentOfferServiceTest {
     private transient TargetedCompanyOfferRepository targetedCompanyOfferRepository;
     @MockBean
     private transient OfferRepository offerRepository;
+    @MockBean
+    private transient RestTemplate restTemplate;
 
     @MockBean
     private transient Utility utility;
@@ -197,9 +203,16 @@ public class StudentOfferServiceTest {
 
     @Test
     void updateStudentOfferTest() {
+        AverageRatingResponse fakeResponse = new AverageRatingResponse(5.0);
+        AverageRatingResponseWrapper responseWrapper = new AverageRatingResponseWrapper();
+        responseWrapper.setData(fakeResponse);
+        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
+                .thenReturn(responseWrapper);
+
         StudentOffer edited = offerTwo;
         edited.setDescription("New Description, last one was awful");
         edited.setPricePerHour(100.0);
+
         Mockito.when(studentOfferRepository.getById(offerTwo.getId()))
                 .thenReturn(offerTwo);
         Mockito.when(offerRepository.save(offerTwo))

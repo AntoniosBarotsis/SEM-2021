@@ -1,17 +1,24 @@
 package nl.tudelft.sem.template.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import logger.FileLogger;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
+import nl.tudelft.sem.template.entities.dtos.AverageRatingResponse;
+import nl.tudelft.sem.template.entities.dtos.AverageRatingResponseWrapper;
+import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.exceptions.LowRatingException;
+import nl.tudelft.sem.template.exceptions.UpstreamServiceException;
 import nl.tudelft.sem.template.exceptions.UserNotAuthorException;
 import nl.tudelft.sem.template.repositories.OfferRepository;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
@@ -23,6 +30,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -42,6 +52,9 @@ class TargetedCompanyOfferServiceTest {
 
     @MockBean
     private transient FileLogger fileLogger;
+
+    @MockBean
+    private transient RestTemplate restTemplate;
 
     private transient StudentOffer studentOffer;
     private transient TargetedCompanyOffer targetedCompanyOffer;
@@ -69,13 +82,23 @@ class TargetedCompanyOfferServiceTest {
             "Company", null);
     }
 
+    TargetedCompanyOffer createCompanyOffer2(StudentOffer studentOffer) {
+        return new TargetedCompanyOffer(
+                "This is a company title", "This is a company description",
+                20, 520, expertise, Status.DISABLED,
+                Arrays.asList("Requirement 1", "Requirement 2", "Requirement 3"),
+                "Company", studentOffer);
+    }
+
     @Test
-    void saveTargetedCompanyOfferValidTest() {
-        TargetedCompanyOffer targetedCompanyOffer2 = new TargetedCompanyOffer(
-            "This is a company title", "This is a company description",
-            20, 520, expertise, Status.DISABLED,
-            Arrays.asList("Requirement 1", "Requirement 2", "Requirement 3"),
-            "Company", studentOffer);
+    void saveTargetedCompanyOfferValidTest() throws LowRatingException, UpstreamServiceException {
+        AverageRatingResponse fakeResponse = new AverageRatingResponse(5.0);
+        AverageRatingResponseWrapper responseWrapper = new AverageRatingResponseWrapper();
+        responseWrapper.setData(fakeResponse);
+        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
+                .thenReturn(responseWrapper);
+
+        TargetedCompanyOffer targetedCompanyOffer2 = createCompanyOffer2(studentOffer);
         studentOffer.setId(33L);
         Mockito.when(studentOfferRepository.getById(33L))
             .thenReturn(studentOffer);
@@ -87,7 +110,13 @@ class TargetedCompanyOfferServiceTest {
     }
 
     @Test
-    void saveTargetedCompanyOfferStudentTest() {
+    void saveTargetedCompanyOfferStudentTest() throws LowRatingException, UpstreamServiceException {
+        AverageRatingResponse fakeResponse = new AverageRatingResponse(5.0);
+        AverageRatingResponseWrapper responseWrapper = new AverageRatingResponseWrapper();
+        responseWrapper.setData(fakeResponse);
+        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
+                .thenReturn(responseWrapper);
+
         targetedCompanyOffer = Mockito.mock(TargetedCompanyOffer.class);
         Mockito.when(studentOfferRepository.getById(33L))
             .thenReturn(studentOffer);
@@ -176,6 +205,78 @@ class TargetedCompanyOfferServiceTest {
                         .getOffersByStudentOffer(3L, "fake"));
         String message = "User with id fake is not the author of this offer";
         assertEquals(message, exception.getMessage());
+    }
+
+    @Test
+    void saveTargetedCompanyOfferWithResponseValidTest() {
+        AverageRatingResponse fakeResponse = new AverageRatingResponse(5.0);
+        AverageRatingResponseWrapper responseWrapper = new AverageRatingResponseWrapper();
+        responseWrapper.setData(fakeResponse);
+        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
+                .thenReturn(responseWrapper);
+
+        TargetedCompanyOffer targetedCompanyOffer2 = createCompanyOffer2(studentOffer);
+        studentOffer.setId(33L);
+        Mockito.when(studentOfferRepository.getById(33L))
+                .thenReturn(studentOffer);
+        Mockito.when(offerRepository.save(targetedCompanyOffer))
+                .thenReturn(targetedCompanyOffer2);
+
+        ResponseEntity<Response<Offer>> response = targetedCompanyOfferService
+                .saveOfferWithResponse(targetedCompanyOffer, 33L);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(targetedCompanyOffer2, Objects.requireNonNull(response.getBody()).getData());
+    }
+
+    @Test
+    void saveTargetedCompanyOfferWithResponseNoStudentOfferTest() {
+        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
+                .thenReturn(new AverageRatingResponse(5.0));
+
+        TargetedCompanyOffer targetedCompanyOffer2 = createCompanyOffer2(studentOffer);
+        Mockito.when(offerRepository.save(targetedCompanyOffer))
+                .thenReturn(targetedCompanyOffer2);
+
+        ResponseEntity<Response<Offer>> response = targetedCompanyOfferService
+                .saveOfferWithResponse(targetedCompanyOffer, 69L);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNull(Objects.requireNonNull(response.getBody()).getData());
+    }
+
+    @Test
+    void saveTargetedCompanyOfferWithResponseLowRatingTest() {
+        AverageRatingResponse fakeResponse = new AverageRatingResponse(1.0);
+        AverageRatingResponseWrapper responseWrapper = new AverageRatingResponseWrapper();
+        responseWrapper.setData(fakeResponse);
+        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
+                .thenReturn(responseWrapper);
+
+        TargetedCompanyOffer targetedCompanyOffer2 = createCompanyOffer2(studentOffer);
+        studentOffer.setId(33L);
+        Mockito.when(studentOfferRepository.getById(33L))
+                .thenReturn(studentOffer);
+        Mockito.when(offerRepository.save(targetedCompanyOffer))
+                .thenReturn(targetedCompanyOffer2);
+
+        ResponseEntity<Response<Offer>> response = targetedCompanyOfferService
+                .saveOfferWithResponse(targetedCompanyOffer, 33L);
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertNull(Objects.requireNonNull(response.getBody()).getData());
+    }
+
+    @Test
+    void saveTargetedCompanyOfferWithResponseServiceUnavailableTest() {
+        TargetedCompanyOffer targetedCompanyOffer2 = createCompanyOffer2(studentOffer);
+        studentOffer.setId(33L);
+        Mockito.when(studentOfferRepository.getById(33L))
+                .thenReturn(studentOffer);
+        Mockito.when(offerRepository.save(targetedCompanyOffer))
+                .thenReturn(targetedCompanyOffer2);
+
+        ResponseEntity<Response<Offer>> response = targetedCompanyOfferService
+                .saveOfferWithResponse(targetedCompanyOffer, 33L);
+        assertEquals(HttpStatus.SERVICE_UNAVAILABLE, response.getStatusCode());
+        assertNull(Objects.requireNonNull(response.getBody()).getData());
     }
 
 }

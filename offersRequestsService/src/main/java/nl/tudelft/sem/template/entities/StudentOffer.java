@@ -42,7 +42,8 @@ public class StudentOffer extends Offer {
         this.studentId = studentId;
     }
 
-    public String getCreator() {
-        return this.studentId;
+    @Override
+    public String getCreatorUsername() {
+        return studentId;
     }
 }

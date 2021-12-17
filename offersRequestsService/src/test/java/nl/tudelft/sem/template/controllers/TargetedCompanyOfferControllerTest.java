@@ -12,6 +12,8 @@ import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
+import nl.tudelft.sem.template.exceptions.LowRatingException;
+import nl.tudelft.sem.template.exceptions.UpstreamServiceException;
 import nl.tudelft.sem.template.exceptions.UserNotAuthorException;
 import nl.tudelft.sem.template.services.TargetedCompanyOfferService;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,7 +70,7 @@ class TargetedCompanyOfferControllerTest {
     }
 
     @Test
-    void saveTargetedCompanyOfferValid() {
+    void saveTargetedCompanyOfferValid() throws LowRatingException, UpstreamServiceException {
         TargetedCompanyOffer targetedCompanyOffer2 = new TargetedCompanyOffer(
             "This is a company title", "This is a company description",
             20, 520,
@@ -76,8 +78,10 @@ class TargetedCompanyOfferControllerTest {
             Arrays.asList("Requirement 1", "Requirement 2", "Requirement 3"),
             "Company", studentOffer);
 
-        Mockito.when(targetedCompanyOfferService.saveOffer(targetedCompanyOffer, 33L))
-            .thenReturn(targetedCompanyOffer2);
+        Mockito.when(targetedCompanyOfferService.saveOfferWithResponse(targetedCompanyOffer, 33L))
+            .thenReturn(new ResponseEntity<>(
+                    new Response<>(targetedCompanyOffer2), HttpStatus.CREATED)
+            );
 
         ResponseEntity<Response<Offer>> response = targetedCompanyOfferController
             .saveTargetedCompanyOffer(company, targetedCompanyOffer, 33L);
@@ -88,11 +92,13 @@ class TargetedCompanyOfferControllerTest {
     }
 
     @Test
-    void saveTargetedCompanyOfferIllegal() {
+    void saveTargetedCompanyOfferIllegal() throws LowRatingException, UpstreamServiceException {
         targetedCompanyOffer.setHoursPerWeek(21);
         String errorMessage = "Offer exceeds 20 hours per week";
-        Mockito.when(targetedCompanyOfferService.saveOffer(targetedCompanyOffer, 33L))
-            .thenThrow(new IllegalArgumentException(errorMessage));
+        Mockito.when(targetedCompanyOfferService.saveOfferWithResponse(targetedCompanyOffer, 33L))
+                .thenReturn(new ResponseEntity<>(
+                    new Response<>(null, errorMessage), HttpStatus.BAD_REQUEST
+                ));
 
         ResponseEntity<Response<Offer>> response = targetedCompanyOfferController
             .saveTargetedCompanyOffer(company, targetedCompanyOffer, 33L);
@@ -193,7 +199,7 @@ class TargetedCompanyOfferControllerTest {
         ResponseEntity<Response<Offer>> response = targetedCompanyOfferController
                 .saveTargetedCompanyOffer("fake", targetedCompanyOffer, 3L);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        assertEquals("User not allowed to post this TargetedCompanyOffer",
+        assertEquals("You can only post an offer for your own company",
                 Objects.requireNonNull(response.getBody()).getErrorMessage());
     }
 

@@ -8,9 +8,9 @@ public class Rating {
     private int stars;
 
     /**
-     * Creates a rating, by checking if the input is valid.
+     * Constructor for Rating. Checks if the rating is valid.
      *
-     * @param stars - the given stars.
+     * @param stars amount of stars, between 0 and 5
      */
     public Rating(int stars) {
         if (stars < 0 || stars > 5) {

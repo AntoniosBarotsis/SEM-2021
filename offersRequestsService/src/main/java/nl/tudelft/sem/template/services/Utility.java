@@ -6,12 +6,17 @@ import nl.tudelft.sem.template.entities.dtos.UserResponseWrapper;
 import nl.tudelft.sem.template.exceptions.ContractCreationException;
 import nl.tudelft.sem.template.exceptions.UserDoesNotExistException;
 import nl.tudelft.sem.template.exceptions.UserServiceUnvanvailableException;
+import org.apache.http.client.methods.HttpHead;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @NoArgsConstructor
 public class Utility {
+
     /**
      * Checks to see if the given user exists.
      *
@@ -57,9 +62,13 @@ public class Utility {
                 = new ContractDto(companyId, studentId, hoursPerWeek, totalHours, pricePerHour);
 
         try {
+            System.out.println("Sending contract to contract microservice");
             String url = "http://contract-service/";
-            HttpEntity<ContractDto> requestEntity = new HttpEntity<>(sentDto);
 
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("x-user-role", "INTERNAL_SERVICE");
+
+            HttpEntity<ContractDto> requestEntity = new HttpEntity<>(sentDto, headers);
             return restTemplate
                     .postForObject(url, requestEntity, ContractDto.class);
 

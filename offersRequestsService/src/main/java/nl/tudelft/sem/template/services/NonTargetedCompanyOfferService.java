@@ -112,7 +112,7 @@ public class NonTargetedCompanyOfferService extends OfferService {
             }
             applicationRepository.save(app);
         }
-        logger.log(nonTargetedCompanyOffer.getCreator()
+        logger.log(nonTargetedCompanyOffer.getCreatorUsername()
                     + " has accepted "
                     + application.get().getStudentId()
                     + " for offer "

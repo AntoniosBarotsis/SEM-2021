@@ -4,10 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
+import java.util.Objects;
 import nl.tudelft.sem.template.domain.Response;
 import nl.tudelft.sem.template.domain.dtos.requests.FeedbackRequest;
+import nl.tudelft.sem.template.domain.dtos.responses.AverageRatingResponse;
 import nl.tudelft.sem.template.domain.dtos.responses.FeedbackResponse;
 import nl.tudelft.sem.template.services.FeedbackService;
+import nl.tudelft.sem.template.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.util.Pair;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 @SpringBootTest
@@ -24,10 +28,13 @@ public class FeedbackControllerTest {
     private transient String userName = "username";
     private transient String userRole = "STUDENT";
     private transient Long contractId = -1L;
+
     @Autowired
     private transient FeedbackController feedbackController;
     @MockBean
     private transient FeedbackService feedbackService;
+    @MockBean
+    private transient UserService userService;
     private transient FeedbackResponse feedbackResponse;
     private transient FeedbackRequest feedbackRequest;
 
@@ -62,5 +69,24 @@ public class FeedbackControllerTest {
             .create(feedbackRequest, userName, userRole);
 
         assertEquals(expected, actual);
+    }
+
+    @Test
+    void getRatingTest() {
+        when(feedbackService.getAverageRatingByUser(userName)).thenReturn(5.0);
+        when(userService.userExists(userName)).thenReturn(true);
+        ResponseEntity<Response<AverageRatingResponse>> response;
+        response = feedbackController.getUserFeedback(userName);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(5.0, Objects.requireNonNull(response.getBody()).getData().getAverageRating());
+    }
+
+    @Test
+    void getRatingNonExistentUser() {
+        when(feedbackService.getAverageRatingByUser(userName)).thenReturn(5.0);
+        when(userService.userExists(userName)).thenReturn(true);
+        ResponseEntity<Response<AverageRatingResponse>> response;
+        response = feedbackController.getUserFeedback("nonExistentUser");
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 }

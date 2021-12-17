@@ -11,4 +11,8 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
     @Query("SELECT f FROM Feedback f WHERE f.author = ?1 "
         + "AND f.recipient = ?2 AND f.contractId = ?3")
     List<Feedback> hasReviewedBefore(String authorId, String recipientId, Long contractId);
+
+    @Query("SELECT COALESCE(AVG(f.rating), -1) FROM Feedback f WHERE f.recipient = ?1")
+    public double getAverageRatingByUser(String username);
+
 }
