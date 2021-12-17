@@ -100,7 +100,7 @@ public class OfferController {
             } else {
                 throw new IllegalArgumentException();
             }
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(new Response<>(null, "The entered offer or credentials are invalid"));
