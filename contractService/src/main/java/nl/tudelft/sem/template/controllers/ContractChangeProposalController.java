@@ -33,6 +33,8 @@ public class ContractChangeProposalController {
     private transient ContractService contractService;
 
     private final transient String nameHeader = "x-user-name";
+    private final transient String unauthenticatedMessage
+            = "User has not been authenticated";
 
     /**
      * Submit a contract change proposal.
@@ -41,16 +43,22 @@ public class ContractChangeProposalController {
      * @param contractId    The id of the contract the user wants to change.
      * @param changeRequest The request containing the new contract parameters.
      * @return 201 CREATED with the saved proposal if the proposal is valid;
-     *         400 BAD REQUEST if the contract is inactive,
-     *         or if the change proposal parameters are invalid;
-     *         404 NOT FOUND if the contract is not found,
-     *         401 UNAUTHORIZED if the user is not in the contract;
+     *         400 BAD REQUEST if the contract is inactive
+     *         or if the change proposal parameters are invalid,
+     *         401 UNAUTHORIZED if user is not authenticated,
+     *         403 FORBIDDEN if the user is not in the contract,
+     *         404 NOT FOUND if the contract is not found.
      */
     @PostMapping("/{contractId}/changeProposals")
     public ResponseEntity<Object> proposeChange(
             @RequestHeader(nameHeader) String userName,
             @PathVariable Long contractId,
             @RequestBody ContractChangeRequest changeRequest) {
+
+        // Check if authenticated:
+        if (userName.isBlank()) {
+            return new ResponseEntity<>(unauthenticatedMessage, HttpStatus.UNAUTHORIZED);
+        }
 
         try {
             ContractChangeProposal p
@@ -63,7 +71,7 @@ public class ContractChangeProposalController {
         } catch (InvalidChangeProposalException | InactiveContractException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (AccessDeniedException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         }
     }
 
@@ -75,13 +83,19 @@ public class ContractChangeProposalController {
      * @return 200 OK with the updated contract if everything is valid;
      *         400 BAD REQUEST if the proposal is invalid
      *         or if the contract is inactive;
-     *         404 NOT FOUND if the proposal is not found,
-     *         401 UNAUTHORIZED if the user is not the one that should review the proposal.
+     *         401 UNAUTHORIZED if user is not authenticated,
+     *         403 FORBIDDEN if the user is not the one that should review the proposal,
+     *         404 NOT FOUND if the proposal is not found.
      */
     @PutMapping("/changeProposals/{proposalId}/accept")
     public ResponseEntity<Object> acceptProposal(
             @RequestHeader(nameHeader) String userName,
             @PathVariable(name = "proposalId") Long proposalId) {
+
+        // Check if authenticated:
+        if (userName.isBlank()) {
+            return new ResponseEntity<>(unauthenticatedMessage, HttpStatus.UNAUTHORIZED);
+        }
 
         try {
             Contract contract = changeProposalService.acceptProposal(proposalId, userName);
@@ -91,7 +105,7 @@ public class ContractChangeProposalController {
         } catch (InvalidChangeProposalException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (AccessDeniedException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         }
     }
 
@@ -101,13 +115,19 @@ public class ContractChangeProposalController {
      * @param userName   The id of the user making the request.
      * @param proposalId The id of the proposal that will be rejected.
      * @return 200 OK if successful,
-     *         404 NOT FOUND if the proposal is not found,
-     *         401 UNAUTHORIZED if the user is not the one that should review the proposal.
+     *         401 UNAUTHORIZED if user is not authenticated,
+     *         403 FORBIDDEN if the user is not the one that should review the proposal,
+     *         404 NOT FOUND if the proposal is not found.
      */
     @PutMapping("/changeProposals/{proposalId}/reject")
     public ResponseEntity<String> rejectProposal(
             @RequestHeader(nameHeader) String userName,
             @PathVariable(name = "proposalId") Long proposalId) {
+
+        // Check if authenticated:
+        if (userName.isBlank()) {
+            return new ResponseEntity<>(unauthenticatedMessage, HttpStatus.UNAUTHORIZED);
+        }
 
         try {
             changeProposalService.rejectProposal(proposalId, userName);
@@ -115,7 +135,7 @@ public class ContractChangeProposalController {
         } catch (ChangeProposalNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (AccessDeniedException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         }
     }
 
@@ -125,13 +145,19 @@ public class ContractChangeProposalController {
      * @param userName   The id of the user making the request.
      * @param proposalId The id of the proposal that will be deleted.
      * @return 200 OK if successful,
-     *         404 NOT FOUND if the proposal is not found,
-     *         401 UNAUTHORIZED if the user is not the one that submitted the proposal.
+     *         401 UNAUTHORIZED if user is not authenticated,
+     *         403 FORBIDDEN if the user is not the one that submitted the proposal,
+     *         404 NOT FOUND if the proposal is not found.
      */
     @DeleteMapping("/changeProposals/{proposalId}")
     public ResponseEntity<String> deleteProposal(
             @RequestHeader(nameHeader) String userName,
             @PathVariable(name = "proposalId") Long proposalId) {
+
+        // Check if authenticated:
+        if (userName.isBlank()) {
+            return new ResponseEntity<>(unauthenticatedMessage, HttpStatus.UNAUTHORIZED);
+        }
 
         try {
             changeProposalService.deleteProposal(proposalId, userName);
@@ -139,7 +165,7 @@ public class ContractChangeProposalController {
         } catch (ChangeProposalNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (AccessDeniedException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         }
     }
 
@@ -150,13 +176,19 @@ public class ContractChangeProposalController {
      * @param contractId The id of the contract.
      * @return 200 OK if successful,
      *         400 BAD REQUEST if the contract is inactive,
-     *         404 NOT FOUND if the contract was not found,
-     *         401 UNAUTHORIZED if the user is not in the contract.
+     *         401 UNAUTHORIZED if user is not authenticated,
+     *         403 FORBIDDEN if the user is not in the contract,
+     *         404 NOT FOUND if the contract was not found.
      */
     @GetMapping("/{contractId}/changeProposals")
     public ResponseEntity<Object> getProposalsOfContract(
             @RequestHeader(nameHeader) String userName,
             @PathVariable(name = "contractId") Long contractId) {
+
+        // Check if authenticated:
+        if (userName.isBlank()) {
+            return new ResponseEntity<>(unauthenticatedMessage, HttpStatus.UNAUTHORIZED);
+        }
 
         try {
             // Get contract and mark it expired if needed:
@@ -169,7 +201,7 @@ public class ContractChangeProposalController {
         } catch (InactiveContractException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (AccessDeniedException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         }
     }
 
