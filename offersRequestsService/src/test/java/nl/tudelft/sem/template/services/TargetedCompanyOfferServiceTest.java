@@ -151,7 +151,7 @@ class TargetedCompanyOfferServiceTest {
 
     @Test
     void getOffersByIdTestPass() {
-        List<TargetedCompanyOffer> returned = new ArrayList<>();
+        List<Offer> returned = new ArrayList<>();
         returned.add(targetedCompanyOffer);
         Mockito.when(targetedCompanyOfferRepository.findAllByCompanyId("MyCompany"))
             .thenReturn(returned);
@@ -161,7 +161,7 @@ class TargetedCompanyOfferServiceTest {
 
     @Test
     void getOffersByStudentTestPass() {
-        List<TargetedCompanyOffer> returned = new ArrayList<>();
+        List<Offer> returned = new ArrayList<>();
         returned.add(targetedCompanyOffer);
 
         Mockito.when(studentOfferRepository.getById(any()))

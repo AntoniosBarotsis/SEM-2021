@@ -51,6 +51,19 @@ public class UserController {
         }
     }
 
+    private User getUser(UserCreateRequest userCreateRequest) {
+        switch (userCreateRequest.getRole()) {
+            case STUDENT:
+                return studentFactory.createUser(userCreateRequest.getUsername(),
+                        userCreateRequest.getPassword());
+            case COMPANY:
+                return companyFactory.createUser(userCreateRequest.getUsername(),
+                        userCreateRequest.getPassword());
+            default:
+                throw new IllegalArgumentException("Invalid role " + userCreateRequest.getRole());
+        }
+    }
+
     /**
      * Create a new user.
      *
@@ -124,18 +137,5 @@ public class UserController {
                     HttpStatus.OK);
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-
-    private User getUser(UserCreateRequest userCreateRequest) {
-        switch (userCreateRequest.getRole()) {
-            case STUDENT:
-                return studentFactory.createUser(userCreateRequest.getUsername(),
-                        userCreateRequest.getPassword());
-            case COMPANY:
-                return companyFactory.createUser(userCreateRequest.getUsername(),
-                        userCreateRequest.getPassword());
-            default:
-                throw new IllegalArgumentException("Invalid role " + userCreateRequest.getRole());
-        }
     }
 }

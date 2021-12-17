@@ -10,6 +10,7 @@ import java.util.Optional;
 import javax.naming.NoPermissionException;
 import javax.transaction.Transactional;
 import logger.FileLogger;
+import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.dtos.ContractDto;
@@ -50,11 +51,11 @@ public class StudentOfferService extends OfferService {
      * @param studentId - the ID of the Student.
      * @return - A list of the Student's Offers.
      */
-    public List<StudentOffer> getOffersById(String studentId) {
+    public List<Offer> getOffersById(String studentId) {
         utility.userExists(studentId, restTemplate);
 
 
-        List<StudentOffer> offer = studentOfferRepository.findAllByStudentId(studentId);
+        List<Offer> offer = studentOfferRepository.findAllByStudentId(studentId);
         if (offer.isEmpty()) {
             throw new IllegalArgumentException("No such student has made offers!");
         }
@@ -65,7 +66,6 @@ public class StudentOfferService extends OfferService {
      * Service, which accepts the given targeted offer and declines all others.
      *
      * @param userName - the id of the Student, who wants to accept the offer.
-     * @param userRole - the role of the Student.
      * @param targetedCompanyOfferId - the id of the accepted offer.
      * @throws NoPermissionException - is thrown
      *      if the user doesn't have permission to accept the offer.
@@ -73,7 +73,7 @@ public class StudentOfferService extends OfferService {
      */
     @Transactional
     public ContractDto acceptOffer(
-            String userName, String userRole, Long targetedCompanyOfferId)
+            String userName, Long targetedCompanyOfferId)
             throws NoPermissionException, ContractCreationException {
         Optional<TargetedCompanyOffer> targetedCompanyOffer =
                 targetedCompanyOfferRepository.findById(targetedCompanyOfferId);
@@ -83,7 +83,7 @@ public class StudentOfferService extends OfferService {
         StudentOffer offer = targetedCompanyOffer.get().getStudentOffer();
         if (!offer
                 .getStudentId()
-                .equals(userName) || !userRole.equals("STUDENT")) {
+                .equals(userName)) {
             throw new NoPermissionException("User not allowed to accept this TargetedOffer");
         }
         if (offer.getStatus() != Status.PENDING

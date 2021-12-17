@@ -40,9 +40,11 @@ public class FeedbackService {
     private transient FileLogger logger;
 
     /**
-     * Get feedback by ID.
+     * Service, which gets a feedback by given id.
      *
-     * @return FeedbackResponse containing feedback with given ID
+     * @param id - the id of the desired feedback.
+     * @return - a FeedbackResponse, if the feedback is found,
+     *      error if no such feedback exists.
      */
     public FeedbackResponse getById(Long id) {
         Optional<Feedback> res = feedbackRepository.findById(id);
@@ -70,7 +72,8 @@ public class FeedbackService {
 
         try {
             if (userName.equals(feedbackRequest.getTo())
-                    || feedbackRequest.getTo().equals(feedbackRequest.getFrom())) {
+                    || feedbackRequest.getTo()
+                    .equals(feedbackRequest.getFrom())) {
                 throw new InvalidFeedbackDetailsException("Cant add a review of yourself");
             }
 

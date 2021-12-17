@@ -84,7 +84,7 @@ class TargetedCompanyOfferControllerTest {
             );
 
         ResponseEntity<Response<Offer>> response = targetedCompanyOfferController
-            .saveTargetedCompanyOffer(company, companyRole, targetedCompanyOffer, 33L);
+            .saveTargetedCompanyOffer(company, targetedCompanyOffer, 33L);
         Response<Offer> res = new Response<>(targetedCompanyOffer2, null);
 
         assertEquals(res, response.getBody());
@@ -101,7 +101,7 @@ class TargetedCompanyOfferControllerTest {
                 ));
 
         ResponseEntity<Response<Offer>> response = targetedCompanyOfferController
-            .saveTargetedCompanyOffer(company, companyRole, targetedCompanyOffer, 33L);
+            .saveTargetedCompanyOffer(company, targetedCompanyOffer, 33L);
         Response<Offer> resError = new Response<>(null, errorMessage);
 
         assertEquals(resError, response.getBody());
@@ -110,19 +110,19 @@ class TargetedCompanyOfferControllerTest {
 
     @Test
     void getCompanyOffersByIdTextPass() {
-        List<TargetedCompanyOffer> returned = new ArrayList<>();
+        List<Offer> returned = new ArrayList<>();
         returned.add(targetedCompanyOfferTwo);
 
         Mockito.when(targetedCompanyOfferService.getOffersById("MoneyNL"))
             .thenReturn(returned);
 
-        Response<List<TargetedCompanyOffer>> res =
+        Response<List<Offer>> res =
                 new Response<>(returned, null);
-        ResponseEntity<Response<List<TargetedCompanyOffer>>> response =
+        ResponseEntity<Response<List<Offer>>> response =
                 new ResponseEntity<>(res, HttpStatus.OK);
 
         assertEquals(response,
-            targetedCompanyOfferController.getCompanyOffersById("MoneyNL", companyRole));
+            targetedCompanyOfferController.getCompanyOffersById("MoneyNL"));
     }
 
     @Test
@@ -138,12 +138,12 @@ class TargetedCompanyOfferControllerTest {
             new ResponseEntity<>(resErrorMessage, HttpStatus.BAD_REQUEST);
 
         assertEquals(response,
-            targetedCompanyOfferController.getCompanyOffersById("Company", companyRole));
+            targetedCompanyOfferController.getCompanyOffersById("Company"));
     }
 
     @Test
     void getCompanyOffersByStudentOfferTestPass() {
-        List<TargetedCompanyOffer> returned = new ArrayList<>();
+        List<Offer> returned = new ArrayList<>();
         returned.add(targetedCompanyOfferTwo);
 
         Long studentOfferId = targetedCompanyOfferTwo
@@ -153,9 +153,9 @@ class TargetedCompanyOfferControllerTest {
                         .getOffersByStudentOffer(studentOfferId, student))
                 .thenReturn(returned);
 
-        Response<List<TargetedCompanyOffer>> resPositive =
+        Response<List<Offer>> resPositive =
                 new Response<>(returned, null);
-        ResponseEntity<Response<List<TargetedCompanyOffer>>> response =
+        ResponseEntity<Response<List<Offer>>> response =
                 new ResponseEntity<>(resPositive, HttpStatus.OK);
 
         assertEquals(response,
@@ -195,59 +195,11 @@ class TargetedCompanyOfferControllerTest {
     }
 
     @Test
-    void saveTargetedCompanyOfferUnauthenticatedTest() {
-        ResponseEntity<Response<Offer>> response = targetedCompanyOfferController
-                .saveTargetedCompanyOffer("", "", targetedCompanyOffer, 3L);
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals(authenticationError,
-                Objects.requireNonNull(response.getBody()).getErrorMessage());
-    }
-
-    @Test
     void saveTargetedCompanyOfferNotAuthorTest() {
         ResponseEntity<Response<Offer>> response = targetedCompanyOfferController
-                .saveTargetedCompanyOffer("fake", companyRole, targetedCompanyOffer, 3L);
+                .saveTargetedCompanyOffer("fake", targetedCompanyOffer, 3L);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         assertEquals("You can only post an offer for your own company",
-                Objects.requireNonNull(response.getBody()).getErrorMessage());
-    }
-
-    @Test
-    void saveTargetedCompanyOfferNotCompanyTest() {
-        ResponseEntity<Response<Offer>> response = targetedCompanyOfferController
-                .saveTargetedCompanyOffer(student, studentRole, targetedCompanyOffer, 3L);
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        assertEquals("Only companies can create targeted offers",
-                Objects.requireNonNull(response.getBody()).getErrorMessage());
-    }
-
-    @Test
-    void getCompanyOffersByIdNotAuthenticatedTest() {
-        ResponseEntity<Response<List<TargetedCompanyOffer>>> response =
-                targetedCompanyOfferController
-                        .getCompanyOffersById("", companyRole);
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals(authenticationError,
-                Objects.requireNonNull(response.getBody()).getErrorMessage());
-    }
-
-    @Test
-    void getCompanyOffersByIdNotCompanyTest() {
-        ResponseEntity<Response<List<TargetedCompanyOffer>>> response =
-                targetedCompanyOfferController
-                        .getCompanyOffersById("test", studentRole);
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        assertEquals("User is not a company",
-                Objects.requireNonNull(response.getBody()).getErrorMessage());
-    }
-
-    @Test
-    void getCompanyOffersByStudentOfferUnauthenticatedTest() {
-        ResponseEntity<Response<List<TargetedCompanyOffer>>> response =
-                targetedCompanyOfferController
-                        .getCompanyOffersByStudentOffer("", 3L);
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals(authenticationError,
                 Objects.requireNonNull(response.getBody()).getErrorMessage());
     }
 
@@ -256,7 +208,7 @@ class TargetedCompanyOfferControllerTest {
         Mockito.when(targetedCompanyOfferService
                         .getOffersByStudentOffer(3L, student))
                 .thenThrow(new UserNotAuthorException(student));
-        ResponseEntity<Response<List<TargetedCompanyOffer>>> response =
+        ResponseEntity<Response<List<Offer>>> response =
                 targetedCompanyOfferController
                         .getCompanyOffersByStudentOffer(student, 3L);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());

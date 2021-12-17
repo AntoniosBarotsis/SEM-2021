@@ -35,24 +35,17 @@ public class NonTargetedCompanyOfferController {
      *
      * @param nonTargetedCompanyOffer Offer we want to create
      * @param userName                Name of the user posting the offer
-     * @param userRole                Role of the user posting the offer
      * @return ResponseEntity containing either data or an errormessage.
      *          201 CREATED if request successful.
      *          401 UNAUTHORIZED if user is not logged in.
      *          403 FORBIDDEN if user not author of offer or not a company.
      *           400 BAD REQUEST if offer does not meet offer conditions.
      */
-    @PostMapping("/")
     public ResponseEntity<Response<Offer>> createNonTargetedCompanyOffer(
-            @RequestBody NonTargetedCompanyOffer nonTargetedCompanyOffer,
-            @RequestHeader(nameHeader) String userName,
-            @RequestHeader(roleHeader) String userRole) {
-        if (userName.isBlank()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new Response<>(null, "User has not been authenticated"));
-        }
-        if (!userName.equals(nonTargetedCompanyOffer.getCompanyId())
-                || !userRole.equals("COMPANY")) {
+             String userName,
+             NonTargetedCompanyOffer nonTargetedCompanyOffer) {
+
+        if (!userName.equals(nonTargetedCompanyOffer.getCompanyId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(new Response<>(null, "User can not make this offer"));
         }
@@ -103,22 +96,15 @@ public class NonTargetedCompanyOfferController {
      * Endpoint for accepting an application by a company.
      *
      * @param userName - the name of the user.
-     * @param userRole - the role of the user.
      *                 Both are contained in the JWT.
      * @return - a Response, containing a success or an error message!
      */
-    @PostMapping("/accept/{id}")
     public ResponseEntity<Response<ContractDto>> acceptApplication(
-            @RequestHeader(nameHeader) String userName,
-            @RequestHeader(roleHeader) String userRole,
-            @PathVariable Long id) {
-        if (userName.isBlank()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new Response<>(null, "User has not been authenticated!"));
-        }
+             String userName,
+             Long id) {
 
         try {
-            ContractDto contract = nonTargetedCompanyOfferService.accept(userName, userRole, id);
+            ContractDto contract = nonTargetedCompanyOfferService.accept(userName, id);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(new Response<>(contract,
                             "Application has been accepted successfully!"));

@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.repositories;
 import java.util.List;
 import javax.transaction.Transactional;
 import lombok.NonNull;
+import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.enums.Status;
@@ -43,10 +44,10 @@ public interface TargetedCompanyOfferRepository extends JpaRepository<TargetedCo
     void updateRequirements(Long studentOfferId, List<String> requirements);
 
     @Query("SELECT t FROM TargetedCompanyOffer t WHERE t.companyId = ?1")
-    List<TargetedCompanyOffer> findAllByCompanyId(String companyId);
+    List<Offer> findAllByCompanyId(String companyId);
 
     @Query("SELECT t FROM TargetedCompanyOffer t WHERE t.studentOffer = ?1")
-    List<TargetedCompanyOffer> findAllByStudentOffer(StudentOffer studentoffer);
+    List<Offer> findAllByStudentOffer(StudentOffer studentoffer);
 
     @Query(value = "SELECT * FROM offer t "
         + "JOIN (SELECT id, student_id AS s_id FROM offer WHERE dtype = 'StudentOffer') s "

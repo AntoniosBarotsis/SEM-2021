@@ -22,8 +22,7 @@ public class FeedbackServiceApplication {
         return new RestTemplate();
     }
 
-    /**
-     * Bean for the FileLogger.
+    /** Bean for the FileLogger.
      *
      * @return FileLogger instance.
      */

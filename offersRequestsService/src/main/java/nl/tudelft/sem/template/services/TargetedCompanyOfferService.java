@@ -77,8 +77,8 @@ public class TargetedCompanyOfferService extends OfferService {
      * @param companyId - the ID of the Company.
      * @return - A list of Targeted Requests, which are all created by the Company.
      */
-    public List<TargetedCompanyOffer> getOffersById(String companyId) {
-        List<TargetedCompanyOffer> offers =
+    public List<Offer> getOffersById(String companyId) {
+        List<Offer> offers =
             targetedCompanyOfferRepository.findAllByCompanyId(companyId);
         if (offers.size() == 0) {
             throw new IllegalArgumentException("No such company has made offers!");
@@ -93,7 +93,7 @@ public class TargetedCompanyOfferService extends OfferService {
      * @param username Name of the person making the request.
      * @return List of TargetedCompanyOffers belonging to the StudentOffer.
      */
-    public List<TargetedCompanyOffer> getOffersByStudentOffer(Long studentOfferId,
+    public List<Offer> getOffersByStudentOffer(Long studentOfferId,
                                                               String username) {
         StudentOffer studentOffer = studentOfferRepository.getById(studentOfferId);
         if (studentOffer == null) {
