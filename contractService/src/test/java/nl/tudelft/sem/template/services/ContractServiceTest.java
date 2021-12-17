@@ -141,7 +141,7 @@ class ContractServiceTest {
                 .thenReturn(null);
 
         assertThrows(ContractNotFoundException.class,
-                () -> contractService.getContract(companyId, studentId, true, studentId));
+                () -> contractService.getContract(companyId, studentId, true, companyId));
     }
 
     @Test
@@ -205,11 +205,13 @@ class ContractServiceTest {
     @Test
     @Tag("getContractById")
     void getContractByIdNotFound() {
+        Exception e = new ContractNotFoundException(1L);
         when(contractRepository
                 .findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(ContractNotFoundException.class,
-                () -> contractService.getContract(companyId, studentId, true, studentId));
+                () -> contractService.getContract(companyId, studentId, true, studentId),
+                e.getMessage());
     }
 
     @Test

@@ -277,6 +277,13 @@ class ContractChangeProposalControllerTest {
 
     @Test
     @Tag("getProposalsOfContract")
+    void getContractProposalsNotAuthenticated() {
+        assertEquals(new ResponseEntity<>(unauthenticatedMessage, HttpStatus.UNAUTHORIZED),
+                proposalController.getProposalsOfContract("", contract.getId()));
+    }
+
+    @Test
+    @Tag("getProposalsOfContract")
     void getContractProposalsContractNotFound() throws ContractNotFoundException {
         Exception e = new ContractNotFoundException(contract.getId());
 
