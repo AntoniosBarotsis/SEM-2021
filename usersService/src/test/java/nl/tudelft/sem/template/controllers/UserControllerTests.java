@@ -11,6 +11,7 @@ import nl.tudelft.sem.template.domain.dtos.UserLoginRequest;
 import nl.tudelft.sem.template.domain.dtos.UserLoginResponse;
 import nl.tudelft.sem.template.entities.StudentFactory;
 import nl.tudelft.sem.template.entities.User;
+import nl.tudelft.sem.template.enums.Role;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
 import nl.tudelft.sem.template.exceptions.UserNotFound;
 import nl.tudelft.sem.template.services.UserService;
@@ -74,7 +75,7 @@ public class UserControllerTests {
 
         UserCreateRequest userRequest =
             new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
-        assertEquals(entity, userController.createUser(userRequest));
+        assertEquals(entity, userController.createUser(userRequest, Role.ADMIN.toString()));
     }
 
     @Test
@@ -91,7 +92,21 @@ public class UserControllerTests {
 
         UserCreateRequest userRequest =
             new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
-        assertEquals(entity, userController.createUser(userRequest));
+        assertEquals(entity, userController.createUser(userRequest, Role.ADMIN.toString()));
+    }
+
+    @Test
+    void createUserForbiddenNotAdmin() {
+        String errorMessage = "Only admins can create users";
+        response.setData(null);
+        response.setErrorMessage(errorMessage);
+
+        ResponseEntity<Response<User>> entity =
+                new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+
+        UserCreateRequest userRequest =
+            new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
+        assertEquals(entity, userController.createUser(userRequest, Role.STUDENT.toString()));
     }
 
 
@@ -103,7 +118,7 @@ public class UserControllerTests {
 
         ResponseEntity<String> entity =
                 new ResponseEntity<>(HttpStatus.OK);
-        assertEquals(entity, userController.deleteUser(user.getUsername()));
+        assertEquals(entity, userController.deleteUser(user.getUsername(), Role.ADMIN.toString()));
     }
 
     @Test
@@ -116,11 +131,17 @@ public class UserControllerTests {
                 new ResponseEntity<>("Could not find user with ID testing",
                         HttpStatus.NOT_FOUND);
 
-        assertEquals(entity, userController.deleteUser(user.getUsername()));
+        assertEquals(entity, userController.deleteUser(user.getUsername(), Role.ADMIN.toString()));
     }
 
     @Test
-    void updateUserTest() throws UserNotFound {
+    void deleteUserForbiddenNotAdmin() {
+        ResponseEntity<String> entity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        assertEquals(entity, userController.deleteUser("test123", Role.STUDENT.toString()));
+    }
+
+    @Test
+    void updateUserTestAdmin() throws UserNotFound {
         Mockito.when(userService.updateUser(user))
                 .thenReturn(user);
 
@@ -129,7 +150,20 @@ public class UserControllerTests {
 
         UserCreateRequest userRequest =
             new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
-        assertEquals(entity, userController.updateUser(userRequest));
+        assertEquals(entity, userController.updateUser(userRequest,"admin", Role.ADMIN.toString()));
+    }
+
+    @Test
+    void updateUserTestOwnUser() throws UserNotFound {
+        Mockito.when(userService.updateUser(user))
+                .thenReturn(user);
+
+        ResponseEntity<Response<User>> entity =
+                new ResponseEntity<>(response, HttpStatus.OK);
+
+        UserCreateRequest userRequest =
+                new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
+        assertEquals(entity, userController.updateUser(userRequest,user.getUsername(), user.getRole().toString()));
     }
 
     @Test
@@ -146,7 +180,33 @@ public class UserControllerTests {
 
         UserCreateRequest userRequest =
             new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
-        assertEquals(entity, userController.updateUser(userRequest));
+        assertEquals(entity, userController.updateUser(userRequest,"admin2", Role.ADMIN.toString()));
+    }
+
+    @Test
+    void updateUserTestForbiddenNotAdmin() {
+        String errorMessage = "You can only update your own account.";
+        response.setData(null);
+        response.setErrorMessage(errorMessage);
+
+        ResponseEntity<Response<User>> entity =
+                new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+
+        UserCreateRequest userRequest = new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
+        assertEquals(entity, userController.updateUser(userRequest,"notAdmin", Role.STUDENT.toString()));
+    }
+
+    @Test
+    void updateUserTestForbiddenUserRoleChange() {
+        String errorMessage = "You can only update your own account.";
+        response.setData(null);
+        response.setErrorMessage(errorMessage);
+
+        ResponseEntity<Response<User>> entity =
+                new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+
+        UserCreateRequest userRequest = new UserCreateRequest(user.getUsername(), user.getPassword(), Role.ADMIN);
+        assertEquals(entity, userController.updateUser(userRequest,"notAdmin", Role.STUDENT.toString()));
     }
 
     @Test
