@@ -13,6 +13,7 @@ Our project may have reached a working version with all required features implem
 | 📸 | Name | Email |
 |---|---|---|
 | ![](https://eu.ui-avatars.com/api/?name=DS&length=2&size=50&color=FFF&background=006a4e&font-size=0.325) | Dan Sochirca | D.Sochirca@student.tudelft.nl |
+| ![](https://eu.ui-avatars.com/api/?name=AB&length=2&size=50&color=FFF&background=006a4e&font-size=0.325) | Antonios Barotsis | a.barotsis@student.tudelft.nl |
 
 ## How to run it
 
