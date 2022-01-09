@@ -84,6 +84,7 @@ public class UserService {
     public User updateUser(User user) throws UserNotFound {
         if (userRepository.existsByUsername(user.getUsername())) {
             user.setPassword(hashPassword(user.getPassword()));
+            userRepository.deleteById(user.getUsername());
             return userRepository.save(user);
         }
         throw new UserNotFound(user.getUsername());

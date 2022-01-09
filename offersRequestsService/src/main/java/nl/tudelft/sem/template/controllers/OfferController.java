@@ -159,6 +159,10 @@ public class OfferController {
         }
 
         if (Objects.equals(userRole, "STUDENT")) {
+            if (studentOffer.isPresent()) {
+                return targetedController
+                        .getCompanyOffersByStudentOffer(userName, studentOffer.get());
+            }
             return studentController.getStudentOffersById(userName);
         } else if (Objects.equals(userRole, "COMPANY")) {
             if (studentOffer.isPresent()) {
