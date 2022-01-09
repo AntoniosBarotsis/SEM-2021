@@ -10,12 +10,13 @@ Our project may have reached a working version with all required features implem
 
 ## Group members
 
-| 📸 | Name | Email |
-|---|---|---|
-| ![](https://eu.ui-avatars.com/api/?name=DS&length=2&size=50&color=FFF&background=006a4e&font-size=0.325) | Dan Sochirca | D.Sochirca@student.tudelft.nl |
-| ![](https://eu.ui-avatars.com/api/?name=AB&length=2&size=50&color=FFF&background=006a4e&font-size=0.325) | Antonios Barotsis | a.barotsis@student.tudelft.nl |
-| ![](https://eu.ui-avatars.com/api/?name=NK&length=2&size=50&color=FFF&background=006a4e&font-size=0.325) | Nathan Klumpenaar | M.J.N.Klumpenaar@student.tudelft.nl |
-| ![](https://eu.ui-avatars.com/api/?name=RT&length=2&size=50&color=FFF&background=006a4e&font-size=0.325) | Rado Todorov | R.A.Todorov@student.tudelft.nl |
+| 📸                                                                                        | Name | Email |
+|-------------------------------------------------------------------------------------------|---|---|
+| ![](https://gitlab.ewi.tudelft.nl/uploads/-/system/user/avatar/3816/avatar.png?width=400) | Dan Sochirca | D.Sochirca@student.tudelft.nl |
+| ![](https://gitlab.ewi.tudelft.nl/uploads/-/system/user/avatar/2388/avatar.png?width=400) | Antonios Barotsis | a.barotsis@student.tudelft.nl |
+| ![](https://gitlab.ewi.tudelft.nl/uploads/-/system/user/avatar/3105/avatar.png?width=400) | Nathan Klumpenaar | M.J.N.Klumpenaar@student.tudelft.nl |
+| ![](https://gitlab.ewi.tudelft.nl/uploads/-/system/user/avatar/3550/avatar.png?width=400) | Rado Todorov | R.A.Todorov@student.tudelft.nl |
+| ![](https://gitlab.ewi.tudelft.nl/uploads/-/system/user/avatar/3681/avatar.png?width=400) | Miloš Ristić | m.ristic-1@student.tudelft.nl |
 ## How to run it
 
 Firstly, **clone** the repository or **download** the source code. Then open the repository in you preferred **IDE** and **build the project**. Once the project's build is done, you should first run the eureka server, then all the microservices: usersService, offersRequestsService, contractService, feedbackService. We also have a detailed description of all endpoints in our [wiki](https://gitlab.ewi.tudelft.nl/cse2115/2021-2022/sem-group-03b/sem-repo-03b/-/wikis/Endpoint%20wiki).
