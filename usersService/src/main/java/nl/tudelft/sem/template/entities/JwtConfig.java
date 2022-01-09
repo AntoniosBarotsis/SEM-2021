@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtConfig {
     private final String jwtSecret;
+    private final String adminPassword;
     private final long lifetime;
 
     /**
@@ -24,6 +25,7 @@ public class JwtConfig {
             .load();
 
         jwtSecret = loader.get("JWT_SECRET", "secret");
+        adminPassword = loader.get("ADMIN_PASSWORD", "admin");
         lifetime = Long.parseLong(loader.get("JWT_LIFETIME",  "" + (60 * 60 * 1000)));
     }
 }

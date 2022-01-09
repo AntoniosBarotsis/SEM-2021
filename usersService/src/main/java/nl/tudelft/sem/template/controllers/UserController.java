@@ -8,19 +8,14 @@ import nl.tudelft.sem.template.domain.dtos.UserLoginResponse;
 import nl.tudelft.sem.template.entities.CompanyFactory;
 import nl.tudelft.sem.template.entities.StudentFactory;
 import nl.tudelft.sem.template.entities.User;
+import nl.tudelft.sem.template.enums.Role;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
 import nl.tudelft.sem.template.exceptions.UserNotFound;
 import nl.tudelft.sem.template.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class UserController {
@@ -33,6 +28,9 @@ public class UserController {
 
     @Autowired
     private transient CompanyFactory companyFactory;
+
+    private final transient String nameHeader = "x-user-name";
+    private final transient String roleHeader = "x-user-role";
 
     /**
      * Get a user by id.
@@ -69,14 +67,23 @@ public class UserController {
      *
      * @param userRequest User to create
      * @return 201 CREATED if the user is created,
-     *          409 CONFLICT if the user already exists
-     *          else 400 BAD REQUEST
+     *         403 FORBIDDEN if callee is not an admin,
+     *         409 CONFLICT if the user already exists,
+     *         else 400 BAD REQUEST.
      */
     @PostMapping("/")
-    public ResponseEntity<Response<User>> createUser(@RequestBody UserCreateRequest userRequest) {
+    public ResponseEntity<Response<User>> createUser(
+            @RequestBody UserCreateRequest userRequest,
+            @RequestHeader(roleHeader) String userRole
+    ) {
+        if (!Role.ADMIN.toString().equals(userRole)) {
+            return new ResponseEntity<>(
+                    new Response<>(null, "Only admins can create users"),
+                    HttpStatus.FORBIDDEN
+            );
+        }
         try {
             User user = getUser(userRequest);
-
             return new ResponseEntity<>(new Response<>(userService.createUser(user), null),
                     HttpStatus.CREATED);
         } catch (UserAlreadyExists e) {
@@ -89,14 +96,35 @@ public class UserController {
      *
      * @param userRequest User to update.
      * @return 200 OK if the user is updated,
-     *          404 NOT FOUND if the user is not found
-     *          else 400 BAD REQUEST
+     *         403 FORBIDDEN if callee is not an admin and is trying to update another user,
+     *         403 FORBIDDEN if callee is not an admin and is trying to change their role,
+     *         404 NOT FOUND if the user is not found,
+     *         else 400 BAD REQUEST.
      */
     @PutMapping("/")
-    public ResponseEntity<Response<User>> updateUser(@RequestBody UserCreateRequest userRequest) {
+    public ResponseEntity<Response<User>> updateUser(
+            @RequestBody UserCreateRequest userRequest,
+            @RequestHeader(nameHeader) String userName,
+            @RequestHeader(roleHeader) String userRole
+
+    ) {
+        boolean isAdmin = Role.ADMIN.toString().equals(userRole);
+        // Only admins can update other users.
+        if (!(isAdmin || userName.equals(userRequest.getUsername()))) {
+            return new ResponseEntity<>(
+                    new Response<>(null, "You can only update your own account."),
+                    HttpStatus.FORBIDDEN
+            );
+        }
+        // A user can not change their own role.
+        if (!isAdmin && userRequest.getRole() != null && !userRequest.getRole().equals(Role.valueOf(userRole))) {
+            return new ResponseEntity<>(
+                    new Response<>(null, "You can not change your role."),
+                    HttpStatus.FORBIDDEN
+            );
+        }
         try {
             User user = getUser(userRequest);
-
             return new ResponseEntity<>(new Response<>(userService.updateUser(user), null),
                     HttpStatus.OK);
         } catch (UserNotFound e) {
@@ -109,10 +137,17 @@ public class UserController {
      *
      * @param username User's id.
      * @return 200 OK if the user is deleted,
-     *          404 NOT FOUND if the user is not found.
+     *         403 FORBIDDEN if callee is not an admin,
+     *         404 NOT FOUND if the user is not found.
      */
     @DeleteMapping("/{username}")
-    public ResponseEntity<String> deleteUser(@PathVariable String username) {
+    public ResponseEntity<String> deleteUser(
+            @PathVariable String username,
+            @RequestHeader(roleHeader) String userRole
+    ) {
+        if (!Role.ADMIN.toString().equals(userRole)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
         try {
             userService.deleteUser(username);
             return new ResponseEntity<>(HttpStatus.OK);
