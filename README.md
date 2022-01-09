@@ -14,7 +14,7 @@ Our project may have reached a working version with all required features implem
 |---|---|---|
 | ![](https://eu.ui-avatars.com/api/?name=DS&length=2&size=50&color=FFF&background=006a4e&font-size=0.325) | Dan Sochirca | D.Sochirca@student.tudelft.nl |
 | ![](https://eu.ui-avatars.com/api/?name=AB&length=2&size=50&color=FFF&background=006a4e&font-size=0.325) | Antonios Barotsis | a.barotsis@student.tudelft.nl |
-| ![](https://eu.ui-avatars.com/api/?name=AB&length=2&size=50&color=FFF&background=006a4e&font-size=0.325) | Nathan Klumpenaar | M.J.N.Klumpenaar@student.tudelft.nl |
+| ![](https://eu.ui-avatars.com/api/?name=NK&length=2&size=50&color=FFF&background=006a4e&font-size=0.325) | Nathan Klumpenaar | M.J.N.Klumpenaar@student.tudelft.nl |
 ## How to run it
 
 Firstly, **clone** the repository or **download** the source code. Then open the repository in you preferred **IDE** and **build the project**. Once the project's build is done, you should first run the eureka server, then all the microservices: usersService, offersRequestsService, contractService, feedbackService. We also have a detailed description of all endpoints in our [wiki](https://gitlab.ewi.tudelft.nl/cse2115/2021-2022/sem-group-03b/sem-repo-03b/-/wikis/Endpoint%20wiki).
@@ -28,7 +28,9 @@ In order to safely run our product on a production environment, you will need to
    - `JWT_SECRET`: the secret key used to validate the the JWT token signed by the userService. (defaults to `secret`)
    - `JWT_LIFETIME`: Optional. The lifetime of the JWT token in seconds. (defaults to `3600`)
    
- More information about the `.env` files can be found in the [wiki](https://gitlab.ewi.tudelft.nl/cse2115/2021-2022/sem-group-03b/sem-repo-03b/-/wikis/Envloader).
+[Read more about our .env files](https://gitlab.ewi.tudelft.nl/cse2115/2021-2022/sem-group-03b/sem-repo-03b/-/wikis/Envloader).
+
+[Read more about how we handle authentication](https://gitlab.ewi.tudelft.nl/cse2115/2021-2022/sem-group-03b/sem-repo-03b/-/wikis/Authentication).
 
 ## How to contribute to it
 The main purpose of this repository is to continue improving it. We want to make contributing to this project as easy and transparent as possible, and we are grateful to the community for contributing bug fixes and improvements. Read below to learn how you can take part in improving Student Freelancing.
