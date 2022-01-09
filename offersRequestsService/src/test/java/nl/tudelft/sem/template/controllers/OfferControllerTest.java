@@ -149,7 +149,7 @@ class OfferControllerTest {
     }
 
     @Test
-    void getOffersByCreatorTestTargetedWithParameter() {
+    void getOffersByCreatorTestTargetedWithParameterCompany() {
         ResponseEntity<Response<List<Offer>>> res = new ResponseEntity<>(
                 new Response<>(List.of(targetedCompanyOffer)),
                 HttpStatus.OK);
@@ -159,6 +159,19 @@ class OfferControllerTest {
 
         assertEquals(res, offerController
                 .getOffersByCreator(company, companyRole, Optional.of(1L)));
+    }
+
+    @Test
+    void getOffersByCreatorTestTargetedWithParameterStudent() {
+        ResponseEntity<Response<List<Offer>>> res = new ResponseEntity<>(
+                new Response<>(List.of(targetedCompanyOffer)),
+                HttpStatus.OK);
+        Mockito.when(targetedController
+                        .getCompanyOffersByStudentOffer(student, 1L))
+                .thenReturn(res);
+
+        assertEquals(res, offerController
+                .getOffersByCreator(student, studentRole, Optional.of(1L)));
     }
 
     @Test

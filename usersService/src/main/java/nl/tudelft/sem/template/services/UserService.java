@@ -6,12 +6,15 @@ import com.sun.istack.NotNull;
 import java.util.Date;
 import java.util.Optional;
 import logger.FileLogger;
+import nl.tudelft.sem.template.entities.Admin;
 import nl.tudelft.sem.template.entities.JwtConfig;
 import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
 import nl.tudelft.sem.template.exceptions.UserNotFound;
 import nl.tudelft.sem.template.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -81,6 +84,7 @@ public class UserService {
     public User updateUser(User user) throws UserNotFound {
         if (userRepository.existsByUsername(user.getUsername())) {
             user.setPassword(hashPassword(user.getPassword()));
+            userRepository.deleteById(user.getUsername());
             return userRepository.save(user);
         }
         throw new UserNotFound(user.getUsername());
@@ -132,5 +136,20 @@ public class UserService {
                 .withClaim("userName", user.getUsername())
                 .withClaim("userRole", user.getRole().toString())
                 .sign(algorithm);
+    }
+
+    /**
+     *  Creates a default admin account on user service startup.
+     *  If the admin account already exists, it will not be created.
+     */
+    @EventListener(ApplicationReadyEvent.class)
+    public void createAdminAccount() {
+        Admin adminUser = new Admin("admin", jwtConfig.getAdminPassword());
+        try {
+            createUser(adminUser);
+            logger.log("Admin account created");
+        } catch (UserAlreadyExists userAlreadyExists) {
+            logger.log("Admin account already exists");
+        }
     }
 }
