@@ -33,6 +33,8 @@ public class ContractController {
 
     private final transient String nameHeader = "x-user-name";
     private final transient String roleHeader = "x-user-role";
+    private final transient String unauthenticatedMessage
+            = "User has not been authenticated";
 
     /**
      * Validates a ContractRequest when creating a contract.
@@ -73,9 +75,9 @@ public class ContractController {
     @PostMapping("/")
     public ResponseEntity<Object> createContract(
             @RequestHeader(roleHeader) String role,
-            @Valid @RequestBody ContractRequest contractRequest) {
-
-        if (!"INTERNAL_SERVICE".equals(role)) {
+            @Valid @RequestBody ContractRequest contractRequest
+    ) {
+        if (!role.equals("INTERNAL_SERVICE")) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         try {
@@ -104,7 +106,7 @@ public class ContractController {
 
         // Check if authenticated:
         if (userName.isBlank()) {
-            return unauthorizedStatus();
+            return new ResponseEntity<>(unauthenticatedMessage, HttpStatus.UNAUTHORIZED);
         }
 
         try {
@@ -134,7 +136,7 @@ public class ContractController {
 
         // Check if authenticated:
         if (userName.isBlank()) {
-            return unauthorizedStatus();
+            return new ResponseEntity<>(unauthenticatedMessage, HttpStatus.UNAUTHORIZED);
         }
 
         try {
@@ -164,7 +166,7 @@ public class ContractController {
 
         // Check if authenticated:
         if (userName.isBlank()) {
-            return unauthorizedStatus();
+            return new ResponseEntity<>(unauthenticatedMessage, HttpStatus.UNAUTHORIZED);
         }
 
         try {
@@ -173,15 +175,6 @@ public class ContractController {
         } catch (Exception e) {
             return getResponseEntityForException(e);
         }
-    }
-
-    /**
-     * Returns response entity with unauthorized http status.
-     *
-     * @return response entity with unauthorized http status.
-     */
-    private ResponseEntity<Object> unauthorizedStatus(){
-        return new ResponseEntity<>("User has not been authenticated", HttpStatus.UNAUTHORIZED);
     }
 
     /**
