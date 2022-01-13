@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@SuppressWarnings("PMD.DataflowAnomalyAnalysis")  // DU Anomaly is a false positive here
 public class ContractChangeProposalService {
 
     @Autowired
