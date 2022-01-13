@@ -5,7 +5,8 @@ import java.util.Map;
 import javax.validation.Valid;
 import nl.tudelft.sem.template.dtos.requests.ContractRequest;
 import nl.tudelft.sem.template.entities.Contract;
-import nl.tudelft.sem.template.services.ContractService;
+import nl.tudelft.sem.template.interfaces.ContractControllerHelperInterface;
+import nl.tudelft.sem.template.interfaces.ContractServiceInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,10 +26,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class ContractController {
 
     @Autowired
-    private transient ContractService contractService;
+    private transient ContractServiceInterface contractService;
 
     @Autowired
-    private transient ContractControllerHelper controllerHelper;
+    private transient ContractControllerHelperInterface controllerHelper;
 
     private final transient String nameHeader = "x-user-name";
     private final transient String roleHeader = "x-user-role";

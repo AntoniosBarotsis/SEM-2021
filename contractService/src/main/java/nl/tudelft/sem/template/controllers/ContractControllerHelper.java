@@ -4,12 +4,13 @@ import nl.tudelft.sem.template.exceptions.AccessDeniedException;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
 import nl.tudelft.sem.template.exceptions.InactiveContractException;
 import nl.tudelft.sem.template.exceptions.InvalidContractException;
+import nl.tudelft.sem.template.interfaces.ContractControllerHelperInterface;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ContractControllerHelper {
+public class ContractControllerHelper implements ContractControllerHelperInterface {
 
     /**
      * Returns a response entity with an error message and a different status
