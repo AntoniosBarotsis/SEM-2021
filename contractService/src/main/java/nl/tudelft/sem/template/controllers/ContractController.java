@@ -5,7 +5,10 @@ import java.util.Map;
 import javax.validation.Valid;
 import nl.tudelft.sem.template.dtos.requests.ContractRequest;
 import nl.tudelft.sem.template.entities.Contract;
-import nl.tudelft.sem.template.interfaces.ContractControllerHelperInterface;
+import nl.tudelft.sem.template.exceptions.AccessDeniedException;
+import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
+import nl.tudelft.sem.template.exceptions.InactiveContractException;
+import nl.tudelft.sem.template.exceptions.InvalidContractException;
 import nl.tudelft.sem.template.interfaces.ContractServiceInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,9 +30,6 @@ public class ContractController {
 
     @Autowired
     private transient ContractServiceInterface contractService;
-
-    @Autowired
-    private transient ContractControllerHelperInterface controllerHelper;
 
     private final transient String nameHeader = "x-user-name";
     private final transient String roleHeader = "x-user-role";
@@ -85,7 +85,7 @@ public class ContractController {
             Contract c = contractService.saveContract(contractRequest.toContract());
             return new ResponseEntity<>(c, HttpStatus.CREATED);
         } catch (Exception e) {
-            return controllerHelper.getResponseEntityForException(e);
+            return getResponseEntityForException(e);
         }
     }
 
@@ -114,7 +114,7 @@ public class ContractController {
             contractService.terminateContract(id, userName);
             return ResponseEntity.ok().body(null);
         } catch (Exception e) {
-            return controllerHelper.getResponseEntityForException(e);
+            return getResponseEntityForException(e);
         }
     }
 
@@ -144,7 +144,7 @@ public class ContractController {
             Contract contract = contractService.getContract(companyId, studentId, true, userName);
             return ResponseEntity.ok().body(contract);
         } catch (Exception e) {
-            return controllerHelper.getResponseEntityForException(e);
+            return getResponseEntityForException(e);
         }
     }
 
@@ -174,8 +174,34 @@ public class ContractController {
             Contract contract = contractService.getContract(companyId, studentId, false, userName);
             return ResponseEntity.ok().body(contract);
         } catch (Exception e) {
-            return controllerHelper.getResponseEntityForException(e);
+            return getResponseEntityForException(e);
         }
     }
 
+    /**
+     * Returns a response entity with an error message and a different status
+     * for different exceptions.
+     *
+     * @param e The exception that was thrown.
+     * @return A response entity with different statuses for different exceptions.
+     */
+    public ResponseEntity<Object> getResponseEntityForException(Exception e) {
+        if (e instanceof ContractNotFoundException) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+
+        if (e instanceof AccessDeniedException) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+        }
+
+        if (e instanceof InvalidContractException) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
+        if (e instanceof InactiveContractException) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }
