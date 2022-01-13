@@ -194,10 +194,10 @@ public class ContractChangeProposalService {
         }
 
         // If proposal didn't include hoursPerWeek or totalHours, use values from contract:
-        double hoursPerWeek = proposal.getHoursPerWeek() != null ?
-                proposal.getHoursPerWeek() : contract.getHoursPerWeek();
-        double totalHours = proposal.getTotalHours() != null ?
-                proposal.getTotalHours() : contract.getTotalHours();
+        double hoursPerWeek = proposal.getHoursPerWeek() != null
+                ? proposal.getHoursPerWeek() : contract.getHoursPerWeek();
+        double totalHours = proposal.getTotalHours() != null
+                ? proposal.getTotalHours() : contract.getTotalHours();
 
         // Hours per week exceeded:
         if (hoursPerWeek > MAX_HOURS) {
@@ -215,13 +215,22 @@ public class ContractChangeProposalService {
         }
     }
 
+    /**
+     * Checks if number of weeks proposed are beyond the 6-month limit.
+     *
+     * @param totalWeeks The computed total weeks (totalHours / hoursPerWeek)
+     * @param contract The contract that needs change.
+     * @param proposal The proposal that is created.
+     * @throws InvalidChangeProposalException If the #weeks > 26 (6 months).
+     */
     private void validateNumberOfWeeks(double totalWeeks, Contract contract,
                                        ContractChangeProposal proposal)
             throws InvalidChangeProposalException {
 
         // If there is a new, proposed end date (should be later than totalWeeks):
         if (proposal.getEndDate() != null) {
-            LocalDate computedEndDate = contract.getStartDate().plusWeeks((int) Math.ceil(totalWeeks));
+            LocalDate computedEndDate =
+                    contract.getStartDate().plusWeeks((int) Math.ceil(totalWeeks));
             LocalDate proposedEndDate = proposal.getEndDate();
 
             // Check if proposal end date is after the minimum required end date:
