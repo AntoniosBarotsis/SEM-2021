@@ -5,17 +5,23 @@ import nl.tudelft.sem.template.domain.dtos.Response;
 import nl.tudelft.sem.template.domain.dtos.UserCreateRequest;
 import nl.tudelft.sem.template.domain.dtos.UserLoginRequest;
 import nl.tudelft.sem.template.domain.dtos.UserLoginResponse;
-import nl.tudelft.sem.template.entities.CompanyFactory;
-import nl.tudelft.sem.template.entities.StudentFactory;
 import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.enums.Role;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
 import nl.tudelft.sem.template.exceptions.UserNotFound;
+import nl.tudelft.sem.template.services.UserControllerHelperService;
 import nl.tudelft.sem.template.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class UserController {
@@ -24,10 +30,7 @@ public class UserController {
     private transient UserService userService;
 
     @Autowired
-    private transient StudentFactory studentFactory;
-
-    @Autowired
-    private transient CompanyFactory companyFactory;
+    private transient UserControllerHelperService userControllerHelperService;
 
     private final transient String nameHeader = "x-user-name";
     private final transient String roleHeader = "x-user-role";
@@ -42,24 +45,15 @@ public class UserController {
     @GetMapping("/{username}")
     public ResponseEntity<Response<User>> getUser(@PathVariable String username) {
         try {
-            return new ResponseEntity<>(new Response<>(userService.getUserOrRaise(username), null),
-                    HttpStatus.OK);
+            User user = userService.getUserOrRaise(username);
+            return UserControllerHelperService.createUserResponse(user, HttpStatus.OK);
         } catch (UserNotFound e) {
-            return new ResponseEntity<>(new Response<>(null, e.getMessage()), HttpStatus.NOT_FOUND);
+            return UserControllerHelperService.createErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
     private User getUser(UserCreateRequest userCreateRequest) {
-        switch (userCreateRequest.getRole()) {
-            case STUDENT:
-                return studentFactory.createUser(userCreateRequest.getUsername(),
-                        userCreateRequest.getPassword());
-            case COMPANY:
-                return companyFactory.createUser(userCreateRequest.getUsername(),
-                        userCreateRequest.getPassword());
-            default:
-                throw new IllegalArgumentException("Invalid role " + userCreateRequest.getRole());
-        }
+        return userControllerHelperService.createUserFromRequest(userCreateRequest);
     }
 
     /**
@@ -76,18 +70,15 @@ public class UserController {
             @RequestBody UserCreateRequest userRequest,
             @RequestHeader(roleHeader) String userRole
     ) {
-        if (!Role.ADMIN.toString().equals(userRole)) {
-            return new ResponseEntity<>(
-                    new Response<>(null, "Only admins can create users"),
-                    HttpStatus.FORBIDDEN
-            );
+        if (!UserControllerHelperService.isAdmin(userRole)) {
+            return UserControllerHelperService.createErrorResponse("Only admins can create users", HttpStatus.FORBIDDEN);
         }
         try {
             User user = getUser(userRequest);
-            return new ResponseEntity<>(new Response<>(userService.createUser(user), null),
-                    HttpStatus.CREATED);
+            User createdUser = userService.createUser(user);
+            return UserControllerHelperService.createUserResponse(createdUser, HttpStatus.CREATED);
         } catch (UserAlreadyExists e) {
-            return new ResponseEntity<>(new Response<>(null, e.getMessage()), HttpStatus.CONFLICT);
+            return UserControllerHelperService.createErrorResponse(e.getMessage(), HttpStatus.CONFLICT);
         }
     }
 
@@ -108,27 +99,27 @@ public class UserController {
             @RequestHeader(roleHeader) String userRole
 
     ) {
-        boolean isAdmin = Role.ADMIN.toString().equals(userRole);
+        boolean isAdmin = UserControllerHelperService.isAdmin(userRole);
         // Only admins can update other users.
         if (!(isAdmin || userName.equals(userRequest.getUsername()))) {
-            return new ResponseEntity<>(
-                    new Response<>(null, "You can only update your own account."),
+            return UserControllerHelperService.createErrorResponse(
+                    "You can only update your own account.",
                     HttpStatus.FORBIDDEN
             );
         }
         // A user can not change their own role.
         if (!isAdmin && userRequest.getRole() != null && !userRequest.getRole().equals(Role.valueOf(userRole))) {
-            return new ResponseEntity<>(
-                    new Response<>(null, "You can not change your role."),
+            return UserControllerHelperService.createErrorResponse(
+                    "You can not change your role.",
                     HttpStatus.FORBIDDEN
             );
         }
         try {
             User user = getUser(userRequest);
-            return new ResponseEntity<>(new Response<>(userService.updateUser(user), null),
-                    HttpStatus.OK);
+            User updatedUser = userService.updateUser(user);
+            return UserControllerHelperService.createUserResponse(updatedUser, HttpStatus.OK);
         } catch (UserNotFound e) {
-            return new ResponseEntity<>(new Response<>(null, e.getMessage()), HttpStatus.NOT_FOUND);
+            return UserControllerHelperService.createErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
@@ -141,18 +132,18 @@ public class UserController {
      *         404 NOT FOUND if the user is not found.
      */
     @DeleteMapping("/{username}")
-    public ResponseEntity<String> deleteUser(
+    public ResponseEntity<Response<User>> deleteUser(
             @PathVariable String username,
             @RequestHeader(roleHeader) String userRole
     ) {
-        if (!Role.ADMIN.toString().equals(userRole)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        if (!UserControllerHelperService.isAdmin(userRole)) {
+            return UserControllerHelperService.createErrorResponse("Only admins can delete users", HttpStatus.FORBIDDEN);
         }
         try {
             userService.deleteUser(username);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return UserControllerHelperService.createUserResponse(null, HttpStatus.OK);
         } catch (UserNotFound e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+            return UserControllerHelperService.createErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
@@ -166,11 +157,12 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<Response<UserLoginResponse>> login(@RequestBody UserLoginRequest user) {
         Optional<User> u = userService.getUser(user.getUsername());
-        if (u.isPresent() && userService.verifyPassword(u.get(), user.getPassword())) {
-            String token = userService.generateJwtToken(u.get());
-            return new ResponseEntity<>(new Response<>(new UserLoginResponse(token), null),
-                    HttpStatus.OK);
+        if (u.isPresent()) {
+            String token = userService.login(u.get(), user.getPassword());
+            if (token != null) {
+                return UserControllerHelperService.createLoginResponse(token);
+            }
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return UserControllerHelperService.createInvalidLoginResponse();
     }
 }
