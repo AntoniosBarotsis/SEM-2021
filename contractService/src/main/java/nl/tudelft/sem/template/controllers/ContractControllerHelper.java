@@ -11,6 +11,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class ContractControllerHelper {
 
+    /**
+     * Returns a response entity with an error message and a different status
+     * for different exceptions.
+     *
+     * @param e The exception that was thrown.
+     * @return A response entity with different statuses for different exceptions.
+     */
     public ResponseEntity<Object> getResponseEntityForException(Exception e) {
         if (e instanceof ContractNotFoundException) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
