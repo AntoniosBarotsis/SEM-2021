@@ -140,30 +140,4 @@ public class UserServiceTest {
 
         assertEquals(errorMessage, exception.getMessage());
     }
-
-    @Test
-    void testHashPassword() {
-        String password = "test";
-        String hashedPassword = authService.hashPassword(password);
-        assertNotEquals(password, hashedPassword);
-    }
-
-    @Test
-    void testVerifyPassword() {
-        String password = "test_password";
-        User hashedPasswordUser = new StudentFactory()
-            .createUser("test2", authService.hashPassword(password));
-
-        assertTrue(authService.verifyPassword(hashedPasswordUser, password));
-        assertFalse(authService.verifyPassword(hashedPasswordUser, "different_test_password"));
-    }
-
-    @Test
-    void testGenerateJwtToken() {
-        String token = authService.generateJwtToken(user);
-        assertNotNull(token);
-        DecodedJWT decodedToken = JWT.decode(token);
-        assertEquals(user.getUsername(), decodedToken.getClaim("userName").asString());
-        assertEquals(user.getRole().toString(), decodedToken.getClaim("userRole").asString());
-    }
 }

@@ -1,5 +1,7 @@
 package nl.tudelft.sem.template.services;
 
+import java.util.Date;
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.sun.istack.NotNull;
@@ -9,10 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 
 @Service
 public class AuthService {
+
     @Autowired
     private transient BCryptPasswordEncoder bcryptPasswordEncoder;
 

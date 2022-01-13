@@ -48,7 +48,8 @@ public class UserController {
             User user = userService.getUserOrRaise(username);
             return UserControllerHelperService.createUserResponse(user, HttpStatus.OK);
         } catch (UserNotFound e) {
-            return UserControllerHelperService.createErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
+            return UserControllerHelperService.createErrorResponse(
+                    e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
@@ -71,14 +72,16 @@ public class UserController {
             @RequestHeader(roleHeader) String userRole
     ) {
         if (!UserControllerHelperService.isAdmin(userRole)) {
-            return UserControllerHelperService.createErrorResponse("Only admins can create users", HttpStatus.FORBIDDEN);
+            return UserControllerHelperService.createErrorResponse(
+                    "Only admins can create users", HttpStatus.FORBIDDEN);
         }
         try {
             User user = getUser(userRequest);
             User createdUser = userService.createUser(user);
             return UserControllerHelperService.createUserResponse(createdUser, HttpStatus.CREATED);
         } catch (UserAlreadyExists e) {
-            return UserControllerHelperService.createErrorResponse(e.getMessage(), HttpStatus.CONFLICT);
+            return UserControllerHelperService.createErrorResponse(
+                    e.getMessage(), HttpStatus.CONFLICT);
         }
     }
 
@@ -108,7 +111,8 @@ public class UserController {
             );
         }
         // A user can not change their own role.
-        if (!isAdmin && userRequest.getRole() != null && !userRequest.getRole().equals(Role.valueOf(userRole))) {
+        if (!isAdmin && userRequest.getRole() != null
+                && !userRequest.getRole().equals(Role.valueOf(userRole))) {
             return UserControllerHelperService.createErrorResponse(
                     "You can not change your role.",
                     HttpStatus.FORBIDDEN
@@ -119,7 +123,8 @@ public class UserController {
             User updatedUser = userService.updateUser(user);
             return UserControllerHelperService.createUserResponse(updatedUser, HttpStatus.OK);
         } catch (UserNotFound e) {
-            return UserControllerHelperService.createErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
+            return UserControllerHelperService.createErrorResponse(
+                    e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
@@ -137,13 +142,15 @@ public class UserController {
             @RequestHeader(roleHeader) String userRole
     ) {
         if (!UserControllerHelperService.isAdmin(userRole)) {
-            return UserControllerHelperService.createErrorResponse("Only admins can delete users", HttpStatus.FORBIDDEN);
+            return UserControllerHelperService.createErrorResponse(
+                    "Only admins can delete users", HttpStatus.FORBIDDEN);
         }
         try {
             userService.deleteUser(username);
             return UserControllerHelperService.createUserResponse(null, HttpStatus.OK);
         } catch (UserNotFound e) {
-            return UserControllerHelperService.createErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
+            return UserControllerHelperService.createErrorResponse(
+                    e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 

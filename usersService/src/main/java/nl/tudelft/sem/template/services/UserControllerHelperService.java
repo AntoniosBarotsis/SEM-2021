@@ -25,21 +25,30 @@ public class UserControllerHelperService {
     }
 
     public static ResponseEntity<Response<UserLoginResponse>> createLoginResponse(String token) {
-        return new ResponseEntity<>(new Response<>(new UserLoginResponse(token), null), HttpStatus.OK);
+        return new ResponseEntity<>(new Response<>(
+                new UserLoginResponse(token), null), HttpStatus.OK);
     }
 
     public static ResponseEntity<Response<UserLoginResponse>> createInvalidLoginResponse() {
-        return new ResponseEntity<>(new Response<>(new UserLoginResponse(null), "Invalid username or password."), HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(new Response<>(new UserLoginResponse(null),
+                "Invalid username or password."), HttpStatus.UNAUTHORIZED);
     }
 
-    public static ResponseEntity<Response<User>> createErrorResponse(String error, HttpStatus status) {
+    public static ResponseEntity<Response<User>> createErrorResponse(
+            String error, HttpStatus status) {
         return new ResponseEntity<>(new Response<>(null, error), status);
     }
 
-    public static Boolean isAdmin(String userRoleHeader){
+    public static Boolean isAdmin(String userRoleHeader) {
         return Role.ADMIN.toString().equals(userRoleHeader);
     }
 
+    /**
+     * Create a user based on the given request.
+     *
+     * @param userCreateRequest The request containing the user information.
+     * @return The created user.
+     */
     public User createUserFromRequest(UserCreateRequest userCreateRequest) {
         switch (userCreateRequest.getRole()) {
             case STUDENT:

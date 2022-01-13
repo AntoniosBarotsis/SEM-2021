@@ -14,7 +14,6 @@ import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.enums.Role;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
 import nl.tudelft.sem.template.exceptions.UserNotFound;
-import nl.tudelft.sem.template.services.AuthService;
 import nl.tudelft.sem.template.services.UserControllerHelperService;
 import nl.tudelft.sem.template.services.UserService;
 import org.junit.jupiter.api.BeforeEach;

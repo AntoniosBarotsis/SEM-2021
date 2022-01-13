@@ -3,7 +3,8 @@ package nl.tudelft.sem.template.services;
 import java.util.Optional;
 import logger.FileLogger;
 import nl.tudelft.sem.template.domain.dtos.UserCreateRequest;
-import nl.tudelft.sem.template.entities.*;
+import nl.tudelft.sem.template.entities.Admin;
+import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
 import nl.tudelft.sem.template.exceptions.UserNotFound;
 import nl.tudelft.sem.template.repositories.UserRepository;
@@ -56,7 +57,7 @@ public class UserService {
      * @return true if password matches, false otherwise.
      */
     public String login(User user, String password) {
-        if (authService.verifyPassword(user, password)){
+        if (authService.verifyPassword(user, password)) {
             return authService.generateJwtToken(user);
         }
         return null;
