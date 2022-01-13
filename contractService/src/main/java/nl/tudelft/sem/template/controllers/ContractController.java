@@ -5,10 +5,6 @@ import java.util.Map;
 import javax.validation.Valid;
 import nl.tudelft.sem.template.dtos.requests.ContractRequest;
 import nl.tudelft.sem.template.entities.Contract;
-import nl.tudelft.sem.template.exceptions.AccessDeniedException;
-import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
-import nl.tudelft.sem.template.exceptions.InactiveContractException;
-import nl.tudelft.sem.template.exceptions.InvalidContractException;
 import nl.tudelft.sem.template.services.ContractService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,6 +26,9 @@ public class ContractController {
 
     @Autowired
     private transient ContractService contractService;
+
+    @Autowired
+    private transient ContractControllerHelper controllerHelper;
 
     private final transient String nameHeader = "x-user-name";
     private final transient String roleHeader = "x-user-role";
@@ -84,8 +83,8 @@ public class ContractController {
         try {
             Contract c = contractService.saveContract(contractRequest.toContract());
             return new ResponseEntity<>(c, HttpStatus.CREATED);
-        } catch (InvalidContractException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return controllerHelper.getResponseEntityForException(e);
         }
     }
 
@@ -101,7 +100,7 @@ public class ContractController {
      *         404 NOT FOUND if the contract is not found.
      */
     @PutMapping("/{id}/terminate")
-    public ResponseEntity<String> terminateContract(
+    public ResponseEntity<Object> terminateContract(
             @RequestHeader(nameHeader) String userName,
             @PathVariable Long id) {
 
@@ -113,12 +112,8 @@ public class ContractController {
         try {
             contractService.terminateContract(id, userName);
             return ResponseEntity.ok().body(null);
-        } catch (ContractNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (InactiveContractException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (AccessDeniedException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            return controllerHelper.getResponseEntityForException(e);
         }
     }
 
@@ -147,10 +142,8 @@ public class ContractController {
         try {
             Contract contract = contractService.getContract(companyId, studentId, true, userName);
             return ResponseEntity.ok().body(contract);
-        } catch (ContractNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (AccessDeniedException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            return controllerHelper.getResponseEntityForException(e);
         }
     }
 
@@ -179,10 +172,8 @@ public class ContractController {
         try {
             Contract contract = contractService.getContract(companyId, studentId, false, userName);
             return ResponseEntity.ok().body(contract);
-        } catch (ContractNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (AccessDeniedException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            return controllerHelper.getResponseEntityForException(e);
         }
     }
 
