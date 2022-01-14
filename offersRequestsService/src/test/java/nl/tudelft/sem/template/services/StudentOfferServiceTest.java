@@ -109,14 +109,14 @@ public class StudentOfferServiceTest {
         List<Offer> returned = new ArrayList<>();
         returned.add(offerThree);
         try {
-        Mockito.doNothing().when(utility).userExists(any(), any());
+            Mockito.doNothing().when(utility).userExists(any(), any());
+            Mockito.when(studentOfferRepository.findAllByStudentId(student))
+                    .thenReturn(returned);
 
-
-        Mockito.when(studentOfferRepository.findAllByStudentId(student))
-                .thenReturn(returned);
-
-        assertEquals(returned, studentOfferService.getOffersById(student));
-        } catch(Exception e) { e.printStackTrace(); }
+            assertEquals(returned, studentOfferService.getOffersById(student));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Test

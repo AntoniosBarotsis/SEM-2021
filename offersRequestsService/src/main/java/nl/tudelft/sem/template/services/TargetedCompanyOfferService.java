@@ -66,7 +66,7 @@ public class TargetedCompanyOfferService extends OfferService {
      */
     public List<Offer> getOffersByStudentOffer(Long studentOfferId,
                                                               String username)
-            throws UserNotAuthorException{
+            throws UserNotAuthorException {
         StudentOffer studentOffer = studentOfferRepository.getById(studentOfferId);
         if (studentOffer == null) {
             throw new IllegalArgumentException("Student offer does not exist");

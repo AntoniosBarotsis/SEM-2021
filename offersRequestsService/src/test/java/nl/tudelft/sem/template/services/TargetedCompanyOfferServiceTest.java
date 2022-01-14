@@ -112,9 +112,11 @@ class TargetedCompanyOfferServiceTest {
         Mockito.when(targetedCompanyOfferRepository.findAllByStudentOffer(studentOffer))
             .thenReturn(returned);
         try {
-        assertEquals(returned,
-            targetedCompanyOfferService.getOffersByStudentOffer(studentOffer.getId(), student));
-        } catch(Exception e) { e.printStackTrace(); }
+            assertEquals(returned,
+                targetedCompanyOfferService.getOffersByStudentOffer(studentOffer.getId(), student));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
