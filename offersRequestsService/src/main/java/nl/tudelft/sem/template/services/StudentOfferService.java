@@ -3,10 +3,8 @@ package nl.tudelft.sem.template.services;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import javax.naming.NoPermissionException;
 import javax.transaction.Transactional;
 import logger.FileLogger;
@@ -75,35 +73,47 @@ public class StudentOfferService extends OfferService {
     public ContractDto acceptOffer(
             String userName, Long targetedCompanyOfferId)
             throws NoPermissionException, ContractCreationException {
-        Optional<TargetedCompanyOffer> targetedCompanyOffer =
-                targetedCompanyOfferRepository.findById(targetedCompanyOfferId);
-        if (targetedCompanyOffer.isEmpty()) {
-            throw new IllegalArgumentException("ID is not valid!");
-        }
-        StudentOffer offer = targetedCompanyOffer.get().getStudentOffer();
+        TargetedCompanyOffer targetedCompanyOffer =
+                targetedCompanyOfferRepository
+                        .findById(targetedCompanyOfferId)
+                        .orElseThrow(() -> new IllegalArgumentException("ID is not valid!"));
+        StudentOffer offer = targetedCompanyOffer.getStudentOffer();
+
+        validateOffer(targetedCompanyOffer, offer, userName);
+
+        // First try to create the contract between the 2 parties.
+        // If the contract creation doesn't succeed then the offer isn't accepted.
+        // Throws exception if error:
+        ContractDto contract = utility.createContract(targetedCompanyOffer.getCompanyId(),
+                userName, targetedCompanyOffer.getHoursPerWeek(),
+                targetedCompanyOffer.getTotalHours(), offer.getPricePerHour(), restTemplate);
+
+        saveAcceptance(targetedCompanyOffer, offer);
+
+        return contract;
+    }
+
+    private void validateOffer(
+            TargetedCompanyOffer targetedCompanyOffer,
+            StudentOffer offer, String userName)
+            throws NoPermissionException {
         if (!offer
                 .getStudentId()
                 .equals(userName)) {
             throw new NoPermissionException("User not allowed to accept this TargetedOffer");
         }
         if (offer.getStatus() != Status.PENDING
-                || targetedCompanyOffer.get().getStatus() != Status.PENDING) {
+                || targetedCompanyOffer.getStatus() != Status.PENDING) {
             throw new IllegalArgumentException(
                     "The StudentOffer or TargetedRequest is not active anymore!");
         }
+    }
 
-        // First try to create the contract between the 2 parties.
-        // If the contract creation doesn't succeed then the offer isn't accepted.
-        // Throws exception if error:
-        TargetedCompanyOffer tco = targetedCompanyOffer.get();
-        ContractDto contract;
-        contract = utility.createContract(tco.getCompanyId(), userName,
-                tco.getHoursPerWeek(), tco.getTotalHours(), offer.getPricePerHour(), restTemplate);
-
+    private void saveAcceptance(TargetedCompanyOffer targetedCompanyOffer,
+                                StudentOffer offer) {
         List<TargetedCompanyOffer> offers = offer.getTargetedCompanyOffers();
-
         for (TargetedCompanyOffer t : offers) {
-            if (!t.equals(targetedCompanyOffer.get())) {
+            if (!t.equals(targetedCompanyOffer)) {
                 t.setStatus(Status.DECLINED);
             } else {
                 t.setStatus(Status.ACCEPTED);
@@ -112,14 +122,12 @@ public class StudentOfferService extends OfferService {
         }
 
         logger.log(offer.getCreatorUsername()
-                    + " has accepted offer"
-                    + targetedCompanyOffer.get().getId()
-                    + " from user "
-                    + targetedCompanyOffer.get().getCreatorUsername());
+                + " has accepted offer"
+                + targetedCompanyOffer.getId()
+                + " from user "
+                + targetedCompanyOffer.getCreatorUsername());
         offer.setStatus(Status.DISABLED);
         studentOfferRepository.save(offer);
-
-        return contract;
     }
 
     /**

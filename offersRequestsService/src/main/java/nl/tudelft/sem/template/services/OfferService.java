@@ -46,21 +46,21 @@ public class OfferService {
     protected Offer saveOffer(Offer offer) throws
             IllegalArgumentException, LowRatingException, UpstreamServiceException {
 
-        double MAX_HOURS = 20;
-        double MAX_WEEKS = 26;
-        double MIN_RATING = 2.5;
-
-        if (offer.getHoursPerWeek() > MAX_HOURS) {
+        double maxHours = 20;
+        if (offer.getHoursPerWeek() > maxHours) {
             throw new IllegalArgumentException("Offer exceeds 20 hours per week");
         }
-        if (offer.getTotalHours() / offer.getHoursPerWeek() > MAX_WEEKS) {
+
+        double maxWeeks = 26;
+        if (offer.getTotalHours() / offer.getHoursPerWeek() > maxWeeks) {
             throw new IllegalArgumentException("Offer exceeds 6 month duration");
         }
 
         // Contact the user feedback service to get the average rating.
+        double minRating = 2.5;
         double rating = getAverageRating(offer.getCreatorUsername());
-        if (rating < MIN_RATING && rating != -1) {
-            throw new LowRatingException("create offer", MIN_RATING);
+        if (rating < minRating && rating != -1) {
+            throw new LowRatingException("create offer", minRating);
         }
 
         offer.setStatus(Status.PENDING);

@@ -6,11 +6,8 @@ import nl.tudelft.sem.template.entities.dtos.UserResponseWrapper;
 import nl.tudelft.sem.template.exceptions.ContractCreationException;
 import nl.tudelft.sem.template.exceptions.UserDoesNotExistException;
 import nl.tudelft.sem.template.exceptions.UserServiceUnvanvailableException;
-import org.apache.http.client.methods.HttpHead;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 

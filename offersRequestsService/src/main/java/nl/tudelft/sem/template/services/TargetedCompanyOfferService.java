@@ -31,7 +31,8 @@ public class TargetedCompanyOfferService extends OfferService {
      * @return The saved Offer.
      * @throws IllegalArgumentException Thrown if any of the conditions are not met.
      */
-    public ResponseEntity<Response<Offer>> saveOfferWithResponse(TargetedCompanyOffer targetedCompanyOffer, Long id) {
+    public ResponseEntity<Response<Offer>> saveOfferWithResponse(
+            TargetedCompanyOffer targetedCompanyOffer, Long id) {
         StudentOffer studentOffer = studentOfferRepository.getById(id);
         if (studentOffer == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
