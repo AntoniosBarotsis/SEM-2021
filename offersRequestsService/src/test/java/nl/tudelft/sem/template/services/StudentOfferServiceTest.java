@@ -116,7 +116,7 @@ public class StudentOfferServiceTest {
                 .thenReturn(returned);
 
         assertEquals(returned, studentOfferService.getOffersById(student));
-        } catch(Exception e) {}
+        } catch(Exception e) { e.printStackTrace(); }
     }
 
     @Test

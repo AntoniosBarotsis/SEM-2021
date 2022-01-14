@@ -152,7 +152,7 @@ class TargetedCompanyOfferControllerTest {
         Mockito.when(targetedCompanyOfferService
                         .getOffersByStudentOffer(studentOfferId, student))
                 .thenReturn(returned);
-        } catch(Exception e) {}
+        } catch(Exception e) { e.printStackTrace(); }
 
         Response<List<Offer>> resPositive =
                 new Response<>(returned, null);
@@ -170,7 +170,7 @@ class TargetedCompanyOfferControllerTest {
         try {
             Mockito.when(targetedCompanyOfferService.getOffersByStudentOffer(3L, student))
                     .thenThrow(new IllegalArgumentException(message));
-        } catch(Exception e) {}
+        } catch(Exception e) { e.printStackTrace(); }
 
         Response<List<TargetedCompanyOffer>> resErrorMessage =
                 new Response<>(null, message);
@@ -211,7 +211,7 @@ class TargetedCompanyOfferControllerTest {
         Mockito.when(targetedCompanyOfferService
                         .getOffersByStudentOffer(3L, student))
                 .thenThrow(new UserNotAuthorException(student));
-        } catch(Exception e) {}
+        } catch(Exception e) { e.printStackTrace(); }
         ResponseEntity<Response<List<Offer>>> response =
                 targetedCompanyOfferController
                         .getCompanyOffersByStudentOffer(student, 3L);

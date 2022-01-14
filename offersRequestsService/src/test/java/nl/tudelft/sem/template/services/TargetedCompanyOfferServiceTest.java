@@ -114,7 +114,7 @@ class TargetedCompanyOfferServiceTest {
         try {
         assertEquals(returned,
             targetedCompanyOfferService.getOffersByStudentOffer(studentOffer.getId(), student));
-        } catch(Exception e) {}
+        } catch(Exception e) { e.printStackTrace(); }
     }
 
     @Test

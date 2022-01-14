@@ -134,7 +134,7 @@ class StudentOfferControllerTest {
         try {
             Mockito.when(studentOfferService.getOffersById(student))
                     .thenReturn(studentOffers);
-        } catch(Exception e) {}
+        } catch(Exception e) { e.printStackTrace(); }
 
         ResponseEntity<Response<List<Offer>>> response
                 = studentOfferController.getStudentOffersById(student);
@@ -151,7 +151,7 @@ class StudentOfferControllerTest {
         try {
         Mockito.when(studentOfferService.getOffersById(student))
             .thenThrow(new IllegalArgumentException(errorMessage));
-        } catch(Exception e) {}
+        } catch(Exception e) { e.printStackTrace(); }
 
         ResponseEntity<Response<List<Offer>>> response
                 = studentOfferController.getStudentOffersById(student);
@@ -294,7 +294,7 @@ class StudentOfferControllerTest {
         try {
         Mockito.when(studentOfferService.getOffersById(student))
                 .thenThrow(new UserServiceUnvanvailableException("test"));
-        } catch(Exception e) {}
+        } catch(Exception e) { e.printStackTrace(); }
 
         ResponseEntity<Response<List<Offer>>> response =
                 studentOfferController.getStudentOffersById(student);
@@ -308,7 +308,7 @@ class StudentOfferControllerTest {
         try {
         Mockito.when(studentOfferService.getOffersById(student))
                 .thenThrow(new UserDoesNotExistException("error"));
-        } catch(Exception e) {}
+        } catch(Exception e) { e.printStackTrace(); }
 
         ResponseEntity<Response<List<Offer>>> response =
                 studentOfferController.getStudentOffersById(student);
