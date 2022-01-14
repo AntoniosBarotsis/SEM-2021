@@ -9,8 +9,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import logger.FileLogger;
 import nl.tudelft.sem.template.entities.Offer;
-import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
-import nl.tudelft.sem.template.entities.dtos.AverageRatingResponse;
 import nl.tudelft.sem.template.entities.dtos.AverageRatingResponseWrapper;
 import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
@@ -27,10 +25,6 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @Primary
 public class OfferService {
-
-    private static final transient double MAX_HOURS = 20;
-    private static final transient double MAX_WEEKS = 26;
-    private static final transient double MIN_RATING = 2.5;
 
     @Autowired
     private transient OfferRepository offerRepository;
@@ -49,8 +43,13 @@ public class OfferService {
      * @throws IllegalArgumentException Thrown when the offer is not valid
      *                                  e.g. exceeds 20 hours per week or 6 month duration
      */
-    public Offer saveOffer(Offer offer) throws
+    protected Offer saveOffer(Offer offer) throws
             IllegalArgumentException, LowRatingException, UpstreamServiceException {
+
+        double MAX_HOURS = 20;
+        double MAX_WEEKS = 26;
+        double MIN_RATING = 2.5;
+
         if (offer.getHoursPerWeek() > MAX_HOURS) {
             throw new IllegalArgumentException("Offer exceeds 20 hours per week");
         }
@@ -107,6 +106,8 @@ public class OfferService {
             .distinct()
             .collect(Collectors.toMap(Function.identity(), x -> new ArrayList<>()));
         offers.forEach(x -> res.get(getClassTag(x)).add(x));
+
+        logger.log(offers.size() + " offers have been made by " + username);
         return res;
     }
 
@@ -120,7 +121,7 @@ public class OfferService {
     private <T> String getClassTag(T item) {
         String s = item.getClass().getSimpleName();
         return s.substring(0, 1).toLowerCase(Locale.ROOT)
-            + s.substring(1, s.length())
+            + s.substring(1)
             + "s";
     }
 
@@ -131,13 +132,13 @@ public class OfferService {
      * @return average rating of the user.
      * @throws UpstreamServiceException Thrown when the user feedback service is not available.
      */
-    public double getAverageRating(String username) throws UpstreamServiceException {
+    private double getAverageRating(String username) throws UpstreamServiceException {
         String feedbackServiceUrl = "http://feedback-service/user/" + username;
         try {
             AverageRatingResponseWrapper response = restTemplate.getForObject(
                     feedbackServiceUrl, AverageRatingResponseWrapper.class
             );
-            System.out.println(response.getData().getAverageRating());
+            System.out.println(Objects.requireNonNull(response).getData().getAverageRating());
             Objects.requireNonNull(response);
             Objects.requireNonNull(response.getData());
             return response.getData().getAverageRating();
