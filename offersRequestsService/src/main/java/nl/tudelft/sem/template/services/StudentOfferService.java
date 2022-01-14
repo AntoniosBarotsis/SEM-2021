@@ -30,8 +30,6 @@ public class StudentOfferService extends OfferService {
     @Autowired
     private transient TargetedCompanyOfferRepository targetedCompanyOfferRepository;
     @Autowired
-    private transient RestTemplate restTemplate;
-    @Autowired
     private transient Utility utility;
     @Autowired
     private transient FileLogger logger;
@@ -53,7 +51,7 @@ public class StudentOfferService extends OfferService {
      */
     public List<Offer> getOffersById(String studentId)
             throws UserDoesNotExistException, UserServiceUnvanvailableException {
-        utility.userExists(studentId, restTemplate);
+        utility.userExists(studentId);
 
 
         List<Offer> offer = studentOfferRepository.findAllByStudentId(studentId);
@@ -89,7 +87,7 @@ public class StudentOfferService extends OfferService {
         // Throws exception if error:
         ContractDto contract = utility.createContract(targetedCompanyOffer.getCompanyId(),
                 userName, targetedCompanyOffer.getHoursPerWeek(),
-                targetedCompanyOffer.getTotalHours(), offer.getPricePerHour(), restTemplate);
+                targetedCompanyOffer.getTotalHours(), offer.getPricePerHour());
 
         saveAcceptance(targetedCompanyOffer, offer);
 

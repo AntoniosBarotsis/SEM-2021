@@ -30,7 +30,7 @@ public class OfferService {
     private transient OfferRepository offerRepository;
 
     @Autowired
-    private transient RestTemplate restTemplate;
+    private transient Utility utility;
 
     @Autowired
     private transient FileLogger logger;
@@ -43,7 +43,7 @@ public class OfferService {
      * @throws IllegalArgumentException Thrown when the offer is not valid
      *                                  e.g. exceeds 20 hours per week or 6 month duration
      */
-    protected Offer saveOffer(Offer offer) throws
+    public Offer saveOffer(Offer offer) throws
             IllegalArgumentException, LowRatingException, UpstreamServiceException {
 
         double maxHours = 20;
@@ -58,7 +58,7 @@ public class OfferService {
 
         // Contact the user feedback service to get the average rating.
         double minRating = 2.5;
-        double rating = getAverageRating(offer.getCreatorUsername());
+        double rating = utility.getAverageRating(offer.getCreatorUsername());
         if (rating < minRating && rating != -1) {
             throw new LowRatingException("create offer", minRating);
         }
@@ -123,31 +123,6 @@ public class OfferService {
         return s.substring(0, 1).toLowerCase(Locale.ROOT)
             + s.substring(1)
             + "s";
-    }
-
-    /**
-     * Returns the average rating of a user by contacting the user feedback service.
-     *
-     * @param username username of the user.
-     * @return average rating of the user.
-     * @throws UpstreamServiceException Thrown when the user feedback service is not available.
-     */
-    private double getAverageRating(String username) throws UpstreamServiceException {
-        String feedbackServiceUrl = "http://feedback-service/user/" + username;
-        try {
-            AverageRatingResponseWrapper response = restTemplate.getForObject(
-                    feedbackServiceUrl, AverageRatingResponseWrapper.class
-            );
-            System.out.println(Objects.requireNonNull(response).getData().getAverageRating());
-            Objects.requireNonNull(response);
-            Objects.requireNonNull(response.getData());
-            return response.getData().getAverageRating();
-        } catch (Exception exception) {
-            throw new UpstreamServiceException(
-                    "Unable to get an average rating for " + username + " from feedback service.",
-                    exception
-            );
-        }
     }
 }
 

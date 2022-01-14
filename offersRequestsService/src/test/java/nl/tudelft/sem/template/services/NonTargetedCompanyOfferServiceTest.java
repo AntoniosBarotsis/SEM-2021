@@ -142,7 +142,7 @@ class NonTargetedCompanyOfferServiceTest {
         Mockito.when(applicationRepository.findById(application.getId()))
                 .thenReturn(Optional.of(application));
 
-        Mockito.when(utility.createContract(any(), any(), any(), any(), any(), any()))
+        Mockito.when(utility.createContract(any(), any(), any(), any(), any()))
                 .thenReturn(contract);
 
         final ContractDto actual = service.accept(companyId, application.getId());
