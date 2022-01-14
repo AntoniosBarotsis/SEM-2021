@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import logger.FileLogger;
 import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
@@ -17,8 +16,6 @@ import nl.tudelft.sem.template.entities.dtos.AverageRatingResponse;
 import nl.tudelft.sem.template.entities.dtos.AverageRatingResponseWrapper;
 import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
-import nl.tudelft.sem.template.exceptions.LowRatingException;
-import nl.tudelft.sem.template.exceptions.UpstreamServiceException;
 import nl.tudelft.sem.template.exceptions.UserNotAuthorException;
 import nl.tudelft.sem.template.repositories.OfferRepository;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
@@ -51,9 +48,6 @@ class TargetedCompanyOfferServiceTest {
     private transient TargetedCompanyOfferRepository targetedCompanyOfferRepository;
 
     @MockBean
-    private transient FileLogger fileLogger;
-
-    @MockBean
     private transient RestTemplate restTemplate;
 
     private transient StudentOffer studentOffer;
@@ -61,16 +55,12 @@ class TargetedCompanyOfferServiceTest {
     private transient List<String> expertise;
     private transient String student;
     private transient String company;
-    private transient String companyRole;
-    private transient String studentRole;
 
     @BeforeEach
     void setup() {
         expertise = Arrays.asList("Expertise 1", "Expertise 2", "Expertise 3");
         student = "Student";
         company = "Company";
-        studentRole = "STUDENT";
-        companyRole = "COMPANY";
         studentOffer = new StudentOffer("This is a title", "This is a description", 20, 520,
             expertise, Status.DISABLED,
             32, student);
@@ -79,7 +69,7 @@ class TargetedCompanyOfferServiceTest {
             "This is a company description",
             20, 520, expertise, Status.DISABLED,
             Arrays.asList("Requirement 1", "Requirement 2", "Requirement 3"),
-            "Company", null);
+            company, null);
     }
 
     TargetedCompanyOffer createCompanyOffer2(StudentOffer studentOffer) {
@@ -87,55 +77,7 @@ class TargetedCompanyOfferServiceTest {
                 "This is a company title", "This is a company description",
                 20, 520, expertise, Status.DISABLED,
                 Arrays.asList("Requirement 1", "Requirement 2", "Requirement 3"),
-                "Company", studentOffer);
-    }
-
-    @Test
-    void saveTargetedCompanyOfferValidTest() throws LowRatingException, UpstreamServiceException {
-        AverageRatingResponse fakeResponse = new AverageRatingResponse(5.0);
-        AverageRatingResponseWrapper responseWrapper = new AverageRatingResponseWrapper();
-        responseWrapper.setData(fakeResponse);
-        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
-                .thenReturn(responseWrapper);
-
-        TargetedCompanyOffer targetedCompanyOffer2 = createCompanyOffer2(studentOffer);
-        studentOffer.setId(33L);
-        Mockito.when(studentOfferRepository.getById(33L))
-            .thenReturn(studentOffer);
-        Mockito.when(offerRepository.save(targetedCompanyOffer))
-            .thenReturn(targetedCompanyOffer2);
-
-        assertEquals(targetedCompanyOffer2, targetedCompanyOfferService
-            .saveOffer(targetedCompanyOffer, 33L));
-    }
-
-    @Test
-    void saveTargetedCompanyOfferStudentTest() throws LowRatingException, UpstreamServiceException {
-        AverageRatingResponse fakeResponse = new AverageRatingResponse(5.0);
-        AverageRatingResponseWrapper responseWrapper = new AverageRatingResponseWrapper();
-        responseWrapper.setData(fakeResponse);
-        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
-                .thenReturn(responseWrapper);
-
-        targetedCompanyOffer = Mockito.mock(TargetedCompanyOffer.class);
-        Mockito.when(studentOfferRepository.getById(33L))
-            .thenReturn(studentOffer);
-        Mockito.when(offerRepository.save(targetedCompanyOffer))
-                        .thenReturn(targetedCompanyOffer);
-        targetedCompanyOfferService.saveOffer(targetedCompanyOffer, 33L);
-        Mockito.verify(targetedCompanyOffer).setStudentOffer(studentOffer);
-    }
-
-    @Test
-    void saveTargetedCompanyOfferInvalid() {
-        String errorMessage = "Student offer does not exist";
-        Mockito.when(studentOfferRepository.getById(33L))
-            .thenReturn(null);
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-            () -> targetedCompanyOfferService.saveOffer(targetedCompanyOffer, 33L));
-
-        assertEquals(errorMessage, exception.getMessage());
+                company, studentOffer);
     }
 
     @Test
@@ -188,10 +130,10 @@ class TargetedCompanyOfferServiceTest {
 
     @Test
     void getTargetedByStudentTest() {
-        Mockito.when(targetedCompanyOfferRepository.getAllByStudent("Student"))
+        Mockito.when(targetedCompanyOfferRepository.getAllByStudent(student))
             .thenReturn(List.of(targetedCompanyOffer));
         List<TargetedCompanyOffer> result = targetedCompanyOfferService
-            .getAllByStudent("Student");
+            .getAllByStudent(student);
         assertEquals(List.of(targetedCompanyOffer), result);
 
     }

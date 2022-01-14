@@ -5,8 +5,6 @@ import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.dtos.Response;
-import nl.tudelft.sem.template.exceptions.LowRatingException;
-import nl.tudelft.sem.template.exceptions.UpstreamServiceException;
 import nl.tudelft.sem.template.exceptions.UserNotAuthorException;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import nl.tudelft.sem.template.repositories.TargetedCompanyOfferRepository;
@@ -14,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 @Service
 public class TargetedCompanyOfferService extends OfferService {
@@ -25,8 +22,6 @@ public class TargetedCompanyOfferService extends OfferService {
     @Autowired
     private transient StudentOfferRepository studentOfferRepository;
 
-    @Autowired
-    private transient RestTemplate restTemplate;
 
     /**
      * Method for saving a TargetedCompanyOffer.
@@ -36,39 +31,14 @@ public class TargetedCompanyOfferService extends OfferService {
      * @return The saved Offer.
      * @throws IllegalArgumentException Thrown if any of the conditions are not met.
      */
-    public Offer saveOffer(TargetedCompanyOffer targetedCompanyOffer, Long id)
-        throws IllegalArgumentException, LowRatingException, UpstreamServiceException {
+    public ResponseEntity<Response<Offer>> saveOfferWithResponse(TargetedCompanyOffer targetedCompanyOffer, Long id) {
         StudentOffer studentOffer = studentOfferRepository.getById(id);
         if (studentOffer == null) {
-            throw new IllegalArgumentException("Student offer does not exist");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new Response<>(null, "Student offer does not exist"));
         }
         targetedCompanyOffer.setStudentOffer(studentOffer);
-        return super.saveOffer(targetedCompanyOffer);
-    }
-
-    /**
-     * Calls saveOffer, catches any exceptions and returns a ResponseEntity based
-     * on the result or thrown exceptions.
-     *
-     * @param offer Offer to be saved.
-     * @param id Id of the StudentOffer this offer targets.
-     * @return ResponseEntity with the result of the saveOffer method.
-     */
-    public ResponseEntity<Response<Offer>> saveOfferWithResponse(
-            TargetedCompanyOffer offer, Long id) {
-        try {
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new Response<>(saveOffer(offer, id)));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new Response<>(null, e.getMessage()));
-        } catch (LowRatingException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new Response<>(null, e.getMessage()));
-        } catch (UpstreamServiceException e) {
-            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                    .body(new Response<>(null, e.getMessage()));
-        }
+        return super.saveOfferWithResponse(targetedCompanyOffer);
     }
 
     /**
