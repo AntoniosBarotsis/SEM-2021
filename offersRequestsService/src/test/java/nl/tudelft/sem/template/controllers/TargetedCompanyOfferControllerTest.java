@@ -148,10 +148,11 @@ class TargetedCompanyOfferControllerTest {
 
         Long studentOfferId = targetedCompanyOfferTwo
                 .getStudentOffer().getId();
-
+        try {
         Mockito.when(targetedCompanyOfferService
                         .getOffersByStudentOffer(studentOfferId, student))
                 .thenReturn(returned);
+        } catch(Exception e) {}
 
         Response<List<Offer>> resPositive =
                 new Response<>(returned, null);
@@ -166,9 +167,10 @@ class TargetedCompanyOfferControllerTest {
     @Test
     void getCompanyOffersByStudentOfferTestFail() {
         String message = "Student offer does not exist";
-
-        Mockito.when(targetedCompanyOfferService.getOffersByStudentOffer(3L, student))
-                .thenThrow(new IllegalArgumentException(message));
+        try {
+            Mockito.when(targetedCompanyOfferService.getOffersByStudentOffer(3L, student))
+                    .thenThrow(new IllegalArgumentException(message));
+        } catch(Exception e) {}
 
         Response<List<TargetedCompanyOffer>> resErrorMessage =
                 new Response<>(null, message);
@@ -205,9 +207,11 @@ class TargetedCompanyOfferControllerTest {
 
     @Test
     void getCompanyOffersByStudentOfferNotAuthorTest() {
+        try {
         Mockito.when(targetedCompanyOfferService
                         .getOffersByStudentOffer(3L, student))
                 .thenThrow(new UserNotAuthorException(student));
+        } catch(Exception e) {}
         ResponseEntity<Response<List<Offer>>> response =
                 targetedCompanyOfferController
                         .getCompanyOffersByStudentOffer(student, 3L);

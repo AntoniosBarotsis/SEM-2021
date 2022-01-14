@@ -108,13 +108,15 @@ public class StudentOfferServiceTest {
     void getOffersByIdTestPass() {
         List<Offer> returned = new ArrayList<>();
         returned.add(offerThree);
-
+        try {
         Mockito.doNothing().when(utility).userExists(any(), any());
+
 
         Mockito.when(studentOfferRepository.findAllByStudentId(student))
                 .thenReturn(returned);
 
         assertEquals(returned, studentOfferService.getOffersById(student));
+        } catch(Exception e) {}
     }
 
     @Test

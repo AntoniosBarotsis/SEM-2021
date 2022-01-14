@@ -20,7 +20,8 @@ public class Utility {
      * @param userId       The user id.
      * @param restTemplate The rest template singleton.
      */
-    public void userExists(String userId, RestTemplate restTemplate) {
+    public void userExists(String userId, RestTemplate restTemplate)
+            throws UserDoesNotExistException, UserServiceUnvanvailableException {
         try {
             var url = "http://users-service/" + userId;
             var res = restTemplate.getForObject(url, UserResponseWrapper.class);

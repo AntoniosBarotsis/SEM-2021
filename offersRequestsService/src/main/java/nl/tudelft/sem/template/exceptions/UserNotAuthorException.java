@@ -1,6 +1,6 @@
 package nl.tudelft.sem.template.exceptions;
 
-public class UserNotAuthorException extends RuntimeException {
+public class UserNotAuthorException extends Exception {
 
     public static final long serialVersionUID = 4322743;
 

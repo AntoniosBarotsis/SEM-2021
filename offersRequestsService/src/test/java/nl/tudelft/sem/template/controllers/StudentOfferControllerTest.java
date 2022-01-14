@@ -131,8 +131,10 @@ class StudentOfferControllerTest {
     @Test
     void getStudentOffersByIdValidTest() {
         List<Offer> studentOffers = List.of(studentOffer);
-        Mockito.when(studentOfferService.getOffersById(student))
-            .thenReturn(studentOffers);
+        try {
+            Mockito.when(studentOfferService.getOffersById(student))
+                    .thenReturn(studentOffers);
+        } catch(Exception e) {}
 
         ResponseEntity<Response<List<Offer>>> response
                 = studentOfferController.getStudentOffersById(student);
@@ -146,8 +148,10 @@ class StudentOfferControllerTest {
     @Test
     void getStudentOffersByIdIllegalTest() {
         String errorMessage = "Error";
+        try {
         Mockito.when(studentOfferService.getOffersById(student))
             .thenThrow(new IllegalArgumentException(errorMessage));
+        } catch(Exception e) {}
 
         ResponseEntity<Response<List<Offer>>> response
                 = studentOfferController.getStudentOffersById(student);
@@ -287,8 +291,10 @@ class StudentOfferControllerTest {
 
     @Test
     void getStudentOffersByIdUnavailableTest() {
+        try {
         Mockito.when(studentOfferService.getOffersById(student))
                 .thenThrow(new UserServiceUnvanvailableException("test"));
+        } catch(Exception e) {}
 
         ResponseEntity<Response<List<Offer>>> response =
                 studentOfferController.getStudentOffersById(student);
@@ -299,8 +305,10 @@ class StudentOfferControllerTest {
 
     @Test
     void getStudentOffersByIdUserNotExistTest() {
+        try {
         Mockito.when(studentOfferService.getOffersById(student))
                 .thenThrow(new UserDoesNotExistException("error"));
+        } catch(Exception e) {}
 
         ResponseEntity<Response<List<Offer>>> response =
                 studentOfferController.getStudentOffersById(student);

@@ -14,6 +14,8 @@ import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.ContractCreationException;
+import nl.tudelft.sem.template.exceptions.UserDoesNotExistException;
+import nl.tudelft.sem.template.exceptions.UserServiceUnvanvailableException;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import nl.tudelft.sem.template.repositories.TargetedCompanyOfferRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +51,8 @@ public class StudentOfferService extends OfferService {
      * @param studentId - the ID of the Student.
      * @return - A list of the Student's Offers.
      */
-    public List<Offer> getOffersById(String studentId) {
+    public List<Offer> getOffersById(String studentId)
+            throws UserDoesNotExistException, UserServiceUnvanvailableException {
         utility.userExists(studentId, restTemplate);
 
 
