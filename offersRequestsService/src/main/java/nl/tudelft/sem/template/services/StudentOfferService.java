@@ -20,7 +20,6 @@ import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import nl.tudelft.sem.template.repositories.TargetedCompanyOfferRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 @Service
 public class StudentOfferService extends OfferService {
@@ -94,6 +93,15 @@ public class StudentOfferService extends OfferService {
         return contract;
     }
 
+    /**
+     * This method checks whether the user and the offer are valid.
+     *
+     * @param targetedCompanyOffer - the targeted offer, which is to be accepted.
+     * @param offer - the student offer.
+     * @param userName - the name of the user, who wants to accept.
+     * @throws NoPermissionException - May throw it, if the user,
+     *      who wants to accept is not the creator of the student offer.
+     */
     private void validateOffer(
             TargetedCompanyOffer targetedCompanyOffer,
             StudentOffer offer, String userName)
@@ -110,6 +118,12 @@ public class StudentOfferService extends OfferService {
         }
     }
 
+    /**
+     * This method applies status changes and stores the changes in the database.
+     *
+     * @param targetedCompanyOffer - the offer, which will be accepted.
+     * @param offer - the student offer.
+     */
     private void saveAcceptance(TargetedCompanyOffer targetedCompanyOffer,
                                 StudentOffer offer) {
         List<TargetedCompanyOffer> offers = offer.getTargetedCompanyOffers();
