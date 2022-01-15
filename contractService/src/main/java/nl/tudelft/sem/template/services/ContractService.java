@@ -12,12 +12,13 @@ import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
 import nl.tudelft.sem.template.exceptions.InactiveContractException;
 import nl.tudelft.sem.template.exceptions.InvalidChangeProposalException;
 import nl.tudelft.sem.template.exceptions.InvalidContractException;
+import nl.tudelft.sem.template.interfaces.ContractServiceInterface;
 import nl.tudelft.sem.template.repositories.ContractRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ContractService {
+public class ContractService implements ContractServiceInterface {
 
     @Autowired
     private transient ContractRepository contractRepository;
