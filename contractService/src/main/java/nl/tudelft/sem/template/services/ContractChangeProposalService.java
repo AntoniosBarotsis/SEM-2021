@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@SuppressWarnings("PMD.DataflowAnomalyAnalysis")  // DU Anomaly is a false positive here
 public class ContractChangeProposalService {
 
     @Autowired
@@ -194,26 +195,43 @@ public class ContractChangeProposalService {
         }
 
         // If proposal didn't include hoursPerWeek or totalHours, use values from contract:
-        double hoursPerWeek;
-        double totalHours;
-        if (proposal.getHoursPerWeek() != null) {
-            hoursPerWeek = proposal.getHoursPerWeek();
-        } else {
-            hoursPerWeek = contract.getHoursPerWeek();
+        double hoursPerWeek = proposal.getHoursPerWeek() != null
+                ? proposal.getHoursPerWeek() : contract.getHoursPerWeek();
+        double totalHours = proposal.getTotalHours() != null
+                ? proposal.getTotalHours() : contract.getTotalHours();
+
+        // Hours per week exceeded:
+        if (hoursPerWeek > MAX_HOURS) {
+            throw new InvalidChangeProposalException();
         }
 
-        if (proposal.getTotalHours() != null) {
-            totalHours = proposal.getTotalHours();
-        } else {
-            totalHours = contract.getTotalHours();
+        // Check if number of weeks is exceeded:
+        validateNumberOfWeeks(totalHours / hoursPerWeek, contract, proposal);
+
+        // If there already is a pending change proposal by this user:
+        if (changeProposalRepository.findPendingChange(proposal.getContract(),
+                proposal.getProposer()) != null) {
+            throw new InvalidChangeProposalException(
+                    "Your previous proposal hasn't been reviewed yet");
         }
+    }
 
-        // Computed end date:
-        double weeks = totalHours / hoursPerWeek;
+    /**
+     * Checks if number of weeks proposed are beyond the 6-month limit.
+     *
+     * @param totalWeeks The computed total weeks (totalHours / hoursPerWeek)
+     * @param contract The contract that needs change.
+     * @param proposal The proposal that is created.
+     * @throws InvalidChangeProposalException If the #weeks > 26 (6 months).
+     */
+    private void validateNumberOfWeeks(double totalWeeks, Contract contract,
+                                       ContractChangeProposal proposal)
+            throws InvalidChangeProposalException {
 
-        // Specified end date:
+        // If there is a new, proposed end date (should be later than totalWeeks):
         if (proposal.getEndDate() != null) {
-            LocalDate computedEndDate = contract.getStartDate().plusWeeks((int) Math.ceil(weeks));
+            LocalDate computedEndDate =
+                    contract.getStartDate().plusWeeks((int) Math.ceil(totalWeeks));
             LocalDate proposedEndDate = proposal.getEndDate();
 
             // Check if proposal end date is after the minimum required end date:
@@ -222,19 +240,12 @@ public class ContractChangeProposalService {
                         "The new end date of contract is too soon.");
             }
 
-            weeks = ChronoUnit.WEEKS.between(contract.getStartDate(), proposedEndDate);
+            totalWeeks = ChronoUnit.WEEKS.between(contract.getStartDate(), proposedEndDate);
         }
 
-        // Max no of hours exceeded OR no of weeks exceeded:
-        if (hoursPerWeek > MAX_HOURS || weeks > MAX_WEEKS) {
+        // No of weeks exceeded:
+        if (totalWeeks > MAX_WEEKS) {
             throw new InvalidChangeProposalException();
-        }
-
-        // If there already is a pending change proposal by this user:
-        if (changeProposalRepository.findPendingChange(proposal.getContract(),
-                proposal.getProposer()) != null) {
-            throw new InvalidChangeProposalException(
-                    "Your previous proposal hasn't been reviewed yet");
         }
     }
 
