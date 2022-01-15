@@ -148,10 +148,13 @@ class TargetedCompanyOfferControllerTest {
 
         Long studentOfferId = targetedCompanyOfferTwo
                 .getStudentOffer().getId();
-
-        Mockito.when(targetedCompanyOfferService
-                        .getOffersByStudentOffer(studentOfferId, student))
-                .thenReturn(returned);
+        try {
+            Mockito.when(targetedCompanyOfferService
+                            .getOffersByStudentOffer(studentOfferId, student))
+                    .thenReturn(returned);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         Response<List<Offer>> resPositive =
                 new Response<>(returned, null);
@@ -166,9 +169,12 @@ class TargetedCompanyOfferControllerTest {
     @Test
     void getCompanyOffersByStudentOfferTestFail() {
         String message = "Student offer does not exist";
-
-        Mockito.when(targetedCompanyOfferService.getOffersByStudentOffer(3L, student))
-                .thenThrow(new IllegalArgumentException(message));
+        try {
+            Mockito.when(targetedCompanyOfferService.getOffersByStudentOffer(3L, student))
+                    .thenThrow(new IllegalArgumentException(message));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         Response<List<TargetedCompanyOffer>> resErrorMessage =
                 new Response<>(null, message);
@@ -205,9 +211,14 @@ class TargetedCompanyOfferControllerTest {
 
     @Test
     void getCompanyOffersByStudentOfferNotAuthorTest() {
-        Mockito.when(targetedCompanyOfferService
-                        .getOffersByStudentOffer(3L, student))
-                .thenThrow(new UserNotAuthorException(student));
+        try {
+            Mockito.when(targetedCompanyOfferService
+                            .getOffersByStudentOffer(3L, student))
+                    .thenThrow(new UserNotAuthorException(student));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         ResponseEntity<Response<List<Offer>>> response =
                 targetedCompanyOfferController
                         .getCompanyOffersByStudentOffer(student, 3L);

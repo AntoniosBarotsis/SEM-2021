@@ -131,8 +131,12 @@ class StudentOfferControllerTest {
     @Test
     void getStudentOffersByIdValidTest() {
         List<Offer> studentOffers = List.of(studentOffer);
-        Mockito.when(studentOfferService.getOffersById(student))
-            .thenReturn(studentOffers);
+        try {
+            Mockito.when(studentOfferService.getOffersById(student))
+                    .thenReturn(studentOffers);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         ResponseEntity<Response<List<Offer>>> response
                 = studentOfferController.getStudentOffersById(student);
@@ -146,8 +150,12 @@ class StudentOfferControllerTest {
     @Test
     void getStudentOffersByIdIllegalTest() {
         String errorMessage = "Error";
-        Mockito.when(studentOfferService.getOffersById(student))
-            .thenThrow(new IllegalArgumentException(errorMessage));
+        try {
+            Mockito.when(studentOfferService.getOffersById(student))
+                .thenThrow(new IllegalArgumentException(errorMessage));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         ResponseEntity<Response<List<Offer>>> response
                 = studentOfferController.getStudentOffersById(student);
@@ -287,8 +295,12 @@ class StudentOfferControllerTest {
 
     @Test
     void getStudentOffersByIdUnavailableTest() {
-        Mockito.when(studentOfferService.getOffersById(student))
-                .thenThrow(new UserServiceUnvanvailableException("test"));
+        try {
+            Mockito.when(studentOfferService.getOffersById(student))
+                    .thenThrow(new UserServiceUnvanvailableException("test"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         ResponseEntity<Response<List<Offer>>> response =
                 studentOfferController.getStudentOffersById(student);
@@ -299,8 +311,12 @@ class StudentOfferControllerTest {
 
     @Test
     void getStudentOffersByIdUserNotExistTest() {
-        Mockito.when(studentOfferService.getOffersById(student))
-                .thenThrow(new UserDoesNotExistException("error"));
+        try {
+            Mockito.when(studentOfferService.getOffersById(student))
+                    .thenThrow(new UserDoesNotExistException("error"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         ResponseEntity<Response<List<Offer>>> response =
                 studentOfferController.getStudentOffersById(student);

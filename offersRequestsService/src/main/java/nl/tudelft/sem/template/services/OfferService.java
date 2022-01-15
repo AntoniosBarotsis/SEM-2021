@@ -9,8 +9,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import logger.FileLogger;
 import nl.tudelft.sem.template.entities.Offer;
-import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
-import nl.tudelft.sem.template.entities.dtos.AverageRatingResponse;
 import nl.tudelft.sem.template.entities.dtos.AverageRatingResponseWrapper;
 import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
@@ -28,15 +26,11 @@ import org.springframework.web.client.RestTemplate;
 @Primary
 public class OfferService {
 
-    private static final transient double MAX_HOURS = 20;
-    private static final transient double MAX_WEEKS = 26;
-    private static final transient double MIN_RATING = 2.5;
-
     @Autowired
     private transient OfferRepository offerRepository;
 
     @Autowired
-    private transient RestTemplate restTemplate;
+    private transient Utility utility;
 
     @Autowired
     private transient FileLogger logger;
@@ -51,17 +45,22 @@ public class OfferService {
      */
     public Offer saveOffer(Offer offer) throws
             IllegalArgumentException, LowRatingException, UpstreamServiceException {
-        if (offer.getHoursPerWeek() > MAX_HOURS) {
+
+        double maxHours = 20;
+        if (offer.getHoursPerWeek() > maxHours) {
             throw new IllegalArgumentException("Offer exceeds 20 hours per week");
         }
-        if (offer.getTotalHours() / offer.getHoursPerWeek() > MAX_WEEKS) {
+
+        double maxWeeks = 26;
+        if (offer.getTotalHours() / offer.getHoursPerWeek() > maxWeeks) {
             throw new IllegalArgumentException("Offer exceeds 6 month duration");
         }
 
         // Contact the user feedback service to get the average rating.
-        double rating = getAverageRating(offer.getCreatorUsername());
-        if (rating < MIN_RATING && rating != -1) {
-            throw new LowRatingException("create offer", MIN_RATING);
+        double minRating = 2.5;
+        double rating = utility.getAverageRating(offer.getCreatorUsername());
+        if (rating < minRating && rating != -1) {
+            throw new LowRatingException("create offer", minRating);
         }
 
         offer.setStatus(Status.PENDING);
@@ -107,6 +106,8 @@ public class OfferService {
             .distinct()
             .collect(Collectors.toMap(Function.identity(), x -> new ArrayList<>()));
         offers.forEach(x -> res.get(getClassTag(x)).add(x));
+
+        logger.log(offers.size() + " offers have been made by " + username);
         return res;
     }
 
@@ -120,33 +121,8 @@ public class OfferService {
     private <T> String getClassTag(T item) {
         String s = item.getClass().getSimpleName();
         return s.substring(0, 1).toLowerCase(Locale.ROOT)
-            + s.substring(1, s.length())
+            + s.substring(1)
             + "s";
-    }
-
-    /**
-     * Returns the average rating of a user by contacting the user feedback service.
-     *
-     * @param username username of the user.
-     * @return average rating of the user.
-     * @throws UpstreamServiceException Thrown when the user feedback service is not available.
-     */
-    public double getAverageRating(String username) throws UpstreamServiceException {
-        String feedbackServiceUrl = "http://feedback-service/user/" + username;
-        try {
-            AverageRatingResponseWrapper response = restTemplate.getForObject(
-                    feedbackServiceUrl, AverageRatingResponseWrapper.class
-            );
-            System.out.println(response.getData().getAverageRating());
-            Objects.requireNonNull(response);
-            Objects.requireNonNull(response.getData());
-            return response.getData().getAverageRating();
-        } catch (Exception exception) {
-            throw new UpstreamServiceException(
-                    "Unable to get an average rating for " + username + " from feedback service.",
-                    exception
-            );
-        }
     }
 }
 

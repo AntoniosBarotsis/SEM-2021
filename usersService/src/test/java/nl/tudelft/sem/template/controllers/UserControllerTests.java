@@ -155,8 +155,9 @@ public class UserControllerTests {
 
         UserCreateRequest userRequest =
             new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
-        assertEquals(entity, userController.updateUser(
-                userRequest, "admin", Role.ADMIN.toString()));
+
+        assertEquals(entity, userController
+                .updateUser(userRequest, "admin", Role.ADMIN.toString()));
     }
 
     @Test
@@ -167,10 +168,10 @@ public class UserControllerTests {
         ResponseEntity<Response<User>> entity =
                 new ResponseEntity<>(response, HttpStatus.OK);
 
-        UserCreateRequest userRequest = new UserCreateRequest(
-                user.getUsername(), user.getPassword(), user.getRole());
-        assertEquals(entity, userController.updateUser(
-                userRequest, user.getUsername(), user.getRole().toString()));
+        UserCreateRequest userRequest =
+                new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
+        assertEquals(entity, userController
+                .updateUser(userRequest, user.getUsername(), user.getRole().toString()));
     }
 
     @Test
@@ -185,10 +186,10 @@ public class UserControllerTests {
         ResponseEntity<Response<User>> entity =
                 new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 
-        UserCreateRequest userRequest = new UserCreateRequest(
-                user.getUsername(), user.getPassword(), user.getRole());
-        assertEquals(entity, userController.updateUser(
-                userRequest, "admin2", Role.ADMIN.toString()));
+        UserCreateRequest userRequest =
+            new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
+        assertEquals(entity, userController
+                .updateUser(userRequest, "admin2", Role.ADMIN.toString()));
     }
 
     @Test
@@ -200,10 +201,10 @@ public class UserControllerTests {
         ResponseEntity<Response<User>> entity =
                 new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
 
-        UserCreateRequest userRequest = new UserCreateRequest(
-                user.getUsername(), user.getPassword(), user.getRole());
-        assertEquals(entity, userController.updateUser(
-                userRequest, "notAdmin", Role.STUDENT.toString()));
+        UserCreateRequest userRequest =
+                new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
+        assertEquals(entity, userController
+                .updateUser(userRequest, "notAdmin", Role.STUDENT.toString()));
     }
 
     @Test
@@ -215,10 +216,10 @@ public class UserControllerTests {
         ResponseEntity<Response<User>> entity =
                 new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
 
-        UserCreateRequest userRequest = new UserCreateRequest(
-                user.getUsername(), user.getPassword(), Role.ADMIN);
-        assertEquals(entity, userController.updateUser(
-                userRequest, "notAdmin", Role.STUDENT.toString()));
+        UserCreateRequest userRequest =
+                new UserCreateRequest(user.getUsername(), user.getPassword(), Role.ADMIN);
+        assertEquals(entity, userController
+                .updateUser(userRequest, "notAdmin", Role.STUDENT.toString()));
     }
 
     @Test

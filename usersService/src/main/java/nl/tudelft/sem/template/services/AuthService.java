@@ -1,10 +1,9 @@
 package nl.tudelft.sem.template.services;
 
-import java.util.Date;
-
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.sun.istack.NotNull;
+import java.util.Date;
 import nl.tudelft.sem.template.entities.JwtConfig;
 import nl.tudelft.sem.template.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
