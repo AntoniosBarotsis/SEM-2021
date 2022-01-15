@@ -14,6 +14,7 @@ import nl.tudelft.sem.template.entities.User;
 import nl.tudelft.sem.template.enums.Role;
 import nl.tudelft.sem.template.exceptions.UserAlreadyExists;
 import nl.tudelft.sem.template.exceptions.UserNotFound;
+import nl.tudelft.sem.template.services.UserControllerHelperService;
 import nl.tudelft.sem.template.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -116,8 +117,8 @@ public class UserControllerTests {
                 .when(userService)
                 .deleteUser(user.getUsername());
 
-        ResponseEntity<String> entity =
-                new ResponseEntity<>(HttpStatus.OK);
+        ResponseEntity<Response<User>> entity = UserControllerHelperService.createUserResponse(
+                null, HttpStatus.OK);
         assertEquals(entity, userController.deleteUser(user.getUsername(), Role.ADMIN.toString()));
     }
 
@@ -127,16 +128,20 @@ public class UserControllerTests {
                 .when(userService)
                 .deleteUser(user.getUsername());
 
-        ResponseEntity<String> entity =
-                new ResponseEntity<>("Could not find user with ID testing",
-                        HttpStatus.NOT_FOUND);
+        ResponseEntity<Response<User>> entity = UserControllerHelperService.createErrorResponse(
+                "Could not find user with ID testing",
+                HttpStatus.NOT_FOUND
+        );
 
         assertEquals(entity, userController.deleteUser(user.getUsername(), Role.ADMIN.toString()));
     }
 
     @Test
     void deleteUserForbiddenNotAdmin() {
-        ResponseEntity<String> entity = new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        ResponseEntity<Response<User>> entity = UserControllerHelperService.createErrorResponse(
+                "Only admins can delete users",
+                HttpStatus.FORBIDDEN
+        );
         assertEquals(entity, userController.deleteUser("test123", Role.STUDENT.toString()));
     }
 
@@ -150,7 +155,9 @@ public class UserControllerTests {
 
         UserCreateRequest userRequest =
             new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
-        assertEquals(entity, userController.updateUser(userRequest,"admin", Role.ADMIN.toString()));
+
+        assertEquals(entity, userController
+                .updateUser(userRequest, "admin", Role.ADMIN.toString()));
     }
 
     @Test
@@ -163,7 +170,8 @@ public class UserControllerTests {
 
         UserCreateRequest userRequest =
                 new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
-        assertEquals(entity, userController.updateUser(userRequest,user.getUsername(), user.getRole().toString()));
+        assertEquals(entity, userController
+                .updateUser(userRequest, user.getUsername(), user.getRole().toString()));
     }
 
     @Test
@@ -180,7 +188,8 @@ public class UserControllerTests {
 
         UserCreateRequest userRequest =
             new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
-        assertEquals(entity, userController.updateUser(userRequest,"admin2", Role.ADMIN.toString()));
+        assertEquals(entity, userController
+                .updateUser(userRequest, "admin2", Role.ADMIN.toString()));
     }
 
     @Test
@@ -192,8 +201,10 @@ public class UserControllerTests {
         ResponseEntity<Response<User>> entity =
                 new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
 
-        UserCreateRequest userRequest = new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
-        assertEquals(entity, userController.updateUser(userRequest,"notAdmin", Role.STUDENT.toString()));
+        UserCreateRequest userRequest =
+                new UserCreateRequest(user.getUsername(), user.getPassword(), user.getRole());
+        assertEquals(entity, userController
+                .updateUser(userRequest, "notAdmin", Role.STUDENT.toString()));
     }
 
     @Test
@@ -205,16 +216,18 @@ public class UserControllerTests {
         ResponseEntity<Response<User>> entity =
                 new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
 
-        UserCreateRequest userRequest = new UserCreateRequest(user.getUsername(), user.getPassword(), Role.ADMIN);
-        assertEquals(entity, userController.updateUser(userRequest,"notAdmin", Role.STUDENT.toString()));
+        UserCreateRequest userRequest =
+                new UserCreateRequest(user.getUsername(), user.getPassword(), Role.ADMIN);
+        assertEquals(entity, userController
+                .updateUser(userRequest, "notAdmin", Role.STUDENT.toString()));
     }
 
     @Test
     void loginUserTest() {
         Mockito.when(userService.getUser(user.getUsername()))
                 .thenReturn(java.util.Optional.ofNullable(user));
-        Mockito.when(userService.verifyPassword(user, user.getPassword())).thenReturn(true);
-        Mockito.when(userService.generateJwtToken(user)).thenReturn("generated_token_test");
+        Mockito.when(userService.login(user, user.getPassword()))
+                .thenReturn("generated_token_test");
 
         ResponseEntity<Response<UserLoginResponse>> loginResponse = userController.login(
                 new UserLoginRequest(user.getUsername(), user.getPassword())
@@ -229,8 +242,8 @@ public class UserControllerTests {
     void loginUserTestPasswordIncorrect() {
         Mockito.when(userService.getUser(user.getUsername()))
                 .thenReturn(java.util.Optional.ofNullable(user));
-        Mockito.when(userService.verifyPassword(user, user.getPassword())).thenReturn(true);
-        Mockito.when(userService.generateJwtToken(user)).thenReturn("generated_token_test");
+        Mockito.when(userService.login(user, user.getPassword()))
+                .thenReturn("generated_token_test");
 
         ResponseEntity<Response<UserLoginResponse>> loginResponse = userController.login(
                 new UserLoginRequest(user.getUsername(), "this_is_not_the_password")

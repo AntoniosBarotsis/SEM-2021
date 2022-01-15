@@ -12,12 +12,13 @@ import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
 import nl.tudelft.sem.template.exceptions.InactiveContractException;
 import nl.tudelft.sem.template.exceptions.InvalidChangeProposalException;
 import nl.tudelft.sem.template.exceptions.InvalidContractException;
+import nl.tudelft.sem.template.interfaces.ContractServiceInterface;
 import nl.tudelft.sem.template.repositories.ContractRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ContractService {
+public class ContractService implements ContractServiceInterface {
 
     @Autowired
     private transient ContractRepository contractRepository;
@@ -84,28 +85,10 @@ public class ContractService {
         // If we need the current active contract:
         if (active) {
             // Retrieve current active contract:
-            contract = contractRepository.findActiveContract(companyId, studentId);
-
-            // Check if it should expire (updates it in the repository as well):
-            if (contract == null || shouldExpire(contract)) {
-                throw new ContractNotFoundException(companyId, studentId);
-            }
-
+            contract = getActive(companyId, studentId);
         } else {
             // Retrieve most recent (active or not) contract:
-            contract = contractRepository
-                    .findFirstByCompanyIdEqualsAndStudentIdEqualsOrderByStartDateDesc(
-                            companyId, studentId
-                    );
-
-            if (contract == null) {
-                throw new ContractNotFoundException(companyId, studentId);
-            }
-
-            // Check if it should expire (updates it in the repository as well):
-            if (shouldExpire(contract)) {
-                contract.setStatus(ContractStatus.EXPIRED);
-            }
+            contract = getNewest(companyId, studentId);
         }
 
         return contract;
@@ -134,6 +117,54 @@ public class ContractService {
             contract.setStatus(ContractStatus.EXPIRED);
         }
 
+        return contract;
+    }
+
+    /**
+     * Gets an active Contract.
+     *
+     * @param companyId - the id of the company.
+     * @param studentId - the id of the student.
+     * @return - An active Contract.
+     * @throws ContractNotFoundException - May be thrown,
+     *      if contract doesn't exist or should Expire.
+     */
+    private Contract getActive(String companyId, String studentId)
+            throws ContractNotFoundException {
+        Contract contract = contractRepository.findActiveContract(companyId, studentId);
+
+        // Check if it should expire (updates it in the repository as well):
+        if (contract == null || shouldExpire(contract)) {
+            throw new ContractNotFoundException(companyId, studentId);
+        }
+
+        return contract;
+    }
+
+    /**
+     * Gets the most recent Contract.
+     *
+     * @param companyId - the id of the company.
+     * @param studentId - the id of the student.
+     * @return - The most recent Contract.
+     * @throws ContractNotFoundException - May be thrown,
+     *      if contract doesn't exist.
+     */
+    private Contract getNewest(String companyId, String studentId)
+            throws ContractNotFoundException {
+        Contract contract = contractRepository
+                .findFirstByCompanyIdEqualsAndStudentIdEqualsOrderByStartDateDesc(
+                        companyId, studentId
+                );
+
+        if (contract == null) {
+            throw new ContractNotFoundException(companyId, studentId);
+        }
+
+        // Check if it should expire (updates it in the repository as well):
+        if (shouldExpire(contract)) {
+            contract.setStatus(ContractStatus.EXPIRED);
+        }
         return contract;
     }
 

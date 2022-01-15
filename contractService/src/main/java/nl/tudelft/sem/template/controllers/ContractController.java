@@ -9,7 +9,7 @@ import nl.tudelft.sem.template.exceptions.AccessDeniedException;
 import nl.tudelft.sem.template.exceptions.ContractNotFoundException;
 import nl.tudelft.sem.template.exceptions.InactiveContractException;
 import nl.tudelft.sem.template.exceptions.InvalidContractException;
-import nl.tudelft.sem.template.services.ContractService;
+import nl.tudelft.sem.template.interfaces.ContractServiceInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ContractController {
 
     @Autowired
-    private transient ContractService contractService;
+    private transient ContractServiceInterface contractService;
 
     private final transient String nameHeader = "x-user-name";
     private final transient String roleHeader = "x-user-role";
@@ -77,15 +77,14 @@ public class ContractController {
             @RequestHeader(roleHeader) String role,
             @Valid @RequestBody ContractRequest contractRequest
     ) {
-        String internalServiceRole = "INTERNAL_SERVICE";
-        if (!internalServiceRole.equals(role)) {
+        if (!role.equals("INTERNAL_SERVICE")) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         try {
             Contract c = contractService.saveContract(contractRequest.toContract());
             return new ResponseEntity<>(c, HttpStatus.CREATED);
-        } catch (InvalidContractException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return getResponseEntityForException(e);
         }
     }
 
@@ -101,7 +100,7 @@ public class ContractController {
      *         404 NOT FOUND if the contract is not found.
      */
     @PutMapping("/{id}/terminate")
-    public ResponseEntity<String> terminateContract(
+    public ResponseEntity<Object> terminateContract(
             @RequestHeader(nameHeader) String userName,
             @PathVariable Long id) {
 
@@ -113,12 +112,8 @@ public class ContractController {
         try {
             contractService.terminateContract(id, userName);
             return ResponseEntity.ok().body(null);
-        } catch (ContractNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (InactiveContractException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (AccessDeniedException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            return getResponseEntityForException(e);
         }
     }
 
@@ -147,10 +142,8 @@ public class ContractController {
         try {
             Contract contract = contractService.getContract(companyId, studentId, true, userName);
             return ResponseEntity.ok().body(contract);
-        } catch (ContractNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (AccessDeniedException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            return getResponseEntityForException(e);
         }
     }
 
@@ -179,11 +172,35 @@ public class ContractController {
         try {
             Contract contract = contractService.getContract(companyId, studentId, false, userName);
             return ResponseEntity.ok().body(contract);
-        } catch (ContractNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (AccessDeniedException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            return getResponseEntityForException(e);
         }
     }
 
+    /**
+     * Returns a response entity with an error message and a different status
+     * for different exceptions.
+     *
+     * @param e The exception that was thrown.
+     * @return A response entity with different statuses for different exceptions.
+     */
+    private ResponseEntity<Object> getResponseEntityForException(Exception e) {
+        if (e instanceof ContractNotFoundException) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+
+        if (e instanceof AccessDeniedException) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+        }
+
+        if (e instanceof InvalidContractException) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
+        if (e instanceof InactiveContractException) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

@@ -26,9 +26,6 @@ public class NonTargetedCompanyOfferService extends OfferService {
     private transient ApplicationRepository applicationRepository;
 
     @Autowired
-    private transient RestTemplate restTemplate;
-
-    @Autowired
     private transient Utility utility;
 
     @Autowired
@@ -100,7 +97,7 @@ public class NonTargetedCompanyOfferService extends OfferService {
         contract = utility.createContract(userName, application.get().getStudentId(),
                 nonTargetedCompanyOffer.getHoursPerWeek(),
                 nonTargetedCompanyOffer.getTotalHours(),
-                application.get().getPricePerHour(), restTemplate);
+                application.get().getPricePerHour());
 
         List<Application> applications = nonTargetedCompanyOffer.getApplications();
 

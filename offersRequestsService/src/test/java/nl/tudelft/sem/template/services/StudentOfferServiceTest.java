@@ -48,8 +48,6 @@ public class StudentOfferServiceTest {
     private transient TargetedCompanyOfferRepository targetedCompanyOfferRepository;
     @MockBean
     private transient OfferRepository offerRepository;
-    @MockBean
-    private transient RestTemplate restTemplate;
 
     @MockBean
     private transient Utility utility;
@@ -108,13 +106,15 @@ public class StudentOfferServiceTest {
     void getOffersByIdTestPass() {
         List<Offer> returned = new ArrayList<>();
         returned.add(offerThree);
+        try {
+            Mockito.doNothing().when(utility).userExists(any());
+            Mockito.when(studentOfferRepository.findAllByStudentId(student))
+                    .thenReturn(returned);
 
-        Mockito.doNothing().when(utility).userExists(any(), any());
-
-        Mockito.when(studentOfferRepository.findAllByStudentId(student))
-                .thenReturn(returned);
-
-        assertEquals(returned, studentOfferService.getOffersById(student));
+            assertEquals(returned, studentOfferService.getOffersById(student));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
@@ -136,7 +136,7 @@ public class StudentOfferServiceTest {
         Mockito.when(targetedCompanyOfferRepository.findById(accepted.getId()))
                         .thenReturn(Optional.of(accepted));
 
-        Mockito.when(utility.createContract(any(), any(), any(), any(), any(), any()))
+        Mockito.when(utility.createContract(any(), any(), any(), any(), any()))
                 .thenReturn(contract);
 
         final ContractDto actual = studentOfferService.acceptOffer(student, accepted.getId());
@@ -206,8 +206,12 @@ public class StudentOfferServiceTest {
         AverageRatingResponse fakeResponse = new AverageRatingResponse(5.0);
         AverageRatingResponseWrapper responseWrapper = new AverageRatingResponseWrapper();
         responseWrapper.setData(fakeResponse);
-        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
-                .thenReturn(responseWrapper);
+        try {
+            Mockito.when(utility.getAverageRating(Mockito.anyString()))
+                    .thenReturn(5.0);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         StudentOffer edited = offerTwo;
         edited.setDescription("New Description, last one was awful");
