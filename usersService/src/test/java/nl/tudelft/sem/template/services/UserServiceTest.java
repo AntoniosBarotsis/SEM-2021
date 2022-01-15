@@ -34,6 +34,9 @@ public class UserServiceTest {
     @Autowired
     private transient UserService userService;
 
+    @Autowired
+    private transient AuthService authService;
+
     @MockBean
     private transient UserRepository userRepository;
 
@@ -136,31 +139,5 @@ public class UserServiceTest {
                 () -> userService.createUser(user));
 
         assertEquals(errorMessage, exception.getMessage());
-    }
-
-    @Test
-    void testHashPassword() {
-        String password = "test";
-        String hashedPassword = userService.hashPassword(password);
-        assertNotEquals(password, hashedPassword);
-    }
-
-    @Test
-    void testVerifyPassword() {
-        String password = "test_password";
-        User hashedPasswordUser = new StudentFactory()
-            .createUser("test2", userService.hashPassword(password));
-
-        assertTrue(userService.verifyPassword(hashedPasswordUser, password));
-        assertFalse(userService.verifyPassword(hashedPasswordUser, "different_test_password"));
-    }
-
-    @Test
-    void testGenerateJwtToken() {
-        String token = userService.generateJwtToken(user);
-        assertNotNull(token);
-        DecodedJWT decodedToken = JWT.decode(token);
-        assertEquals(user.getUsername(), decodedToken.getClaim("userName").asString());
-        assertEquals(user.getRole().toString(), decodedToken.getClaim("userRole").asString());
     }
 }
