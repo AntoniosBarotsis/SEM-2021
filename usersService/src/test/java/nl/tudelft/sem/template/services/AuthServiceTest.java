@@ -2,13 +2,19 @@ package nl.tudelft.sem.template.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Date;
 import nl.tudelft.sem.template.entities.JwtConfig;
 import nl.tudelft.sem.template.entities.StudentFactory;
 import nl.tudelft.sem.template.entities.User;
@@ -19,10 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.Date;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 
 @SpringBootTest
@@ -31,6 +34,9 @@ public class AuthServiceTest {
 
     @Autowired
     private transient AuthService authService;
+
+    @MockBean
+    private transient BCryptPasswordEncoder passwordEncoder;
 
     @MockBean
     private transient JwtConfig jwtConfig;
@@ -45,18 +51,36 @@ public class AuthServiceTest {
     @Test
     void testHashPassword() {
         String password = "test";
+        String hashed = "hashedPassword";
+        when(passwordEncoder.encode(password)).thenReturn(hashed);
+
         String hashedPassword = authService.hashPassword(password);
-        assertNotEquals(password, hashedPassword);
+        assertEquals(hashed, hashedPassword);
     }
 
     @Test
-    void testVerifyPassword() {
+    void testVerifyPasswordCorrect() {
         String password = "test_password";
         User hashedPasswordUser = new StudentFactory()
-                .createUser("test2", authService.hashPassword(password));
+                .createUser("test2", "hashedPassword");
+
+        when(passwordEncoder.matches(password, hashedPasswordUser.getPassword()))
+                .thenReturn(true);
 
         assertTrue(authService.verifyPassword(hashedPasswordUser, password));
-        assertFalse(authService.verifyPassword(hashedPasswordUser, "different_test_password"));
+        verify(passwordEncoder).matches(password, hashedPasswordUser.getPassword());
+    }
+
+    @Test
+    void testVerifyPasswordWrongPassword() {
+        String password = "test_password";
+        User hashedPasswordUser = new StudentFactory()
+                .createUser("test2", "abc");
+
+        when(passwordEncoder.matches(password, hashedPasswordUser.getPassword()))
+                .thenReturn(false);
+
+        assertFalse(authService.verifyPassword(hashedPasswordUser, password));
     }
 
     @Test
@@ -73,7 +97,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    void testGenerateJwtTokenTestDate(){
+    void testGenerateJwtTokenTestDate() {
         when(jwtConfig.getJwtSecret()).thenReturn("secret");
         when(jwtConfig.getLifetime()).thenReturn((long) (60 * 60 * 1000));
 
