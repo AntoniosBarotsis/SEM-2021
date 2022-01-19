@@ -33,7 +33,7 @@ public class AuthServiceTest {
     private transient AuthService authService;
 
     @MockBean
-    private JwtConfig jwtConfig;
+    private transient JwtConfig jwtConfig;
 
     private transient User user;
 
