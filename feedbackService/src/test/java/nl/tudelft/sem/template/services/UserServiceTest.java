@@ -93,7 +93,6 @@ public class UserServiceTest {
 
     @Test
     void testUserNotExists() {
-        UserResponse userResponse = new UserResponse(userName, "test2", UserRole.STUDENT);
         UserResponseWrapper userResponseWrapper = new UserResponseWrapper();
         userResponseWrapper.setData(null);
         when(restTemplate.getForObject(userServiceEndpoint + userName, UserResponseWrapper.class))

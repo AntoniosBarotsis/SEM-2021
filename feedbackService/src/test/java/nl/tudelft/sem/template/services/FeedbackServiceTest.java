@@ -65,17 +65,18 @@ public class FeedbackServiceTest {
     private transient long id = 1;
     private transient String userName = "username";
     private transient String userRole = "STUDENT";
+    private transient String userReview = "review";
 
     @BeforeEach
     void setUp() {
         Long contractId = -1L;
         feedbackResponse =
-            new FeedbackResponse("review", 0, userName, "to", contractId);
+            new FeedbackResponse(userReview, 0, userName, "to", contractId);
         feedbackRequest =
-            new FeedbackRequest("review", 0, userName, "to", contractId);
+            new FeedbackRequest(userReview, 0, userName, "to", contractId);
         rating = new Rating(0);
         feedback =
-            new Feedback(id, "review", rating, userName, "to", contractId);
+            new Feedback(id, userReview, rating, userName, "to", contractId);
         userRoleResponse = new UserRoleResponse();
         userRoleResponse.setRole("COMPANY");
         userRoleResponseWrapper = new UserRoleResponseWrapper();
@@ -126,7 +127,7 @@ public class FeedbackServiceTest {
 
     @Test
     void createTest2() {
-        userRoleResponseWrapper.setData(new UserRoleResponse("STUDENT"));
+        userRoleResponseWrapper.setData(new UserRoleResponse(userRole));
         String newUserRole = "COMPANY";
 
         when(restTemplate.getForObject(anyString(), eq(UserRoleResponseWrapper.class)))
@@ -147,7 +148,7 @@ public class FeedbackServiceTest {
 
     @Test
     void createTest3() {
-        FeedbackRequest req = new FeedbackRequest("review", 0, null, "to", 0L);
+        FeedbackRequest req = new FeedbackRequest(userReview, 0, null, "to", 0L);
 
         when(restTemplate.getForObject(anyString(), eq(UserRoleResponseWrapper.class)))
             .thenReturn(userRoleResponseWrapper);
@@ -166,7 +167,7 @@ public class FeedbackServiceTest {
     @Test
     void createTest4() {
         userRoleResponse = new UserRoleResponse();
-        userRoleResponse.setRole("STUDENT");
+        userRoleResponse.setRole(userRole);
         userRoleResponseWrapper = new UserRoleResponseWrapper();
         userRoleResponseWrapper.setData(userRoleResponse);
 
@@ -179,8 +180,7 @@ public class FeedbackServiceTest {
         when(feedbackRepository.save(any(Feedback.class)))
             .thenReturn(feedback);
 
-        Pair<FeedbackResponse, Long> actual = feedbackService
-            .create(feedbackRequest, userName, "COMPANY");
+        feedbackService.create(feedbackRequest, userName, "COMPANY");
     }
 
     @Test
@@ -242,7 +242,7 @@ public class FeedbackServiceTest {
 
     @Test
     void createAuthorHasSameRoleAsRecipient() {
-        userRoleResponseWrapper.setData(new UserRoleResponse("STUDENT"));
+        userRoleResponseWrapper.setData(new UserRoleResponse(userRole));
         when(restTemplate.getForObject(anyString(), eq(UserRoleResponseWrapper.class)))
             .thenReturn(userRoleResponseWrapper);
 
