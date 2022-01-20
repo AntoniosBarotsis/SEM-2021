@@ -107,7 +107,7 @@ public class OfferService {
             .collect(Collectors.toMap(Function.identity(), x -> new ArrayList<>()));
         offers.forEach(x -> res.get(getClassTag(x)).add(x));
 
-        logger.log(offers.size() + " offers have been made by " + username);
+        logger.log(offers.size() + " offer(s) associated with " + username);
         return res;
     }
 

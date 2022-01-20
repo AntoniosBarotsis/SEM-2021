@@ -22,6 +22,8 @@ import nl.tudelft.sem.template.entities.dtos.AverageRatingResponseWrapper;
 import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.ContractCreationException;
+import nl.tudelft.sem.template.exceptions.UserDoesNotExistException;
+import nl.tudelft.sem.template.exceptions.UserServiceUnvanvailableException;
 import nl.tudelft.sem.template.repositories.OfferRepository;
 import nl.tudelft.sem.template.repositories.StudentOfferRepository;
 import nl.tudelft.sem.template.repositories.TargetedCompanyOfferRepository;
@@ -111,7 +113,9 @@ public class StudentOfferServiceTest {
             Mockito.when(studentOfferRepository.findAllByStudentId(student))
                     .thenReturn(returned);
 
-            assertEquals(returned, studentOfferService.getOffersById(student));
+            List<Offer> test = studentOfferService.getOffersById(student);
+            Mockito.verify(utility).userExists(student);
+            assertEquals(returned, test);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -132,7 +136,7 @@ public class StudentOfferServiceTest {
     void acceptOfferTest() throws NoPermissionException, ContractCreationException {
         TargetedCompanyOffer declined = new TargetedCompanyOffer();
         offerTwo.setTargetedCompanyOffers(List.of(declined, accepted));
-
+        accepted.setId(1L);
         Mockito.when(targetedCompanyOfferRepository.findById(accepted.getId()))
                         .thenReturn(Optional.of(accepted));
 
@@ -144,6 +148,8 @@ public class StudentOfferServiceTest {
         Mockito.verify(studentOfferRepository, times(1)).save(any());
         Mockito.verify(targetedCompanyOfferRepository,
                 times(2)).save(any());
+
+        Mockito.verify(fileLogger).log("Student has accepted offer 1 from user Our Company");
         assertSame(accepted.getStatus(), Status.ACCEPTED);
         assertSame(offerTwo.getStatus(), Status.DISABLED);
         assertSame(declined.getStatus(), Status.DECLINED);
@@ -270,6 +276,30 @@ public class StudentOfferServiceTest {
         List<String> expertises = new ArrayList<>();
         expertises.add("Swimming");
         assertEquals(List.of(offerTwo),
+                studentOfferService.getByExpertises(expertises));
+    }
+
+    @Test
+    void getByExpertisesMultipleTest() throws UnsupportedEncodingException {
+        List<StudentOffer> asd = new ArrayList<>();
+        asd.add(offerTwo);
+        Mockito.when(studentOfferRepository.findAllActive())
+                .thenReturn(asd);
+
+        List<String> expertises = Arrays.asList("Dancing", "Jumping", "Swimming");
+        assertEquals(List.of(offerTwo),
+                studentOfferService.getByExpertises(expertises));
+    }
+
+    @Test
+    void getByExpertisesNonExistantest() throws UnsupportedEncodingException {
+        List<StudentOffer> asd = new ArrayList<>();
+        asd.add(offerTwo);
+        Mockito.when(studentOfferRepository.findAllActive())
+                .thenReturn(asd);
+
+        List<String> expertises = Arrays.asList("Looking", "At", "Nothing");
+        assertEquals(List.of(),
                 studentOfferService.getByExpertises(expertises));
     }
 }
