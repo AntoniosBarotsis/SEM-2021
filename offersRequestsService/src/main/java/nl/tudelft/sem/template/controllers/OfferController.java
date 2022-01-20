@@ -97,13 +97,14 @@ public class OfferController {
      * This methods handles the creation of a company offer.
      *
      * @param userName - the name of the user.
-     * @param studentOfferId - the id of the student offer (Needed for creating a targeted company offer)
+     * @param studentOfferId - the id of the student offer (Needed
+     *                          for creating a targeted company offer)
      * @param offer - the offer, which will be created.
      * @return - a ResponseEntity, containing a response
      *      with either the created offer or an error message.
      */
     private ResponseEntity<Response<Offer>>
-        createCompanyOffer(String userName, Optional<Long> studentOfferId, OfferDto offer){
+        createCompanyOffer(String userName, Optional<Long> studentOfferId, OfferDto offer) {
         if (studentOfferId.isPresent()) {
             return targetedController
                     .saveTargetedCompanyOffer(userName,

@@ -1,17 +1,13 @@
 package nl.tudelft.sem.template.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import java.util.Optional;
 import logger.FileLogger;
 import nl.tudelft.sem.template.entities.StudentFactory;
@@ -34,7 +30,7 @@ public class UserServiceTest {
     @Autowired
     private transient UserService userService;
 
-    @Autowired
+    @MockBean
     private transient AuthService authService;
 
     @MockBean
@@ -45,9 +41,13 @@ public class UserServiceTest {
 
     private transient User user;
 
+    private final transient String userPassword = "testPass";
+    private final transient String fakeHashedPassword = "fakeHashedPassword";
+
+
     @BeforeEach
     void setUp() {
-        user = new StudentFactory().createUser("testing", "testPass");
+        user = new StudentFactory().createUser("testing", userPassword);
     }
 
     @Test
@@ -61,7 +61,7 @@ public class UserServiceTest {
         } catch (UserNotFound e) {
             e.printStackTrace();
         }
-
+        verify(fileLogger, times(1)).log(any());
         verify(userRepository, times(1)).deleteById(user.getUsername());
     }
 
@@ -103,7 +103,11 @@ public class UserServiceTest {
         Mockito.when(userRepository.save(user))
                 .thenReturn(user);
 
+        Mockito.when(authService.hashPassword(user.getPassword())).thenReturn(fakeHashedPassword);
+
         assertEquals(user, userService.updateUser(user));
+        assertEquals(fakeHashedPassword, user.getPassword());
+        Mockito.verify(userRepository, times(1)).deleteById(user.getUsername());
     }
 
     @Test
@@ -126,7 +130,10 @@ public class UserServiceTest {
         Mockito.when(userRepository.save(user))
                 .thenReturn(user);
 
+        Mockito.when(authService.hashPassword(user.getPassword())).thenReturn(fakeHashedPassword);
         assertEquals(user, userService.createUser(user));
+        assertEquals(fakeHashedPassword, user.getPassword());
+        verify(fileLogger, times(1)).log(any());
     }
 
     @Test
@@ -139,5 +146,22 @@ public class UserServiceTest {
                 () -> userService.createUser(user));
 
         assertEquals(errorMessage, exception.getMessage());
+    }
+
+    @Test
+    void testUserLoginCorrectPassword() {
+        String token = "testToken";
+        Mockito.when(authService.verifyPassword(user, userPassword)).thenReturn(true);
+        Mockito.when(authService.generateJwtToken(user)).thenReturn(token);
+        String actualToken = userService.login(user, userPassword);
+        assertNotNull(actualToken);
+        assertEquals(token, actualToken);
+    }
+
+    @Test
+    void testUserLoginIncorrectPassword() {
+        Mockito.when(authService.verifyPassword(user, userPassword)).thenReturn(false);
+        String actualToken = userService.login(user, userPassword);
+        assertNull(actualToken);
     }
 }
