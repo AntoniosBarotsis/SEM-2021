@@ -3,8 +3,7 @@ package nl.tudelft.sem.template.services;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
+import logger.FileLogger;
 import nl.tudelft.sem.template.entities.dtos.AverageRatingResponse;
 import nl.tudelft.sem.template.entities.dtos.AverageRatingResponseWrapper;
 import nl.tudelft.sem.template.entities.dtos.ContractDto;
@@ -15,7 +14,6 @@ import nl.tudelft.sem.template.exceptions.ContractCreationException;
 import nl.tudelft.sem.template.exceptions.UpstreamServiceException;
 import nl.tudelft.sem.template.exceptions.UserDoesNotExistException;
 import nl.tudelft.sem.template.exceptions.UserServiceUnvanvailableException;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -37,6 +35,8 @@ public class UtilityTest {
 
     @MockBean
     private transient RestTemplate restTemplate;
+    @MockBean
+    private transient FileLogger logger;
 
     private transient String studentId;
     private transient String errorMessage;
@@ -47,8 +47,6 @@ public class UtilityTest {
     private transient ContractDto contract;
     private transient HttpEntity<ContractDto> request;
     private transient String url;
-    private final transient ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-    private final transient PrintStream originalOut = System.out;
 
     @BeforeEach
     void setUp() {
@@ -66,12 +64,6 @@ public class UtilityTest {
         HttpHeaders headers = new HttpHeaders();
         headers.set("x-user-role", "INTERNAL_SERVICE");
         request = new HttpEntity<>(contract, headers);
-        System.setOut(new PrintStream(outContent));
-    }
-
-    @AfterEach
-    void restoreStream() {
-        System.setOut(originalOut);
     }
 
     @Test
@@ -144,7 +136,7 @@ public class UtilityTest {
                 .thenReturn(contract);
         utility
                 .createContract(companyId, studentId, hoursPerWeek, totalHours, pricePerHour);
-        assertEquals("Sending contract to contract microservice\r\n", outContent.toString());
+        Mockito.verify(logger).log("Sending contract to contract microservice");
     }
 
     @Test
@@ -171,7 +163,7 @@ public class UtilityTest {
                         new AverageRatingResponse(4.0), null));
         utility.getAverageRating(studentId);
 
-        assertEquals("4.0\r\n", outContent.toString());
+        Mockito.verify(logger).log("This the average rating for " + studentId + ": " + 4.0);
     }
 
 }
