@@ -63,7 +63,7 @@ dependencies {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
 	testImplementation('org.junit.jupiter:junit-jupiter:5.5.2')
-	testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.1.0'
+	testImplementation group: 'org.mockito', name: 'mockito-inline', version: '3.4.0'
 	testImplementation('org.assertj:assertj-core:3.14.0')
 }
 
