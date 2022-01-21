@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.controllers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
@@ -9,6 +10,8 @@ import nl.tudelft.sem.template.domain.Response;
 import nl.tudelft.sem.template.domain.dtos.requests.FeedbackRequest;
 import nl.tudelft.sem.template.domain.dtos.responses.AverageRatingResponse;
 import nl.tudelft.sem.template.domain.dtos.responses.FeedbackResponse;
+import nl.tudelft.sem.template.exceptions.FeedbackNotFoundException;
+import nl.tudelft.sem.template.exceptions.InvalidRoleException;
 import nl.tudelft.sem.template.services.FeedbackService;
 import nl.tudelft.sem.template.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,6 +60,15 @@ public class FeedbackControllerTest {
     }
 
     @Test
+    void getByIdTest2() {
+        when(feedbackService.getById(id)).thenThrow(FeedbackNotFoundException.class);
+        ResponseEntity<Response<FeedbackResponse>> actual = feedbackController.getById(id);
+
+        assertNotNull(actual);
+        assertNotNull(actual.getBody());
+    }
+
+    @Test
     void createTest() {
         when(feedbackService.create(feedbackRequest, userName, userRole))
             .thenReturn(Pair.of(feedbackResponse, id));
@@ -69,6 +81,28 @@ public class FeedbackControllerTest {
             .create(feedbackRequest, userName, userRole);
 
         assertEquals(expected, actual);
+    }
+
+    @Test
+    void createTest2() {
+        when(feedbackService.create(feedbackRequest, userName, userRole))
+            .thenThrow(InvalidRoleException.class);
+
+        ResponseEntity<Response<FeedbackResponse>> actual = feedbackController
+            .create(feedbackRequest, userName, userRole);
+
+        assertNotNull(actual);
+        assertNotNull(actual.getBody());
+    }
+
+    @Test
+    void createTest3() {
+        ResponseEntity<Response<FeedbackResponse>> actual = feedbackController
+            .create(feedbackRequest, userName, null);
+
+        assertNotNull(actual);
+        assertNotNull(actual.getBody());
+        assertNotNull(actual.getBody().getErrorMessage());
     }
 
     @Test
