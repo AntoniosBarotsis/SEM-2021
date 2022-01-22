@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -88,5 +89,14 @@ public class UserServiceTest {
         when(restTemplate.getForObject(userServiceEndpoint + userName, UserResponseWrapper.class))
                 .thenReturn(userResponseWrapper);
         assertTrue(userService.userExists(userName));
+    }
+
+    @Test
+    void testUserNotExists() {
+        UserResponseWrapper userResponseWrapper = new UserResponseWrapper();
+        userResponseWrapper.setData(null);
+        when(restTemplate.getForObject(userServiceEndpoint + userName, UserResponseWrapper.class))
+            .thenReturn(userResponseWrapper);
+        assertFalse(userService.userExists(userName));
     }
 }

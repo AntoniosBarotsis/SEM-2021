@@ -129,7 +129,7 @@ public class FeedbackServiceHelper {
      * @param userRole The user role
      * @return The recipient role
      */
-    private UserRole getRecipientRole(FeedbackRequest feedbackRequest, String userRole) {
+    UserRole getRecipientRole(FeedbackRequest feedbackRequest, String userRole) {
         String baseUserUrl = "http://users-service/";
         String urlRecipient = baseUserUrl + feedbackRequest.getTo();
 

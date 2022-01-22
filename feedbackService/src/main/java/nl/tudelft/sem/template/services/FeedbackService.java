@@ -58,6 +58,10 @@ public class FeedbackService {
 
             String contractUrl = feedbackServiceHelper.getContractUrl(feedbackRequest, userRole);
 
+            if (contractUrl.isEmpty()) {
+                throw new RestClientException("Contract URL was empty");
+            }
+
             // Check if there exists a contract between the two parties.
             checkExistingContract(feedbackRequest, contractUrl);
 

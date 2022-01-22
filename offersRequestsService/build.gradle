@@ -139,6 +139,8 @@ pitest {
 
 	targetClasses = ['nl.tudelft.sem.template.*']  //by default "${project.group}.*"
 	targetTests = ['nl.tudelft.sem.template.*']
+	excludedClasses = ['nl.tudelft.sem.template.entities.*']
+
 	pitestVersion = '1.5.1' //not needed when a default PIT version should be used
 	threads = 4
 	outputFormats = ['XML', 'HTML']

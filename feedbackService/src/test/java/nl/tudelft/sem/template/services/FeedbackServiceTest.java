@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -64,17 +65,18 @@ public class FeedbackServiceTest {
     private transient long id = 1;
     private transient String userName = "username";
     private transient String userRole = "STUDENT";
+    private transient String userReview = "review";
 
     @BeforeEach
     void setUp() {
         Long contractId = -1L;
         feedbackResponse =
-            new FeedbackResponse("review", 0, userName, "to", contractId);
+            new FeedbackResponse(userReview, 0, userName, "to", contractId);
         feedbackRequest =
-            new FeedbackRequest("review", 0, userName, "to", contractId);
+            new FeedbackRequest(userReview, 0, userName, "to", contractId);
         rating = new Rating(0);
         feedback =
-            new Feedback(id, "review", rating, userName, "to", contractId);
+            new Feedback(id, userReview, rating, userName, "to", contractId);
         userRoleResponse = new UserRoleResponse();
         userRoleResponse.setRole("COMPANY");
         userRoleResponseWrapper = new UserRoleResponseWrapper();
@@ -125,7 +127,7 @@ public class FeedbackServiceTest {
 
     @Test
     void createTest2() {
-        userRoleResponseWrapper.setData(new UserRoleResponse("STUDENT"));
+        userRoleResponseWrapper.setData(new UserRoleResponse(userRole));
         String newUserRole = "COMPANY";
 
         when(restTemplate.getForObject(anyString(), eq(UserRoleResponseWrapper.class)))
@@ -142,6 +144,63 @@ public class FeedbackServiceTest {
             .create(feedbackRequest, userName, newUserRole);
 
         assertEquals(expected.getFirst(), actual.getFirst());
+    }
+
+    @Test
+    void createTest3() {
+        FeedbackRequest req = new FeedbackRequest(userReview, 0, null, "to", 0L);
+
+        when(restTemplate.getForObject(anyString(), eq(UserRoleResponseWrapper.class)))
+            .thenReturn(userRoleResponseWrapper);
+
+        when(restTemplate.exchange(anyString(), any(), any(), eq(ContractResponse.class)))
+            .thenReturn(new ResponseEntity<>(contractResponse, HttpStatus.OK));
+
+        when(feedbackRepository.save(any(Feedback.class)))
+            .thenReturn(feedback);
+
+        feedbackService.create(req, userName, userRole);
+
+        assertEquals(userName, req.getFrom());
+    }
+
+    @Test
+    void createTest4() {
+        userRoleResponse = new UserRoleResponse();
+        userRoleResponse.setRole(userRole);
+        userRoleResponseWrapper = new UserRoleResponseWrapper();
+        userRoleResponseWrapper.setData(userRoleResponse);
+
+        when(restTemplate.getForObject(anyString(), eq(UserRoleResponseWrapper.class)))
+            .thenReturn(userRoleResponseWrapper);
+
+        when(restTemplate.exchange(anyString(), any(), any(), eq(ContractResponse.class)))
+            .thenReturn(new ResponseEntity<>(contractResponse, HttpStatus.OK));
+
+        when(feedbackRepository.save(any(Feedback.class)))
+            .thenReturn(feedback);
+
+        feedbackService.create(feedbackRequest, userName, "COMPANY");
+    }
+
+    @Test
+    void createTest5() {
+        FeedbackServiceHelper feedbackServiceHelper = mock(FeedbackServiceHelper.class);
+        when(feedbackServiceHelper.getContractUrl(any(), any()))
+            .thenReturn("");
+
+        assertThrows(UserServiceUnavailableException.class,
+            () -> feedbackService.create(feedbackRequest, userName, userRole));
+    }
+
+
+    @Test
+    void createTest6() {
+        when(restTemplate.getForObject(any(), any()))
+            .thenReturn(null);
+
+        assertThrows(UserServiceUnavailableException.class,
+            () -> feedbackService.create(feedbackRequest, userName, userRole));
     }
 
     @Test
@@ -183,7 +242,7 @@ public class FeedbackServiceTest {
 
     @Test
     void createAuthorHasSameRoleAsRecipient() {
-        userRoleResponseWrapper.setData(new UserRoleResponse("STUDENT"));
+        userRoleResponseWrapper.setData(new UserRoleResponse(userRole));
         when(restTemplate.getForObject(anyString(), eq(UserRoleResponseWrapper.class)))
             .thenReturn(userRoleResponseWrapper);
 

@@ -13,12 +13,9 @@ import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.ContractCreationException;
-import nl.tudelft.sem.template.exceptions.LowRatingException;
-import nl.tudelft.sem.template.exceptions.UpstreamServiceException;
 import nl.tudelft.sem.template.services.NonTargetedCompanyOfferService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -80,7 +77,7 @@ class NonTargetedCompanyOfferControllerTest {
     }
 
     @Test
-    void saveOfferValidTest() throws LowRatingException, UpstreamServiceException {
+    void saveOfferValidTest() {
         Mockito.when(offerService.saveOfferWithResponse(offer)).thenReturn(
                 new ResponseEntity<>(new Response<>(offer), HttpStatus.CREATED)
         );
@@ -91,7 +88,7 @@ class NonTargetedCompanyOfferControllerTest {
     }
 
     @Test
-    void saveOfferIllegalTest() throws LowRatingException, UpstreamServiceException {
+    void saveOfferIllegalTest() {
         String error = "error";
         Mockito.when(offerService.saveOfferWithResponse(offer)).thenReturn(
                 new ResponseEntity<>(new Response<>(null, error), HttpStatus.BAD_REQUEST)

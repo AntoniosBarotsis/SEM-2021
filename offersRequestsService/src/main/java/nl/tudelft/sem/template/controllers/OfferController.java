@@ -5,10 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.validation.Valid;
-import nl.tudelft.sem.template.entities.NonTargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.Offer;
-import nl.tudelft.sem.template.entities.StudentOffer;
-import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.entities.dtos.OfferDto;
 import nl.tudelft.sem.template.entities.dtos.Response;
@@ -97,7 +94,8 @@ public class OfferController {
      * This methods handles the creation of a company offer.
      *
      * @param userName - the name of the user.
-     * @param studentOfferId - the id of the student offer associated with the companyoffer.
+     * @param studentOfferId - the id of the student offer (Needed
+     *                          for creating a targeted company offer)
      * @param offer - the offer, which will be created.
      * @return - a ResponseEntity, containing a response
      *      with either the created offer or an error message.
