@@ -12,8 +12,6 @@ import nl.tudelft.sem.template.entities.StudentOffer;
 import nl.tudelft.sem.template.entities.TargetedCompanyOffer;
 import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
-import nl.tudelft.sem.template.exceptions.LowRatingException;
-import nl.tudelft.sem.template.exceptions.UpstreamServiceException;
 import nl.tudelft.sem.template.exceptions.UserNotAuthorException;
 import nl.tudelft.sem.template.services.TargetedCompanyOfferService;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,7 +68,7 @@ class TargetedCompanyOfferControllerTest {
     }
 
     @Test
-    void saveTargetedCompanyOfferValid() throws LowRatingException, UpstreamServiceException {
+    void saveTargetedCompanyOfferValid() {
         TargetedCompanyOffer targetedCompanyOffer2 = new TargetedCompanyOffer(
             "This is a company title", "This is a company description",
             20, 520,
@@ -92,7 +90,7 @@ class TargetedCompanyOfferControllerTest {
     }
 
     @Test
-    void saveTargetedCompanyOfferIllegal() throws LowRatingException, UpstreamServiceException {
+    void saveTargetedCompanyOfferIllegal() {
         targetedCompanyOffer.setHoursPerWeek(21);
         String errorMessage = "Offer exceeds 20 hours per week";
         Mockito.when(targetedCompanyOfferService.saveOfferWithResponse(targetedCompanyOffer, 33L))

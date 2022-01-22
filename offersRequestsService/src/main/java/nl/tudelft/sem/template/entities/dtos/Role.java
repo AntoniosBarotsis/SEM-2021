@@ -1,6 +1,6 @@
 package nl.tudelft.sem.template.entities.dtos;
 
-enum Role {
+public enum Role {
     STUDENT,
     COMPANY,
     ADMIN

@@ -224,4 +224,15 @@ class TargetedCompanyOfferServiceTest {
         assertNull(Objects.requireNonNull(response.getBody()).getData());
     }
 
+    @Test
+    void saveTargetedCompanyOfferWithResponseMockingTest() {
+        TargetedCompanyOffer offer = Mockito.mock(TargetedCompanyOffer.class);
+        studentOffer.setId(33L);
+        Mockito.when(studentOfferRepository.getById(33L))
+                .thenReturn(studentOffer);
+        targetedCompanyOfferService.saveOfferWithResponse(offer, 33L);
+        Mockito.verify(offer).setStudentOffer(studentOffer);
+
+    }
+
 }

@@ -7,8 +7,6 @@ import nl.tudelft.sem.template.entities.Offer;
 import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.exceptions.ContractCreationException;
-import nl.tudelft.sem.template.exceptions.LowRatingException;
-import nl.tudelft.sem.template.exceptions.UpstreamServiceException;
 import nl.tudelft.sem.template.services.NonTargetedCompanyOfferService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

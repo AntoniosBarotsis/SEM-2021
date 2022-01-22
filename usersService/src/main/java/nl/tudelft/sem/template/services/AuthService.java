@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.services;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.sun.istack.NotNull;
+import java.time.Instant;
 import java.util.Date;
 import nl.tudelft.sem.template.entities.JwtConfig;
 import nl.tudelft.sem.template.entities.User;
@@ -49,7 +50,7 @@ public class AuthService {
     public String generateJwtToken(User user) {
         Algorithm algorithm = Algorithm.HMAC256(jwtConfig.getJwtSecret());
         return JWT.create()
-                .withExpiresAt(new Date(System.currentTimeMillis() + jwtConfig.getLifetime()))
+                .withExpiresAt(new Date(Instant.now().toEpochMilli() + jwtConfig.getLifetime()))
                 .withIssuer("SEM3B-TUD")
                 .withClaim("userName", user.getUsername())
                 .withClaim("userRole", user.getRole().toString())

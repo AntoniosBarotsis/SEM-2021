@@ -135,9 +135,12 @@ pmd {
 apply plugin: 'info.solidsoft.pitest'
 pitest {
 	//adds dependency to org.pitest:pitest-junit5-plugin and sets "testPlugin" to "junit5"
-	junit5PluginVersion = '0.12'
+	junit5PluginVersion = '0.15'
 
 	targetClasses = ['nl.tudelft.sem.template.*']  //by default "${project.group}.*"
+	targetTests = ['nl.tudelft.sem.template.*']
+	excludedClasses = ['nl.tudelft.sem.template.entities.*']
+
 	pitestVersion = '1.5.1' //not needed when a default PIT version should be used
 	threads = 4
 	outputFormats = ['XML', 'HTML']
