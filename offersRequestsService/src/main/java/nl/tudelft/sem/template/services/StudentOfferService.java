@@ -137,7 +137,7 @@ public class StudentOfferService extends OfferService {
         }
 
         logger.log(offer.getCreatorUsername()
-                + " has accepted offer"
+                + " has accepted offer "
                 + targetedCompanyOffer.getId()
                 + " from user "
                 + targetedCompanyOffer.getCreatorUsername());

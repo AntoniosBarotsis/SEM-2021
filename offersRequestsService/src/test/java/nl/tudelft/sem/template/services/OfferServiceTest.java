@@ -22,7 +22,6 @@ import nl.tudelft.sem.template.exceptions.UpstreamServiceException;
 import nl.tudelft.sem.template.repositories.OfferRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -69,6 +68,7 @@ class OfferServiceTest {
 
     @Test
     void saveOfferValidTest() throws LowRatingException, UpstreamServiceException {
+        studentOffer.setId(1L);
         Mockito.when(offerRepository.save(studentOffer))
             .thenReturn(studentOffer);
         AverageRatingResponse fakeResponse = new AverageRatingResponse(5.0);
@@ -77,7 +77,9 @@ class OfferServiceTest {
         Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
                 .thenReturn(responseWrapper);
 
-        assertEquals(studentOffer, offerService.saveOffer(studentOffer));
+        Offer test = offerService.saveOffer(studentOffer);
+        Mockito.verify(fileLogger).log("StudentOffer 1 saved by user Student");
+        assertEquals(studentOffer, test);
     }
 
     @Test
@@ -128,7 +130,10 @@ class OfferServiceTest {
         expected.put("studentOffers", Arrays.asList(studentOffer, studentOffer2));
         expected.put("targetedCompanyOffers", List.of(targetedCompanyOffer));
 
-        assertEquals(expected, offerService.getAllByUsername(student));
+        Map<String, List<Offer>> test = offerService.getAllByUsername(student);
+
+        Mockito.verify(fileLogger).log("3 offer(s) associated with Student");
+        assertEquals(expected, test);
     }
 
     @Test
@@ -185,5 +190,16 @@ class OfferServiceTest {
         assertNull(Objects.requireNonNull(response.getBody()).getData());
     }
 
+    @Test
+    void saveOfferNoRatingTest() throws LowRatingException, UpstreamServiceException {
+        Mockito.when(offerRepository.save(studentOffer))
+                .thenReturn(studentOffer);
+        AverageRatingResponse fakeResponse = new AverageRatingResponse(-1);
+        AverageRatingResponseWrapper responseWrapper = new AverageRatingResponseWrapper();
+        responseWrapper.setData(fakeResponse);
+        Mockito.when(restTemplate.getForObject(Mockito.anyString(), Mockito.any()))
+                .thenReturn(responseWrapper);
 
+        assertEquals(studentOffer, offerService.saveOffer(studentOffer));
+    }
 }

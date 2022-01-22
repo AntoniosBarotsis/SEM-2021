@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.services;
 
 import java.util.Objects;
+import logger.FileLogger;
 import lombok.NoArgsConstructor;
 import nl.tudelft.sem.template.entities.dtos.AverageRatingResponseWrapper;
 import nl.tudelft.sem.template.entities.dtos.ContractDto;
@@ -20,6 +21,8 @@ public class Utility {
 
     @Autowired
     private transient RestTemplate restTemplate;
+    @Autowired
+    private transient FileLogger logger;
 
     /**
      * Checks to see if the given user exists.
@@ -64,7 +67,7 @@ public class Utility {
                 = new ContractDto(companyId, studentId, hoursPerWeek, totalHours, pricePerHour);
 
         try {
-            System.out.println("Sending contract to contract microservice");
+            logger.log("Sending contract to contract microservice");
             String url = "http://contract-service/";
 
             HttpHeaders headers = new HttpHeaders();
@@ -93,7 +96,12 @@ public class Utility {
             AverageRatingResponseWrapper response = restTemplate.getForObject(
                     feedbackServiceUrl, AverageRatingResponseWrapper.class
             );
-            System.out.println(Objects.requireNonNull(response).getData().getAverageRating());
+
+            logger.log("This the average rating for " + username
+                    + ": " + Objects
+                    .requireNonNull(response)
+                    .getData().getAverageRating());
+
             Objects.requireNonNull(response);
             Objects.requireNonNull(response.getData());
             return response.getData().getAverageRating();

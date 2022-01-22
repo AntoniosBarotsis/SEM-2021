@@ -16,8 +16,6 @@ import nl.tudelft.sem.template.entities.dtos.ContractDto;
 import nl.tudelft.sem.template.entities.dtos.Response;
 import nl.tudelft.sem.template.enums.Status;
 import nl.tudelft.sem.template.exceptions.ContractCreationException;
-import nl.tudelft.sem.template.exceptions.LowRatingException;
-import nl.tudelft.sem.template.exceptions.UpstreamServiceException;
 import nl.tudelft.sem.template.exceptions.UserDoesNotExistException;
 import nl.tudelft.sem.template.exceptions.UserServiceUnvanvailableException;
 import nl.tudelft.sem.template.services.StudentOfferService;
@@ -81,7 +79,7 @@ class StudentOfferControllerTest {
 
 
     @Test
-    void saveStudentOfferValid() throws LowRatingException, UpstreamServiceException {
+    void saveStudentOfferValid() {
         Offer studentOffer2 = new StudentOffer("This is a title",
             "This is a description", 20,
             520, Arrays.asList("Expertise 1", "Expertise 2", "Expertise 3"), Status.PENDING,
@@ -98,7 +96,7 @@ class StudentOfferControllerTest {
     }
 
     @Test
-    void saveStudentOfferIllegal() throws LowRatingException, UpstreamServiceException {
+    void saveStudentOfferIllegal() {
         studentOffer.setHoursPerWeek(21);
         String errorMessage = "Offer exceeds 20 hours per week";
         Mockito.when(studentOfferService.saveOfferWithResponse(studentOffer)).thenReturn(

@@ -32,8 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.client.RestTemplate;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -111,7 +109,9 @@ public class StudentOfferServiceTest {
             Mockito.when(studentOfferRepository.findAllByStudentId(student))
                     .thenReturn(returned);
 
-            assertEquals(returned, studentOfferService.getOffersById(student));
+            List<Offer> test = studentOfferService.getOffersById(student);
+            Mockito.verify(utility).userExists(student);
+            assertEquals(returned, test);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -132,7 +132,7 @@ public class StudentOfferServiceTest {
     void acceptOfferTest() throws NoPermissionException, ContractCreationException {
         TargetedCompanyOffer declined = new TargetedCompanyOffer();
         offerTwo.setTargetedCompanyOffers(List.of(declined, accepted));
-
+        accepted.setId(1L);
         Mockito.when(targetedCompanyOfferRepository.findById(accepted.getId()))
                         .thenReturn(Optional.of(accepted));
 
@@ -144,6 +144,8 @@ public class StudentOfferServiceTest {
         Mockito.verify(studentOfferRepository, times(1)).save(any());
         Mockito.verify(targetedCompanyOfferRepository,
                 times(2)).save(any());
+
+        Mockito.verify(fileLogger).log("Student has accepted offer 1 from user Our Company");
         assertSame(accepted.getStatus(), Status.ACCEPTED);
         assertSame(offerTwo.getStatus(), Status.DISABLED);
         assertSame(declined.getStatus(), Status.DECLINED);
@@ -270,6 +272,30 @@ public class StudentOfferServiceTest {
         List<String> expertises = new ArrayList<>();
         expertises.add("Swimming");
         assertEquals(List.of(offerTwo),
+                studentOfferService.getByExpertises(expertises));
+    }
+
+    @Test
+    void getByExpertisesMultipleTest() throws UnsupportedEncodingException {
+        List<StudentOffer> asd = new ArrayList<>();
+        asd.add(offerTwo);
+        Mockito.when(studentOfferRepository.findAllActive())
+                .thenReturn(asd);
+
+        List<String> expertises = Arrays.asList("Dancing", "Jumping", "Swimming");
+        assertEquals(List.of(offerTwo),
+                studentOfferService.getByExpertises(expertises));
+    }
+
+    @Test
+    void getByExpertisesNonExistantest() throws UnsupportedEncodingException {
+        List<StudentOffer> asd = new ArrayList<>();
+        asd.add(offerTwo);
+        Mockito.when(studentOfferRepository.findAllActive())
+                .thenReturn(asd);
+
+        List<String> expertises = Arrays.asList("Looking", "At", "Nothing");
+        assertEquals(List.of(),
                 studentOfferService.getByExpertises(expertises));
     }
 }
